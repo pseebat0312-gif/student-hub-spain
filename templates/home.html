@@ -218,7 +218,7 @@
     }
 
     // 关键：用 JS 绑定 onclick，避免 HTML 里的 onclick 在某些情况下失效
-    statusCard.onclick = handleUserCard;
+    
   }
 
   function updateClock() {
@@ -233,6 +233,16 @@
   updateClock();
   setInterval(updateClock, 1000);
 
+  // ===== 只绑定一次卡片点击 =====
+  document.getElementById('userStatusCard').addEventListener('click', function() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (localStorage.getItem('access_token')) {
+      location.href = '/profile';
+    } else {
+      location.href = '/login';
+    }
+  });
+  
   refreshLoginUI();
 
   // 从工具页返回时自动切到工具箱标签
