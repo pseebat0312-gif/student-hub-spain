@@ -132,7 +132,7 @@
   <div class="tab-page" id="tab-user">
     <h3 style="margin-bottom: 16px; color: #a0d8b3;">👤 我的</h3>
 
-    <div class="card" id="userStatusCard" onclick="handleUserCard()">
+    <div class="card" id="userStatusCard">
       <h3 id="userCardTitle">🔑 点击登录</h3>
       <p id="userCardDesc">登录后可使用个人中心、留言、社区等功能</p >
     </div>
@@ -180,6 +180,7 @@
   }
 
   function handleUserCard() {
+    if (navigator.vibrate) navigator.vibrate(10);
     if (localStorage.getItem('access_token')) location.href = '/profile';
     else location.href = '/login';
   }
@@ -198,6 +199,7 @@
     const userOnly = document.getElementById('userOnlyCards');
     const adminCard = document.getElementById('adminCard');
     const topDisplay = document.getElementById('userDisplay');
+    const statusCard = document.getElementById('userStatusCard');
 
     if (token && email) {
       document.getElementById('userCardTitle').textContent = '✅ ' + email;
@@ -214,6 +216,9 @@
       topDisplay.textContent = '登录 →';
       topDisplay.onclick = () => location.href = '/login';
     }
+
+    // 关键：用 JS 绑定 onclick，避免 HTML 里的 onclick 在某些情况下失效
+    statusCard.onclick = handleUserCard;
   }
 
   function updateClock() {
