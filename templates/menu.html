@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>独家菜单 · 西班牙留学生工具站</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+body {
+background: linear-gradient(180deg, #0f0c29 0%, #1a1a3e 50%, #24243e 100%);
+color: #fff; font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+min-height: 100vh; padding-bottom: 100px;
+}
+
+#topBar {
+padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+background: linear-gradient(to bottom, #0f0c29, transparent);
+position: sticky; top: 0; z-index: 10;
+}
+#topBar .back-btn {
+background: rgba(255,255,255,0.08); border: none; color: #fff;
+font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+cursor: pointer;
+}
+#topBar .back-btn:active { transform: scale(0.9); }
+#topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+#topBar .history-btn {
+background: rgba(255,255,255,0.08); border: none; color: #a0d8b3;
+font-size: 12px; padding: 8px 12px; border-radius: 10px;
+cursor: pointer;
+}
+
+/* 分类标签 */
+#categoryBar {
+display: flex; gap: 8px; overflow-x: auto;
+padding: 0 20px 12px;
+}
+#categoryBar::-webkit-scrollbar { display: none; }
+.cat-btn {
+padding: 8px 18px; border-radius: 20px;
+border: 1px solid rgba(255,255,255,0.1);
+background: rgba(255,255,255,0.05);
+color: #ccc; font-size: 13px; white-space: nowrap;
+cursor: pointer; transition: 0.15s;
+}
+.cat-btn.active {
+background: rgba(160, 216, 179, 0.2);
+color: #a0d8b3; border-color: #a0d8b3; font-weight: bold;
+}
+.cat-btn:active { transform: scale(0.95); }
+
+/* 内容 */
+#content { padding: 10px 20px 40px; }
+
+/* 添加菜按钮 */
+.add-btn {
+width: 100%; padding: 14px; border-radius: 14px;
+border: 1px dashed rgba(160, 216, 179, 0.4);
+background: rgba(160, 216, 179, 0.08);
+color: #a0d8b3; font-size: 14px; font-weight: bold;
+cursor: pointer; margin-bottom: 20px;
+}
+.add-btn:active { transform: scale(0.98); }
+
+/* 添加菜表单 */
+.form-card {
+display: none; background: rgba(255,255,255,0.05);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 16px; padding: 18px; margin-bottom: 20px;
+}
+.form-card.show { display: block; }
+.form-card input, .form-card textarea, .form-card select {
+width: 100%; padding: 12px 14px; border-radius: 12px;
+border: 1px solid rgba(255,255,255,0.1);
+background: rgba(255,255,255,0.06);
+color: #fff; font-size: 14px; outline: none;
+margin-bottom: 10px; font-family: inherit;
+}
+.form-card textarea { height: 60px; resize: none; }
+.form-card select option { background: #1a1a2e; }
+.form-card input:focus, .form-card textarea:focus { border-color: #a0d8b3; }
+.form-actions { display: flex; gap: 10px; }
+.form-actions button {
+flex: 1; padding: 12px; border-radius: 12px;
+border: none; font-size: 14px; font-weight: bold; cursor: pointer;
+}
+.form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+.form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+
+/* 菜品卡片列表 */
+.dish-list { display: flex; flex-direction: column; gap: 14px; }
+.dish-card {
+display: flex; gap: 14px;
+background: rgba(255,255,255,0.05);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 16px; padding: 12px;
+align-items: center;
+position: relative;
+}
+.dish-card .dish-img {
+width: 100px; height: 100px;
+border-radius: 12px;
+flex-shrink: 0;
+background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+display: flex; align-items: center; justify-content: center;
+font-size: 40px;
+overflow: hidden;
+}
+.dish-card .dish-img img {
+width: 100%; height: 100%; object-fit: cover;
+}
+.dish-card .dish-info {
+flex: 1; min-width: 0;
+}
+.dish-card .dish-name {
+font-size: 15px; font-weight: bold; color: #fff;
+margin-bottom: 4px;
+}
+.dish-card .dish-note {
+font-size: 12px; color: #999; line-height: 1.5;
+margin-bottom: 4px;
+}
+.dish-card .dish-cat {
+font-size: 11px; color: #a0d8b3;
+background: rgba(160, 216, 179, 0.12);
+padding: 2px 8px; border-radius: 8px;
+display: inline-block;
+}
+
+.dish-card .add-cart-btn {
+width: 40px; height: 40px;
+border-radius: 50%;
+border: none;
+background: linear-gradient(135deg, #ff6b9d, #a54a7c);
+color: #fff; font-size: 22px; font-weight: bold;
+cursor: pointer; flex-shrink: 0;
+display: flex; align-items: center; justify-content: center;
+box-shadow: 0 4px 12px rgba(165, 74, 124, 0.4);
+}
+.add-cart-btn:active { transform: scale(0.9); }
+
+.dish-card .remove-dish {
+position: absolute; top: 8px; right: 8px;
+background: rgba(0,0,0,0.4); border: none; color: #fff;
+width: 22px; height: 22px; border-radius: 50%;
+font-size: 12px; cursor: pointer;
+}
+
+.empty-state {
+text-align: center; padding: 60px 20px;
+color: #666; font-size: 13px;
+}
+
+/* 底部购物车 */
+#cartBar {
+position: fixed; bottom: 0; left: 0; right: 0;
+background: rgba(20, 20, 40, 0.98);
+border-top: 1px solid rgba(255,255,255,0.08);
+padding: 12px 20px 24px;
+display: flex; align-items: center; gap: 12px;
+transform: translateY(120%);
+transition: transform 0.3s ease;
+z-index: 100;
+backdrop-filter: blur(15px);
+}
+#cartBar.show { transform: translateY(0); }
+#cartBar .cart-count {
+flex: 1; font-size: 14px; color: #fff;
+}
+#cartBar .cart-count .num {
+font-size: 20px; font-weight: bold; color: #a0d8b3;
+margin-right: 4px;
+}
+#cartBar .order-btn {
+padding: 14px 28px; border-radius: 14px;
+border: none; background: linear-gradient(135deg, #ff6b9d, #a54a7c);
+color: #fff; font-size: 15px; font-weight: bold;
+cursor: pointer;
+box-shadow: 0 6px 20px rgba(165, 74, 124, 0.5);
+}
+#cartBar .order-btn:active { transform: scale(0.96); }
+
+/* 订单卡片弹窗 */
+.modal {
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.8);
+display: none; justify-content: center; align-items: flex-end;
+z-index: 200;
+}
+.modal.show { display: flex; }
+.modal-content {
+background: #1a1a2e;
+width: 100%; max-width: 500px;
+border-radius: 25px 25px 0 0;
+padding: 24px 20px 35px;
+max-height: 85vh; overflow-y: auto;
+animation: slideUp 0.3s ease;
+}
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* 订单分享卡片（给你后期设计的占位） */
+.order-card {
+background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+border-radius: 20px;
+padding: 24px;
+text-align: left;
+margin-bottom: 16px;
+box-shadow: 0 8px 30px rgba(74, 124, 89, 0.4);
+}
+.order-card .order-date {
+font-size: 12px; color: rgba(255,255,255,0.7);
+margin-bottom: 6px;
+}
+.order-card .order-title {
+font-size: 20px; font-weight: bold;
+margin-bottom: 16px;
+}
+.order-card .order-item {
+font-size: 14px; padding: 6px 0;
+border-bottom: 1px dashed rgba(255,255,255,0.15);
+}
+.order-card .order-item:last-child { border-bottom: none; }
+.order-card .order-footer {
+font-size: 11px; color: rgba(255,255,255,0.6);
+margin-top: 16px; text-align: right;
+}
+
+.modal-btns { display: flex; gap: 10px; }
+.modal-btns button {
+flex: 1; padding: 14px; border-radius: 14px;
+border: none; font-size: 14px; font-weight: bold;
+cursor: pointer;
+}
+.modal-btns .close-btn { background: rgba(255,255,255,0.1); color: #fff; }
+.modal-btns .save-btn { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+<button class="back-btn" onclick="goBack()">←</button>
+<div class="title">🍽️ 独家菜单</div>
+<button class="history-btn" onclick="showHistory()">📜 历史</button>
+</div>
+
+<div id="categoryBar">
+<button class="cat-btn active" data-cat="全部" onclick="switchCat('全部', this)">全部</button>
+<button class="cat-btn" data-cat="主食" onclick="switchCat('主食', this)">🍚 主食</button>
+<button class="cat-btn" data-cat="蔬菜" onclick="switchCat('蔬菜', this)">🥬 蔬菜</button>
+<button class="cat-btn" data-cat="肉类" onclick="switchCat('肉类', this)">🍖 肉类</button>
+<button class="cat-btn" data-cat="甜品" onclick="switchCat('甜品', this)">🍰 甜品</button>
+<button class="cat-btn" data-cat="汤" onclick="switchCat('汤', this)">🍲 汤</button>
+<button class="cat-btn" data-cat="其他" onclick="switchCat('其他', this)">✨ 其他</button>
+</div>
+
+<div id="content">
+<button class="add-btn" onclick="toggleForm()">➕ 添加新菜</button>
+
+<div class="form-card" id="addForm">
+<input type="text" id="dishName" placeholder="菜名 *（比如：番茄炒蛋）">
+<textarea id="dishNote" placeholder="简介（可选，比如：微辣、不放葱）"></textarea>
+<select id="dishCat">
+<option value="主食">🍚 主食</option>
+<option value="蔬菜">🥬 蔬菜</option>
+<option value="肉类">🍖 肉类</option>
+<option value="甜品">🍰 甜品</option>
+<option value="汤">🍲 汤</option>
+<option value="其他">✨ 其他</option>
+</select>
+<input type="text" id="dishImage" placeholder="图片链接（可选）">
+<div class="form-actions">
+<button class="cancel" onclick="toggleForm()">取消</button>
+<button class="submit" onclick="addDish()">添加</button>
+</div>
+</div>
+
+<div class="dish-list" id="dishList"></div>
+</div>
+
+<!-- 底部购物车 -->
+<div id="cartBar">
+<div class="cart-count"><span class="num" id="cartNum">0</span>道菜已选</div>
+<button class="order-btn" onclick="submitOrder()">下单</button>
+</div>
+
+<!-- 订单弹窗 -->
+<div class="modal" id="orderModal">
+<div class="modal-content">
+<div id="orderCardContainer"></div>
+<div class="modal-btns">
+<button class="close-btn" onclick="closeOrderModal()">关闭</button>
+<button class="save-btn" onclick="saveOrder()">保存订单</button>
+</div>
+</div>
+</div>
+
+<!-- 历史订单弹窗 -->
+<div class="modal" id="historyModal">
+<div class="modal-content">
+<h3 style="color:#a0d8b3; margin-bottom:16px;">📜 历史订单</h3>
+<div id="historyList"></div>
+<div class="modal-btns" style="margin-top:16px;">
+<button class="close-btn" onclick="closeHistory()">关闭</button>
+</div>
+</div>
+</div>
+
+<script>
+// ===== 演示数据 =====
+let dishes = [
+{ name: '番茄炒蛋', note: '家常菜，微辣', cat: '蔬菜', image: '' },
+{ name: '红烧肉', note: '肥而不腻', cat: '肉类', image: '' },
+{ name: '紫菜蛋花汤', note: '清淡', cat: '汤', image: '' }
+];
+
+// 从本地恢复
+const savedDishes = localStorage.getItem('menu_dishes');
+if (savedDishes) {
+try { dishes = JSON.parse(savedDishes); } catch(e) {}
+}
+
+let orders = JSON.parse(localStorage.getItem('menu_orders') || '[]');
+let currentCat = '全部';
+let cart = []; // 存的是菜品索引
+
+// ===== 渲染菜单 =====
+function renderDishes() {
+const list = document.getElementById('dishList');
+const filtered = dishes
+.map((d, i) => ({...d, idx: i}))
+.filter(d => currentCat === '全部' || d.cat === currentCat);
+
+if (filtered.length === 0) {
+list.innerHTML = '<div class="empty-state">这个分类下还没有菜～</div>';
+return;
+}
+
+list.innerHTML = '';
+filtered.forEach(dish => {
+const card = document.createElement('div');
+card.className = 'dish-card';
+
+const imgHtml = dish.image
+? `<img src="${dish.image}" alt="${dish.name}">`
+: '🍽️';
+
+card.innerHTML = `
+<div class="dish-img">${imgHtml}</div>
+<div class="dish-info">
+<div class="dish-name">${dish.name}</div>
+<div class="dish-note">${dish.note || ''}</div>
+<div class="dish-cat">${dish.cat}</div>
+</div>
+<button class="add-cart-btn" onclick="addToCart(${dish.idx})">+</button>
+<button class="remove-dish" onclick="removeDish(${dish.idx})">✕</button>
+`;
+list.appendChild(card);
+});
+}
+
+// ===== 切换分类 =====
+function switchCat(cat, el) {
+if (navigator.vibrate) navigator.vibrate(8);
+currentCat = cat;
+document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+el.classList.add('active');
+renderDishes();
+}
+
+// ===== 添加菜 =====
+function toggleForm() {
+document.getElementById('addForm').classList.toggle('show');
+}
+
+function addDish() {
+const name = document.getElementById('dishName').value.trim();
+const note = document.getElementById('dishNote').value.trim();
+const cat = document.getElementById('dishCat').value;
+const image = document.getElementById('dishImage').value.trim();
+
+if (!name) { alert('菜名不能为空'); return; }
+if (navigator.vibrate) navigator.vibrate(15);
+
+dishes.push({ name, note, cat, image });
+localStorage.setItem('menu_dishes', JSON.stringify(dishes));
+renderDishes();
+
+document.getElementById('dishName').value = '';
+document.getElementById('dishNote').value = '';
+document.getElementById('dishImage').value = '';
+toggleForm();
+}
+
+// ===== 删除菜 =====
+function removeDish(idx) {
+if (navigator.vibrate) navigator.vibrate(10);
+if (!confirm('确定删除这道菜吗？')) return;
+dishes.splice(idx, 1);
+localStorage.setItem('menu_dishes', JSON.stringify(dishes));
+cart = [];
+renderDishes();
+updateCartBar();
+}
+
+// ===== 加到购物车 =====
+function addToCart(idx) {
+if (navigator.vibrate) navigator.vibrate(8);
+cart.push(idx);
+updateCartBar();
+// 加的时候闪一下
+document.getElementById('cartBar').classList.add('show');
+}
+
+function updateCartBar() {
+document.getElementById('cartNum').textContent = cart.length;
+if (cart.length > 0) {
+document.getElementById('cartBar').classList.add('show');
+} else {
+document.getElementById('cartBar').classList.remove('show');
+}
+}
+
+// ===== 下单 =====
+function submitOrder() {
+if (cart.length === 0) return;
+if (navigator.vibrate) navigator.vibrate(20);
+
+const selectedDishes = cart.map(i => dishes[i]);
+const now = new Date();
+const dateStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+
+let itemsHtml = '';
+selectedDishes.forEach(d => {
+itemsHtml += `<div class="order-item">· ${d.name}${d.note ? ' <span style="opacity:0.7;">（' + d.note + '）</span>' : ''}</div>`;
+});
+
+const cardHtml = `
+<div class="order-card">
+<div class="order-date">${dateStr}</div>
+<div class="order-title">🍽️ 今日菜单</div>
+<div>${itemsHtml}</div>
+<div class="order-footer">来自「独家菜单」</div>
+</div>
+`;
+
+document.getElementById('orderCardContainer').innerHTML = cardHtml;
+document.getElementById('orderModal').classList.add('show');
+
+// 暂存这次订单，点保存时写入历史
+window._pendingOrder = { date: dateStr, dishes: selectedDishes.map(d => d.name) };
+}
+
+function closeOrderModal() {
+document.getElementById('orderModal').classList.remove('show');
+// 清空购物车
+cart = [];
+updateCartBar();
+}
+
+function saveOrder() {
+if (window._pendingOrder) {
+orders.unshift(window._pendingOrder);
+localStorage.setItem('menu_orders', JSON.stringify(orders));
+window._pendingOrder = null;
+}
+document.getElementById('orderModal').classList.remove('show');
+cart = [];
+updateCartBar();
+alert('✅ 订单已保存到历史记录');
+}
+
+// ===== 历史订单 =====
+function showHistory() {
+const list = document.getElementById('historyList');
+if (orders.length === 0) {
+list.innerHTML = '<div class="empty-state">还没有历史订单</div>';
+} else {
+list.innerHTML = '';
+orders.forEach(o => {
+const div = document.createElement('div');
+div.className = 'order-card';
+div.style.background = 'rgba(255,255,255,0.05)';
+div.style.boxShadow = 'none';
+div.style.marginBottom = '10px';
+div.innerHTML = `
+<div class="order-date" style="color:#888;">${o.date}</div>
+<div style="font-size:13px; line-height:1.8; color:#ddd;">
+${o.dishes.map(d => '· ' + d).join('<br>')}
+</div>
+`;
+list.appendChild(div);
+});
+}
+document.getElementById('historyModal').classList.add('show');
+}
+
+function closeHistory() {
+document.getElementById('historyModal').classList.remove('show');
+}
+
+// ===== 返回 =====
+function goBack() {
+if (navigator.vibrate) navigator.vibrate(10);
+if (window.history.length > 1) window.history.back();
+else location.href = '/?tab=tools';
+}
+
+// 初始化
+renderDishes();
+updateCartBar();
+</script>
+</body>
+</html>

@@ -104,6 +104,10 @@ def login_page():
 def reset_password_page():
     return render_template("reset_password.html")
 
+@app.route("/menu")
+def menu():
+    return render_template("menu.html")
+
 
 # ===== 重置密码（发邮件） =====
 @app.route("/api/reset_password", methods=["POST"])
