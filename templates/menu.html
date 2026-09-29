@@ -15,7 +15,8 @@ height: 100vh; overflow: hidden;
 #topBar {
 padding: 12px 14px; display: flex; align-items: center; gap: 8px;
 background: #0f0c29; border-bottom: 1px solid rgba(255,255,255,0.06);
-z-index: 9999; height: 56px; position: relative;
+z-index: 9999; height: 56px; position:fixed;
+top: 0; left: 0; right: 0;
 }
 #topBar .back-btn {
 background: rgba(255,255,255,0.08); border: none; color: #fff;
@@ -35,10 +36,11 @@ cursor: pointer; flex-shrink: 0; min-width: 44px;
 #topBar .icon-btn:active { transform: scale(0.95); }
 
 #menuContainer {
-display: flex; height: calc(100vh - 56px - 84px);
-transition: height 0.3s;
-}
-#menuContainer.no-cart { height: calc(100vh - 56px); }
+    display: flex; height: calc(100vh - 56px - 84px);
+    transition: height 0.3s;
+    margin-top: 56px;
+  }
+  #menuContainer.no-cart { height: calc(100vh - 56px); }
 
 #categorySide {
 width: 88px; background: rgba(0,0,0,0.3);
