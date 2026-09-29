@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>个人中心 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; transition: 0.1s;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+
+  #content { padding: 10px 20px 40px; }
+
+  .hero-card {
+    text-align: center;
+    padding: 30px 20px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero-card .avatar {
+    font-size: 64px; line-height: 1;
+    margin-bottom: 12px;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .hero-card .avatar img {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #a0d8b3;
+  }
+  .hero-card .nickname { font-size: 20px; font-weight: bold; color: #fff; }
+  .hero-card .email { font-size: 12px; color: #888; margin-top: 6px; }
+
+  .upload-avatar-btn {
+    margin-top: 14px; padding: 10px 20px;
+    border-radius: 12px; border: 1px solid rgba(160, 216, 179, 0.3);
+    background: rgba(160, 216, 179, 0.1);
+    color: #a0d8b3; font-size: 13px;
+    cursor: pointer; transition: 0.15s;
+  }
+  .upload-avatar-btn:active { transform: scale(0.95); }
+
+  .section-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-size: 15px; font-weight: bold; color: #a0d8b3;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  }
+
+  .field-label { font-size: 13px; color: #888; margin-bottom: 8px; }
+  .text-input {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 14px; font-family: inherit;
+  }
+  .text-input:focus { border-color: #a0d8b3; }
+
+  .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .emoji-option {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .emoji-option:active { transform: scale(0.9); }
+  .emoji-option.selected {
+    border-color: #a0d8b3;
+    background: rgba(160, 216, 179, 0.15);
+  }
+
+  .upload-area {
+    padding: 22px; border-radius: 14px;
+    border: 2px dashed rgba(160, 216, 179, 0.3);
+    background: rgba(160, 216, 179, 0.05);
+    text-align: center; font-size: 14px; color: #a0d8b3;
+    cursor: pointer; margin-bottom: 16px;
+    transition: 0.15s;
+  }
+  .upload-area:active { transform: scale(0.98); background: rgba(160, 216, 179, 0.1); }
+
+  .primary-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 15px; font-weight: bold;
+    cursor: pointer; transition: 0.1s;
+  }
+  .primary-btn:active { transform: scale(0.97); }
+
+  .member-row { display: flex; gap: 12px; }
+  .member-box {
+    flex: 1;
+    background: rgba(160, 216, 179, 0.08);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .member-box .label { font-size: 12px; color: #888; margin-bottom: 6px; }
+  .member-box .value { font-size: 18px; font-weight: bold; color: #a0d8b3; }
+
+  .upgrade-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1px solid rgba(160, 216, 179, 0.3);
+    background: rgba(160, 216, 179, 0.1);
+    color: #a0d8b3; font-size: 15px; font-weight: bold;
+    cursor: pointer; transition: 0.1s;
+    margin-top: 14px;
+  }
+  .upgrade-btn:active { transform: scale(0.97); }
+
+  .tip-box { font-size: 12px; color: #888; line-height: 1.6; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">👤 个人中心</div>
+</div>
+
+<div id="content">
+
+  <div class="hero-card">
+    <div class="avatar" id="heroAvatar">🐱</div>
+    <div class="nickname" id="heroNickname">还没有设置昵称</div>
+    <div class="email">molly@example.com</div>
+    <button class="upload-avatar-btn" onclick="document.getElementById('avatarFileInput').click()">📷 上传图片头像</button>
+    <input type="file" id="avatarFileInput" accept="image/*" style="display:none" onchange="onAvatarUpload(event)">
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">👤 个人资料设置</div>
+    <div class="field-label">昵称</div>
+    <input class="text-input" type="text" id="nicknameInput" placeholder="输入你的昵称...">
+
+    <div class="field-label">方式一：选一个 emoji 头像</div>
+    <div class="emoji-grid" id="emojiGrid"></div>
+
+    <div class="field-label">方式二：上传图片当头像</div>
+    <div class="upload-area" onclick="document.getElementById('avatarFileInput2').click()">
+      <span id="uploadText">📷 点击上传图片</span>
+      <input type="file" id="avatarFileInput2" accept="image/*" style="display:none" onchange="onAvatarUpload(event)">
+    </div>
+
+    <button class="primary-btn" onclick="saveProfile()">💾 保存资料</button>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">🔑 修改密码</div>
+    <div class="field-label">旧密码</div>
+    <input class="text-input" type="password" id="oldPwd" placeholder="输入旧密码...">
+    <div class="field-label">新密码</div>
+    <input class="text-input" type="password" id="newPwd" placeholder="输入新密码...">
+    <button class="primary-btn" onclick="changePassword()">确认修改</button>
+  </div>
+
+  <div class="section-card">
+    <div class="section-title">💎 会员状态</div>
+    <div class="member-row">
+      <div class="member-box">
+        <div class="label">当前等级</div>
+        <div class="value">免费用户</div>
+      </div>
+      <div class="member-box">
+        <div class="label">AI 分析次数</div>
+        <div class="value">0 / 3</div>
+      </div>
+    </div>
+    <button class="upgrade-btn" onclick="upgradeMember()">升级到会员（即将开放）</button>
+    <div class="tip-box">升级到会员，解锁无限次 AI 分析和历史记录保存功能。</div>
+  </div>
+
+</div>
+
+<script>
+  // ===== 智能返回 =====
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      location.href = '/';
+    }
+  }
+
+  // ===== Emoji 选项 =====
+  const emojiOptions = [
+    "🐱", "🐶", "🦊", "🐼", "🐸", "🦁", "🐯", "🐨",
+    "🌸", "🌈", "⭐", "🌙", "☀️", "🍀", "🎵", "🍕"
+  ];
+  let selectedEmoji = "🐱";
+  let uploadedImageData = null;
+
+  function renderEmojiGrid() {
+    const grid = document.getElementById('emojiGrid');
+    grid.innerHTML = '';
+    emojiOptions.forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'emoji-option' + (e === selectedEmoji ? ' selected' : '');
+      div.textContent = e;
+      div.onclick = () => {
+        selectedEmoji = e;
+        uploadedImageData = null;
+        if (navigator.vibrate) navigator.vibrate(8);
+        renderEmojiGrid();
+        document.getElementById('heroAvatar').textContent = e;
+        const uploadText = document.getElementById('uploadText');
+        if (uploadText) uploadText.textContent = '📷 点击上传图片';
+      };
+      grid.appendChild(div);
+    });
+  }
+  renderEmojiGrid();
+
+  // ===== 上传图片头像 =====
+  function onAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('请选择图片文件');
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      alert('图片太大了，请选择 2MB 以内的图片');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImageData = e.target.result;
+      document.getElementById('heroAvatar').innerHTML = `< img src="${uploadedImageData}" alt="avatar">`;
+      const uploadText = document.getElementById('uploadText');
+      if (uploadText) uploadText.textContent = '✅ 已选择图片（点击可替换）';
+      if (navigator.vibrate) navigator.vibrate(15);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ===== 保存资料 =====
+  function saveProfile() {
+    const nickname = document.getElementById('nicknameInput').value.trim();
+    if (navigator.vibrate) navigator.vibrate(15);
+    if (!nickname) {
+      alert('请先输入昵称');
+      return;
+    }
+
+    document.getElementById('heroNickname').textContent = nickname;
+
+    if (uploadedImageData) {
+      document.getElementById('heroAvatar').innerHTML = `< img src="${uploadedImageData}" alt="avatar">`;
+      alert('✅ 资料已保存（图片头像）。\n\n等接上数据库后，图片会先上传到 Supabase Storage，再把链接存进 user_profiles 表。');
+    } else {
+      document.getElementById('heroAvatar').textContent = selectedEmoji;
+      alert('✅ 资料已保存（emoji 头像）。\n\n等接上数据库后，会直接写入 user_profiles 表。');
+    }
+  }
+
+  // ===== 修改密码 =====
+  function changePassword() {
+    const oldPwd = document.getElementById('oldPwd').value;
+    const newPwd = document.getElementById('newPwd').value;
+    if (!oldPwd || !newPwd) {
+      alert('请填写完整');
+      return;
+    }
+    if (navigator.vibrate) navigator.vibrate(15);
+    alert('✅ 密码修改请求已提交。\n\n等接上数据库后，这里会校验旧密码并更新到 app_users 表。');
+    document.getElementById('oldPwd').value = '';
+    document.getElementById('newPwd').value = '';
+  }
+
+  // ===== 升级会员 =====
+  function upgradeMember() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    alert('付费功能正在开发中，敬请期待。');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>学校导览 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29;
+    color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    overflow-x: hidden; min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  /* 顶部返回 */
+  #topBar {
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08);
+    border: none; color: #fff; font-size: 18px;
+    width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; transition: 0.1s;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.15); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+
+  /* 主内容区 */
+  #content { padding: 10px 20px 40px; }
+
+  /* 学校选择器 */
+  .school-select {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: 16px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 16px;
+    outline: none; appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a0d8b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 18px;
+    margin-bottom: 24px;
+    cursor: pointer;
+  }
+  .school-select option { background: #1a1a2e; color: #fff; }
+
+  /* 分类标题 */
+  .section-title {
+    font-size: 16px; color: #a0d8b3; font-weight: bold;
+    margin: 24px 0 12px; display: flex; align-items: center; gap: 8px;
+  }
+
+  /* 链接按钮网格 */
+  .link-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .link-btn {
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 18px 12px;
+    border-radius: 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #fff; text-decoration: none;
+    font-size: 14px; text-align: center;
+    transition: 0.15s;
+    min-height: 80px;
+  }
+  .link-btn:active {
+    transform: scale(0.96);
+    background: rgba(160, 216, 179, 0.15);
+    border-color: #a0d8b3;
+  }
+  .link-btn .emoji { font-size: 22px; margin-bottom: 6px; }
+
+  /* 提示框 */
+  .tip-box {
+    background: rgba(160, 216, 179, 0.08);
+    border-left: 4px solid #a0d8b3;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 13px; color: #ccc;
+    line-height: 1.6;
+    margin-top: 24px;
+  }
+
+  /* 未选择的提示 */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: #666; font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">🏛️ 学校快速导览</div>
+</div>
+
+<!-- 内容 -->
+<div id="content">
+
+  <!-- 学校下拉 -->
+  <select class="school-select" id="schoolSelect" onchange="onSchoolChange()">
+    <option value="">📌 请选择你的学校</option>
+    <option value="UCM">马德里康普顿斯大学 (UCM)</option>
+    <option value="UAM">马德里自治大学 (UAM)</option>
+    <option value="UB">巴塞罗那大学 (UB)</option>
+    <option value="UPF">庞培法布拉大学 (UPF)</option>
+    <option value="other">其他（即将添加）</option>
+  </select>
+
+  <!-- 动态内容区 -->
+  <div id="schoolContent">
+    <div class="empty-state">👆 请从上方选择你的学校</div>
+  </div>
+
+</div>
+
+<script>
+    // ===== 智能返回 =====
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    // 如果是从别的页面跳进来的（有历史记录），就返回上一页
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // 如果用户是直接打开这个链接的，就回主页
+      location.href = '/';
+    }
+  }
+  // 学校数据（直接写在前端，瞬间切换）
+  const schoolData = {
+    UCM: {
+      name: "马德里康普顿斯大学 (UCM)",
+      sections: [
+        {
+          title: "📚 学术与教学",
+          links: [
+            { emoji: "🏛️", name: "UCM 官网", url: "https://www.ucm.es" },
+            { emoji: "💻", name: "Campus Virtual", url: "https://www.ucm.es/campusvirtual" },
+            { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" },
+            { emoji: "🛠️", name: "学校免费工具", url: "https://ssii.ucm.es/" }
+          ]
+        },
+        {
+          title: "🏃 体育与生活",
+          links: [
+            { emoji: "⚽", name: "体育主页", url: "https://www.ucm.es/deportesucm" },
+            { emoji: "🏟️", name: "设施预约", url: "https://deportes.ucm.es/" },
+            { emoji: "📖", name: "图书馆服务", url: "https://biblioteca.ucm.es/" }
+          ]
+        }
+      ],
+      tip: "💡 提示：在校外访问 Campus Virtual 时，需要先连接学校的 VPN。"
+    },
+    UAM: { name: "马德里自治大学 (UAM)", sections: [], tip: "UAM 的入口正在整理中，敬请期待！" },
+    UB: { name: "巴塞罗那大学 (UB)", sections: [], tip: "UB 的入口正在整理中，敬请期待！" },
+    UPF: { name: "庞培法布拉大学 (UPF)", sections: [], tip: "UPF 的入口正在整理中，敬请期待！" },
+    other: { name: "其他学校", sections: [], tip: "如果你希望添加你的学校，欢迎在留言板留言联系作者！" }
+  };
+
+  function onSchoolChange() {
+    const key = document.getElementById('schoolSelect').value;
+    const container = document.getElementById('schoolContent');
+
+    // 震动反馈
+    if (navigator.vibrate) navigator.vibrate(10);
+
+    if (!key || !schoolData[key]) {
+      container.innerHTML = '<div class="empty-state">👆 请从上方选择你的学校</div>';
+      return;
+    }
+
+    const data = schoolData[key];
+    let html = '';
+
+    if (data.sections.length === 0) {
+      html += `<div class="empty-state">${data.tip}</div>`;
+    } else {
+      data.sections.forEach(sec => {
+        html += `<div class="section-title">${sec.title}</div>`;
+        html += `<div class="link-grid">`;
+        sec.links.forEach(link => {
+          html += `
+            <a class="link-btn" href=" " target="_blank">
+              <span class="emoji">${link.emoji}</span>
+              <span>${link.name}</span>
+            </a >
+          `;
+        });
+        html += `</div>`;
+      });
+      html += `<div class="tip-box">${data.tip}</div>`;
+    }
+
+    container.innerHTML = html;
+  }
+</script>
+</body>
+</html>

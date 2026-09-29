@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#4a7c59">
+<title>西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29;
+    color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    overflow: hidden; height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  /* 页面容器，支持滑动切换 */
+  .page-container {
+    flex: 1; display: flex; transition: transform 0.3s ease-out;
+    height: 100vh;
+  }
+  .page {
+    min-width: 100vw; height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    padding: 40px 24px;
+    box-sizing: border-box;
+  }
+
+  /* 时钟页 */
+  .clock-card {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid #4a7c59;
+    border-radius: 20px;
+    padding: 30px; width: 100%; max-width: 360px;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .clock-card .label { font-size: 14px; color: #a0d8b3; margin-bottom: 10px; }
+  .clock-card .time { font-size: 28px; font-weight: bold; letter-spacing: 1px; }
+
+  /* 进度页 */
+  .progress-card {
+    background: rgba(255,255,255,0.06);
+    border: 2px solid #4a7c59;
+    border-radius: 20px;
+    padding: 30px; width: 100%; max-width: 360px;
+    text-align: center;
+  }
+  .progress-card .big-num { font-size: 48px; font-weight: bold; color: #a0d8b3; margin: 10px 0; }
+  .progress-card .small { font-size: 14px; color: #aaa; margin-top: 12px; line-height: 1.8; }
+
+  /* 底部导航栏 */
+  .nav-bar {
+    display: flex; justify-content: space-around; align-items: center;
+    background: rgba(10,10,26,0.95);
+    border-top: 1px solid #1a1a2e;
+    padding: 14px 0 20px;
+    position: fixed; bottom: 0; left: 0; right: 0;
+  }
+  .nav-item {
+    color: #888; font-size: 12px; display: flex; flex-direction: column;
+    align-items: center; gap: 4px; cursor: pointer;
+    transition: 0.2s; padding: 6px 20px; border-radius: 10px;
+  }
+  .nav-item:active { transform: scale(0.9); }
+  .nav-item.active { color: #ff6b9d; }
+  .nav-item .icon { font-size: 22px; }
+
+  /* 页面切换提示 */
+  .slide-hint {
+    position: fixed; bottom: 100px; font-size: 12px; color: #555;
+    animation: fade 2s infinite;
+  }
+  @keyframes fade { 0%,100% { opacity: 0.3; } 50% { opacity: 0.8; } }
+</style>
+</head>
+<body>
+
+<!-- 主页面容器 -->
+<div class="page-container" id="pageContainer">
+
+  <!-- 页面 1：时钟 -->
+<!-- 页面 1：时钟 -->
+  <div class="page">
+    <div class="clock-card">
+      <div class="label">🇪🇸 西班牙时间</div>
+      <div class="time" id="spainClock">{{ spain_time }}</div>
+    </div>
+    <div class="clock-card">
+      <div class="label">🇨🇳 中国时间</div>
+      <div class="time" id="chinaClock">{{ china_time }}</div>
+    </div>
+  </div>
+
+  <!-- 页面 2：进度 -->
+  <div class="page">
+    <div class="progress-card">
+      <div style="font-size:14px;color:#a0d8b3;">{{ year }} 年已过</div>
+      <div class="big-num">{{ progress }}%</div>
+      <div class="small">
+        已过 <b>{{ day_of_year }}</b> 天<br>
+        还剩 <b>{{ days_left }}</b> 天
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 滑动提示 -->
+<div class="slide-hint" id="slideHint">← 左右滑动切换 →</div>
+
+<!-- 底部导航 -->
+<div class="nav-bar">
+  <div class="nav-item active" onclick="goPage(0)" id="navClock">
+    <span class="icon">🕐</span><span>时钟</span>
+  </div>
+  <div class="nav-item" onclick="goPage(1)" id="navProgress">
+    <span class="icon">📊</span><span>进度</span>
+  </div>
+</div>
+
+<script>
+  // ===== 智能返回 =====
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    // 如果是从别的页面跳进来的（有历史记录），就返回上一页
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // 如果用户是直接打开这个链接的，就回主页
+      location.href = '/';
+    }
+  }
+  const container = document.getElementById('pageContainer');
+  let currentPage = 0;
+  const totalPages = 2;
+  // ===== 实时时钟（每秒钟刷新一次） =====
+function updateClock() {
+  const now = new Date();
+
+  // 西班牙时间
+  const spainTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}));
+  // 中国时间
+  const chinaTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}));
+
+  const pad = (n) => String(n).padStart(2, '0');
+  const fmt = (d) => {
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
+  // 给页面上的时钟元素更新文字
+  // 注意：因为我给你的 HTML 里时钟文字是 Python 渲染的，你需要加上 id
+  const spainEl = document.getElementById('spainClock');
+  const chinaEl = document.getElementById('chinaClock');
+  if (spainEl) spainEl.textContent = fmt(spainTime);
+  if (chinaEl) chinaEl.textContent = fmt(chinaTime);
+}
+
+// 页面一打开就更新时间，然后每秒更新一次
+updateClock();
+setInterval(updateClock, 1000);
+  function goPage(index) {
+    currentPage = index;
+    container.style.transform = `translateX(-${index * 100}vw)`;
+    // 更新导航状态
+    document.getElementById('navClock').classList.toggle('active', index === 0);
+    document.getElementById('navProgress').classList.toggle('active', index === 1);
+    // 震动反馈（如果手机支持）
+    if (navigator.vibrate) navigator.vibrate(10);
+  }
+
+  // 触摸滑动
+  let startX = 0;
+  let endX = 0;
+  container.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+  });
+  container.addEventListener('touchend', (e) => {
+    endX = e.changedTouches[0].clientX;
+    if (startX - endX > 50 && currentPage < totalPages - 1) goPage(currentPage + 1);
+    if (endX - startX > 50 && currentPage > 0) goPage(currentPage - 1);
+  });
+
+  // 鼠标拖动支持（电脑测试）
+  let isDown = false;
+  container.addEventListener('mousedown', (e) => { isDown = true; startX = e.clientX; });
+  container.addEventListener('mouseup', (e) => {
+    if (!isDown) return;
+    isDown = false;
+    endX = e.clientX;
+    if (startX - endX > 50 && currentPage < totalPages - 1) goPage(currentPage + 1);
+    if (endX - startX > 50 && currentPage > 0) goPage(currentPage - 1);
+  });
+
+  // 3秒后隐藏滑动提示
+  setTimeout(() => document.getElementById('slideHint').style.display = 'none', 4000);
+</script>
+</body>
+</html>
