@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29;
+    color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    overflow: hidden; height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  #topBar {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 16px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    z-index: 10;
+  }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+  #topBar .user { font-size: 13px; color: #888; }
+
+  #mainContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 80px 20px 100px;
+  }
+
+  .tab-page { display: none; }
+  .tab-page.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    transition: transform 0.1s;
+  }
+  .card:active { transform: scale(0.98); }
+  .card h3 { font-size: 16px; margin-bottom: 8px; color: #fff; }
+  .card p { font-size: 13px; color: #aaa; line-height: 1.6; }
+
+  .big-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 16px; font-weight: bold;
+    cursor: pointer; transition: 0.1s;
+    box-shadow: 0 6px 20px rgba(74,124,89,0.3);
+    margin-bottom: 20px;
+  }
+  .big-btn:active { transform: scale(0.97); }
+
+  #navBar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; justify-content: space-around; align-items: center;
+    background: rgba(10,10,26,0.95);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 8px 0 20px;
+    z-index: 100;
+  }
+  .nav-item {
+    color: #666; font-size: 11px; display: flex; flex-direction: column;
+    align-items: center; gap: 4px; cursor: pointer;
+    transition: 0.2s; padding: 6px 0; flex: 1;
+  }
+  .nav-item .icon { font-size: 22px; }
+  .nav-item.active { color: #a0d8b3; }
+  .nav-item:active { transform: scale(0.9); }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <div class="title">🇪🇸 西班牙留学生工具站</div>
+  <div class="user" id="userDisplay">未登录</div>
+</div>
+
+<div id="mainContent">
+
+  <div class="tab-page active" id="tab-home">
+    <div class="card">
+      <h3>👋 欢迎回来</h3>
+      <p>这里是你的西班牙留学生一站式工具箱。点击底部的标签，去探索你需要的一切。</p >
+    </div>
+    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+      <div class="card" style="flex: 1; margin-bottom: 0; text-align: center;">
+        <h3 style="font-size: 13px; color: #a0d8b3;">🇪🇸 西班牙</h3>
+        <p id="spainClock" style="font-size: 16px; font-weight: bold; color: #fff; margin-top: 8px;">--:--:--</p >
+      </div>
+      <div class="card" style="flex: 1; margin-bottom: 0; text-align: center;">
+        <h3 style="font-size: 13px; color: #a0d8b3;">🇨🇳 中国</h3>
+        <p id="chinaClock" style="font-size: 16px; font-weight: bold; color: #fff; margin-top: 8px;">--:--:--</p >
+      </div>
+    </div>
+    <button class="big-btn" onclick="switchTab('tools')">进入工具箱</button>
+  </div>
+<!-- Tab 3: 我的 -->
+  <div class="tab-page" id="tab-user">
+    <h3 style="margin-bottom: 16px; color: #a0d8b3;">👤 我的</h3>
+
+    <div class="card" onclick="location.href='/profile'">
+      <h3>👤 个人中心</h3>
+      <p>设置昵称、头像，修改密码，查看会员状态。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/message'">
+      <h3>✍️ 留言板</h3>
+      <p>给作者留言，默认私密，作者可能会公开。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/admin'">
+      <h3>🛠️ 管理后台</h3>
+      <p>仅管理员可见（查看用户、留言、帖子等）。</p >
+    </div>
+  </div>
+  <div class="tab-page" id="tab-tools">
+    <h3 style="margin-bottom: 16px; color: #a0d8b3;">🧰 工具箱</h3>
+
+    <div class="card" onclick="openTool('每日更新')">
+      <h3>📰 每日更新</h3>
+      <p>每天凌晨自动为你收集西班牙留学生最新资讯。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/school'">
+      <h3>🏫 学校导览</h3>
+      <p>一键查看西班牙各大高校的信息与攻略。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/ai_detect'">
+      <h3>🔍 AI 检测器</h3>
+      <p>帮你判断一段文字是不是 AI 写的。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/affairs'">
+      <h3>📋 办事导览</h3>
+      <p>居留卡、返乡证、住家证明等办理流程全在这里。</p >
+    </div>
+
+    <div class="card" onclick="openTool('日常生活导览')">
+      <h3>🛒 日常生活导览</h3>
+      <p>超市、交通、外卖等日常生活指南。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/market'">
+      <h3>🛒 留学生二手市场</h3>
+      <p>闲置出售、同城交易，只做沟通不涉及支付。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/community'">
+      <h3>💬 留学生互助社区</h3>
+      <p>经验分享、踩坑求助、学习交流，一起互助。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/profile'">
+      <h3>👤 个人中心</h3>
+      <p>设置昵称、头像，修改密码，查看会员状态。</p >
+    </div>
+
+    <div class="card" onclick="location.href='/map'">
+      <h3>🗺️ 留学生探店地图</h3>
+      <p>推荐好吃好玩的地方，一起避坑。</p >
+    </div>
+
+    <!-- 工具分类：留言板 -->
+    <div class="card" onclick="location.href='/message'">
+      <h3>✍️ 留言板</h3>
+      <p>给作者留言，默认私密，作者可能会公开。</p >
+    </div>
+
+    <!-- 工具分类：管理后台 -->
+    <div class="card" onclick="location.href='/admin'">
+      <h3>🛠️ 管理后台</h3>
+      <p>查看用户、检测记录、留言、社区帖子（仅管理员可见）。</p >
+    </div>
+
+    <!-- 工具分类：汇率计算器 -->
+    <div class="card" onclick="location.href='/currency'">
+      <h3>💱 汇率计算器 + 记账本</h3>
+      <p>实时汇率换算欧元/人民币/美元，还能记账。</p >
+    </div>
+
+
+  </div>
+
+</div>
+
+<div id="navBar">
+  <div class="nav-item active" onclick="switchTab('home')" data-tab="home">
+    <span class="icon">🏠</span><span>主页</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('tools')" data-tab="tools">
+    <span class="icon">🧰</span><span>工具</span>
+  </div>
+  <div class="nav-item" onclick="switchTab('user')" data-tab="user">
+    <span class="icon">👤</span><span>我的</span>
+  </div>
+</div>
+
+<script>
+  // ===== 智能返回 =====
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      location.href = '/';
+    }
+  }
+
+  // 切换 Tab
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
+
+    if (navigator.vibrate) navigator.vibrate(10);
+  }
+
+  // 点击工具卡片的动作
+  function openTool(toolName) {
+    if (navigator.vibrate) navigator.vibrate(15);
+    alert("即将进入【" + toolName + "】工具页。\n（在这里，我们以后会把它连到原来的 Streamlit 页面上）");
+  }
+
+  // 实时双时区时钟
+  function updateClock() {
+    const now = new Date();
+    const spainTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}));
+    const chinaTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}));
+    const pad = (n) => String(n).padStart(2, '0');
+    const fmt = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    
+    const spainEl = document.getElementById('spainClock');
+    const chinaEl = document.getElementById('chinaClock');
+    if (spainEl) spainEl.textContent = fmt(spainTime);
+    if (chinaEl) chinaEl.textContent = fmt(chinaTime);
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // 顶部用户信息
+  document.getElementById('userDisplay').textContent = "游客模式";
+
+  // ===== 核心：从工具页返回时自动切到工具箱标签 =====
+  window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'tools') {
+      switchTab('tools');
+      // 清掉 url 里的 ?tab=tools，防止用户手动刷新的时候还在工具页
+      window.history.replaceState({}, '', '/');
+    }
+  });
+</script>
+</body>
+</html>
