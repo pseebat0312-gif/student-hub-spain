@@ -153,8 +153,23 @@
 
   async function loadMessages() {
     try {
-      const resp = await fetch('/api/messages');
-      const data = await resp.json();
+      // 公开留言
+    const pubResp = await fetch('/api/messages');
+    const pubData = await pubResp.json();
+
+    // 我自己的留言（包含私密）
+    const myEmail = localStorage.getItem('user_email') || 'anonymous';
+    const myResp = await fetch('/api/messages/mine?email=' + encodeURIComponent(myEmail));
+    const myData = await myResp.json();
+
+    // 合并
+    const allData = [...(Array.isArray(pubData) ? pubData : []), ...(Array.isArray(myData) ? myData : [])];
+    const uniqueData = [];
+    const seen = {};
+    allData.forEach(m => {
+      if (!seen[m.id]) { seen[m.id] = true; uniqueData.push(m); }
+    });
+    renderMessages(uniqueData);
       allMessages = data;
     
     } catch (e) {

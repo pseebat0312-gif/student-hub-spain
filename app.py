@@ -138,15 +138,29 @@ def api_messages():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/messages/mine")
+def api_messages_mine():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = supabase.table("messages").select("*").eq("user_email", email).order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/messages/add", methods=["POST"])
 def api_messages_add():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     try:
         data = request.get_json()
-        email = data.get("email", "").strip()
+        email = data.get("email", "").strip() or "anonymous"
         content = data.get("content", "").strip()
-        if not email or not content:
+        if not content:
             return jsonify({"error": "缺少内容"}), 400
         supabase.table("messages").insert({
             "user_email": email,
