@@ -9,46 +9,46 @@
   * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
   html, body { height: 100%; }
   body {
-    background: #0f0c29;
-    background-size: cover;
-    color: #fff;
+    background: #0f0c29; color: #fff;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     overflow-y: auto;
-    transition: background 0.3s;
   }
-
-  /* 顶部状态栏 */
   #topBar {
     position: fixed; top: 0; left: 0; right: 0;
     padding: 16px 20px;
     display: flex; justify-content: space-between; align-items: center;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+    background: linear-gradient(to bottom, #0f0c29, transparent);
     z-index: 10;
   }
-  #topBar .title { font-size: 16px; font-weight: bold; color: #fff; }
-  #topBar .user { font-size: 13px; color: #fff; cursor: pointer; }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+  #topBar .user { font-size: 13px; color: #a0d8b3; cursor: pointer; }
 
-  /* 内容区 */
-  #mainContent {
-    padding: 80px 20px 120px;
-    min-height: 100vh;
-  }
+  #mainContent { padding: 80px 20px 100px; min-height: 100vh; }
 
-  /* 时间卡片 */
-  .clock-card {
-    background: rgba(255,255,255,0.08);
+  .tab-page { display: none; }
+  .tab-page.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-    padding: 18px;
-    margin-bottom: 24px;
-    display: flex; justify-content: space-around;
-    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 20px; margin-bottom: 16px;
+    cursor: pointer; transition: transform 0.1s;
   }
-  .clock-card .time-item { text-align: center; }
-  .clock-card .time-item .label { font-size: 12px; color: #a0d8b3; margin-bottom: 6px; }
-  .clock-card .time-item .time { font-size: 18px; font-weight: bold; }
+  .card:active { transform: scale(0.98); }
+  .card h3 { font-size: 16px; margin-bottom: 8px; color: #fff; }
+  .card p { font-size: 13px; color: #aaa; line-height: 1.6; }
 
-  /* App 网格 */
+  .big-btn {
+    width: 100%; padding: 16px; border-radius: 16px; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 16px; font-weight: bold;
+    cursor: pointer; margin-bottom: 20px;
+  }
+  .big-btn:active { transform: scale(0.97); }
+
+  /* ===== 手机桌面网格 ===== */
   .app-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -61,8 +61,7 @@
   }
   .app-icon:active { transform: scale(0.92); }
   .app-icon .icon-box {
-    width: 64px; height: 64px;
-    border-radius: 16px;
+    width: 64px; height: 64px; border-radius: 16px;
     display: flex; align-items: center; justify-content: center;
     font-size: 32px;
     background: linear-gradient(135deg, #4a7c59, #2d5a3d);
@@ -71,11 +70,8 @@
   }
   .app-icon .app-name {
     font-size: 11px; color: #fff; text-align: center;
-    line-height: 1.3;
-    word-break: keep-all;
+    line-height: 1.3; word-break: keep-all;
   }
-
-  /* 不同颜色的 App */
   .color-green { background: linear-gradient(135deg, #4a7c59, #2d5a3d) !important; }
   .color-blue  { background: linear-gradient(135deg, #4a6fa5, #2d4a7c) !important; }
   .color-pink  { background: linear-gradient(135deg, #a54a7c, #7c2d5a) !important; }
@@ -84,34 +80,20 @@
   .color-red   { background: linear-gradient(135deg, #a54a4a, #7c2d2d) !important; }
   .color-dark  { background: linear-gradient(135deg, #2a2a3e, #1a1a2e) !important; }
 
-  /* Dock 底栏 */
-  #dock {
-    position: fixed; bottom: 20px; left: 20px; right: 20px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 24px;
-    padding: 12px;
+  #navBar {
+    position: fixed; bottom: 0; left: 0; right: 0;
     display: flex; justify-content: space-around; align-items: center;
-    backdrop-filter: blur(15px);
-    z-index: 100;
+    background: rgba(10,10,26,0.95);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 8px 0 20px; z-index: 100;
   }
-  .dock-item {
-    display: flex; flex-direction: column; align-items: center;
-    cursor: pointer; padding: 6px 12px; border-radius: 12px;
-    transition: 0.15s;
+  .nav-item {
+    color: #666; font-size: 11px;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; flex: 1;
   }
-  .dock-item:active { transform: scale(0.9); }
-  .dock-item .dock-icon { font-size: 24px; }
-  .dock-item .dock-name { font-size: 10px; color: #ccc; margin-top: 4px; }
-
-  /* 背景切换按钮（右上角小圆点） */
-  #bgBtn {
-    position: fixed; top: 16px; right: 20px;
-    width: 32px; height: 32px; border-radius: 50%;
-    background: rgba(255,255,255,0.15);
-    border: none; color: #fff; font-size: 16px;
-    cursor: pointer; z-index: 20;
-  }
+  .nav-item .icon { font-size: 22px; }
+  .nav-item.active { color: #a0d8b3; }
 </style>
 </head>
 <body>
@@ -121,43 +103,63 @@
   <div class="user" id="userDisplay">登录 →</div>
 </div>
 
-<button id="bgBtn" onclick="changeBg()">🎨</button>
-
 <div id="mainContent">
 
-  <div class="clock-card">
-    <div class="time-item">
-      <div class="label">🇪🇸 西班牙</div>
-      <div class="time" id="spainClock">--:--:--</div>
+  <!-- Tab 1: 主页（不变） -->
+  <div class="tab-page active" id="tab-home">
+    <div class="card" onclick="switchTab('tools')">
+      <h3>👋 欢迎回来</h3>
+      <p>这里是你的西班牙留学生一站式工具箱。点击底部标签，或者点这里进入工具箱。</p >
     </div>
-    <div class="time-item">
-      <div class="label">🇨🇳 中国</div>
-      <div class="time" id="chinaClock">--:--:--</div>
+    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+      <div class="card" style="flex: 1; margin-bottom: 0; text-align: center; cursor: default;">
+        <h3 style="font-size: 13px; color: #a0d8b3;">🇪🇸 西班牙</h3>
+        <p id="spainClock" style="font-size: 16px; font-weight: bold; color: #fff; margin-top: 8px;">--:--:--</p >
+      </div>
+      <div class="card" style="flex: 1; margin-bottom: 0; text-align: center; cursor: default;">
+        <h3 style="font-size: 13px; color: #a0d8b3;">🇨🇳 中国</h3>
+        <p id="chinaClock" style="font-size: 16px; font-weight: bold; color: #fff; margin-top: 8px;">--:--:--</p >
+      </div>
     </div>
+    <button class="big-btn" onclick="switchTab('tools')">进入工具箱</button>
   </div>
 
-  <div class="app-grid" id="appGrid">
-    <!-- 图标会由 JS 渲染 -->
+  <!-- Tab 2: 工具箱（换成了手机桌面） -->
+  <div class="tab-page" id="tab-tools">
+    <div class="app-grid" id="appGrid"></div>
+  </div>
+
+  <!-- Tab 3: 我的（不变） -->
+  <div class="tab-page" id="tab-user">
+    <h3 style="margin-bottom: 16px; color: #a0d8b3;">👤 我的</h3>
+
+    <div class="card" id="userStatusCard">
+      <h3 id="userCardTitle">🔑 点击登录</h3>
+      <p id="userCardDesc">登录后可使用个人中心、留言、社区等功能</p >
+    </div>
+
+    <div id="userOnlyCards" style="display:none;">
+      <div class="card" onclick="location.href='/profile'"><h3>👤 个人中心</h3><p>设置昵称、头像，修改密码，查看会员状态。</p ></div>
+      <div class="card" onclick="location.href='/message'"><h3>✍️ 留言板</h3><p>给作者留言，默认私密，作者可能会公开。</p ></div>
+      <div class="card" id="adminCard" onclick="location.href='/admin'" style="display:none;"><h3>🛠️ 管理后台</h3><p>仅管理员可见。</p ></div>
+      <div class="card" onclick="logout()" style="background: rgba(255,107,157,0.08); border-color: rgba(255,107,157,0.3);">
+        <h3 style="color:#ff6b9d;">🚪 退出登录</h3><p>点了就会退出当前账号</p >
+      </div>
+    </div>
   </div>
 
 </div>
 
-<div id="dock">
-  <div class="dock-item" onclick="location.href='/'">
-    <span class="dock-icon">🏠</span><span class="dock-name">主页</span>
-  </div>
-  <div class="dock-item" onclick="location.href='/message'">
-    <span class="dock-icon">✍️</span><span class="dock-name">留言</span>
-  </div>
-  <div class="dock-item" onclick="location.href='/profile'">
-    <span class="dock-icon">👤</span><span class="dock-name">我的</span>
-  </div>
+<div id="navBar">
+  <div class="nav-item active" onclick="switchTab('home')" data-tab="home"><span class="icon">🏠</span><span>主页</span></div>
+  <div class="nav-item" onclick="switchTab('tools')" data-tab="tools"><span class="icon">🧰</span><span>工具</span></div>
+  <div class="nav-item" onclick="switchTab('user')" data-tab="user"><span class="icon">👤</span><span>我的</span></div>
 </div>
 
 <script>
   const ADMIN_EMAIL = "pseebat0312@gmail.com";
 
-  // ===== App 列表（图标、名字、链接、颜色）=====
+  // ===== App 列表 =====
   const apps = [
     { name: '倒数日',    icon: '⏳', url: '/countdown',   color: 'color-orange' },
     { name: '室友菜单',  icon: '🍽️', url: '/menu',        color: 'color-pink' },
@@ -173,7 +175,6 @@
     { name: '急救卡',    icon: '🚨', url: '/emergency',   color: 'color-red' }
   ];
 
-  // ===== 渲染 App 图标 =====
   function renderApps() {
     const grid = document.getElementById('appGrid');
     grid.innerHTML = '';
@@ -182,7 +183,6 @@
       div.className = 'app-icon';
       div.onclick = () => {
         if (navigator.vibrate) navigator.vibrate(10);
-        // 未实现的功能弹提示
         if (['/countdown', '/menu', '/fortune', '/emergency'].includes(app.url)) {
           alert('【' + app.name + '】正在开发中，敬请期待！');
         } else {
@@ -197,64 +197,77 @@
     });
   }
 
-  // ===== 背景切换 =====
-  const backgrounds = [
-    '#0f0c29',
-    'linear-gradient(135deg, #0f0c29, #302b63, #24243e)',
-    'linear-gradient(135deg, #1a1a2e, #16213e)',
-    'linear-gradient(135deg, #2d1b3d, #1a1a2e)',
-    'linear-gradient(135deg, #1b3d2d, #0f1a1a)',
-    'linear-gradient(135deg, #3d1b1b, #1a0f0f)'
-  ];
-  let bgIndex = 0;
-  function changeBg() {
-    bgIndex = (bgIndex + 1) % backgrounds.length;
-    document.body.style.background = backgrounds[bgIndex];
-    localStorage.setItem('bgIndex', bgIndex);
-  }
-  // 恢复上次背景
-  const savedBg = localStorage.getItem('bgIndex');
-  if (savedBg !== null) {
-    bgIndex = parseInt(savedBg);
-    document.body.style.background = backgrounds[bgIndex];
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + tabName).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
+    if (navigator.vibrate) navigator.vibrate(10);
+    refreshLoginUI();
   }
 
-  // ===== 时钟 =====
+  function logout() {
+    if (navigator.vibrate) navigator.vibrate(15);
+    if (!confirm('确定要退出登录吗？')) return;
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_email');
+    location.reload();
+  }
+
+  function refreshLoginUI() {
+    const token = localStorage.getItem('access_token');
+    const email = localStorage.getItem('user_email');
+    const userOnly = document.getElementById('userOnlyCards');
+    const adminCard = document.getElementById('adminCard');
+    const topDisplay = document.getElementById('userDisplay');
+    const statusCard = document.getElementById('userStatusCard');
+
+    if (token && email) {
+      document.getElementById('userCardTitle').textContent = '✅ ' + email;
+      document.getElementById('userCardDesc').textContent = '点击进入个人中心';
+      userOnly.style.display = 'block';
+      adminCard.style.display = (email === ADMIN_EMAIL) ? 'block' : 'none';
+      topDisplay.textContent = email;
+      topDisplay.onclick = logout;
+    } else {
+      document.getElementById('userCardTitle').textContent = '🔑 点击登录';
+      document.getElementById('userCardDesc').textContent = '登录后可使用个人中心、留言、社区等功能';
+      userOnly.style.display = 'none';
+      adminCard.style.display = 'none';
+      topDisplay.textContent = '登录 →';
+      topDisplay.onclick = () => location.href = '/login';
+    }
+
+    statusCard.addEventListener('click', function() {
+      if (navigator.vibrate) navigator.vibrate(10);
+      if (localStorage.getItem('access_token')) location.href = '/profile';
+      else location.href = '/login';
+    });
+  }
+
   function updateClock() {
     const now = new Date();
-    const spain = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}));
-    const china = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}));
+    const spainTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}));
+    const chinaTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}));
     const pad = (n) => String(n).padStart(2, '0');
     const fmt = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-    document.getElementById('spainClock').textContent = fmt(spain);
-    document.getElementById('chinaClock').textContent = fmt(china);
+    document.getElementById('spainClock').textContent = fmt(spainTime);
+    document.getElementById('chinaClock').textContent = fmt(chinaTime);
   }
   updateClock();
   setInterval(updateClock, 1000);
 
-  // ===== 登录状态 =====
-  function refreshLoginUI() {
-    const token = localStorage.getItem('access_token');
-    const email = localStorage.getItem('user_email');
-    const topDisplay = document.getElementById('userDisplay');
-
-    if (token && email) {
-      topDisplay.textContent = email;
-      topDisplay.onclick = () => {
-        if (confirm('确定要退出登录吗？')) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user_email');
-          location.reload();
-        }
-      };
-    } else {
-      topDisplay.textContent = '登录 →';
-      topDisplay.onclick = () => location.href = '/login';
-    }
-  }
-
   renderApps();
   refreshLoginUI();
+
+  // 从工具页返回时自动切到工具箱标签
+  window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'tools') {
+      switchTab('tools');
+      window.history.replaceState({}, '', '/');
+    }
+  });
 </script>
 </body>
 </html>
