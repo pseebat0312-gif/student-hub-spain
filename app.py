@@ -198,6 +198,24 @@ def api_google_login():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+# ===== 用 OAuth code 换 session =====
+@app.route("/api/exchange_code", methods=["POST"])
+def api_exchange_code():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    code = data.get("code", "")
+    if not code:
+        return jsonify({"error": "缺少 code"}), 400
+    try:
+        # Supabase 支持直接用 OAuth code 换 session
+        resp = supabase.auth.exchange_code_for_session({"auth_code": code})
+        return jsonify({
+            "access_token": resp.session.access_token,
+            "email": resp.user.email
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 # ===== 管理员：检查身份 =====
 @app.route("/api/check_admin", methods=["POST"])
