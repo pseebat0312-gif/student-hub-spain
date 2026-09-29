@@ -105,18 +105,39 @@
     <button class="big-btn" onclick="switchTab('tools')">进入工具箱</button>
   </div>
 <!-- Tab 3: 我的 -->
+  <!-- Tab 3: 我的 -->
   <div class="tab-page" id="tab-user">
     <h3 style="margin-bottom: 16px; color: #a0d8b3;">👤 我的</h3>
 
-    <div class="card" onclick="location.href='/profile'">
-      <h3>👤 个人中心</h3>
-      <p>设置昵称、头像，修改密码，查看会员状态。</p >
+    <!-- 登录/未登录 状态卡 -->
+    <div class="card" id="userStatusCard" onclick="handleUserCard()">
+      <h3 id="userCardTitle">🔑 点击登录</h3>
+      <p id="userCardDesc">登录后可使用个人中心、留言、社区等功能</p >
     </div>
 
-    <div class="card" onclick="location.href='/message'">
-      <h3>✍️ 留言板</h3>
-      <p>给作者留言，默认私密，作者可能会公开。</p >
+    <!-- 登录后才显示的功能卡 -->
+    <div id="userOnlyCards" style="display:none;">
+      <div class="card" onclick="location.href='/profile'">
+        <h3>👤 个人中心</h3>
+        <p>设置昵称、头像，修改密码，查看会员状态。</p >
+      </div>
+
+      <div class="card" onclick="location.href='/message'">
+        <h3>✍️ 留言板</h3>
+        <p>给作者留言，默认私密，作者可能会公开。</p >
+      </div>
+
+      <div class="card" id="adminCard" onclick="location.href='/admin'" style="display:none;">
+        <h3>🛠️ 管理后台</h3>
+        <p>仅管理员可见（查看用户、留言、帖子等）。</p >
+      </div>
+
+      <div class="card" onclick="logout()" style="background: rgba(255,107,157,0.08); border-color: rgba(255,107,157,0.3);">
+        <h3 style="color:#ff6b9d;">🚪 退出登录</h3>
+        <p>点了就会退出当前账号</p >
+      </div>
     </div>
+  </div>
 
     <div class="card" onclick="location.href='/admin'">
       <h3>🛠️ 管理后台</h3>
@@ -233,6 +254,64 @@
     if (navigator.vibrate) navigator.vibrate(15);
     alert("即将进入【" + toolName + "】工具页。\n（在这里，我们以后会把它连到原来的 Streamlit 页面上）");
   }
+// ===== 登录状态管理 =====
+  const ADMIN_EMAIL = "pseebat0312@gmail.com"; // 改成你的管理员邮箱
+
+  function handleUserCard() {
+    if (localStorage.getItem('access_token')) {
+      // 已登录，点卡片跳去个人中心
+      location.href = '/profile';
+    } else {
+      location.href = '/login';
+    }
+  }
+
+  function logout() {
+    if (navigator.vibrate) navigator.vibrate(15);
+    if (!confirm('确定要退出登录吗？')) return;
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_email');
+    location.reload();
+  }
+
+  function refreshLoginUI() {
+    const token = localStorage.getItem('access_token');
+    const email = localStorage.getItem('user_email');
+    const statusCard = document.getElementById('userStatusCard');
+    const userOnly = document.getElementById('userOnlyCards');
+    const adminCard = document.getElementById('adminCard');
+    const topDisplay = document.getElementById('userDisplay');
+
+    if (token && email) {
+      // 已登录
+      document.getElementById('userCardTitle').textContent = '✅ ' + email;
+      document.getElementById('userCardDesc').textContent = '点击进入个人中心';
+      userOnly.style.display = 'block';
+      if (email === ADMIN_EMAIL) adminCard.style.display = 'block';
+
+      // 顶部栏显示邮箱，点击可退出
+      if (topDisplay) {
+        topDisplay.textContent = email;
+        topDisplay.style.color = '#a0d8b3';
+        topDisplay.onclick = logout;
+      }
+    } else {
+      // 未登录
+      document.getElementById('userCardTitle').textContent = '🔑 点击登录';
+      document.getElementById('userCardDesc').textContent = '登录后可使用个人中心、留言、社区等功能';
+      userOnly.style.display = 'none';
+      adminCard.style.display = 'none';
+
+      if (topDisplay) {
+        topDisplay.textContent = '登录 →';
+        topDisplay.style.color = '#a0d8b3';
+        topDisplay.onclick = () => location.href = '/login';
+      }
+    }
+  }
+
+  // 页面加载时刷新
+  refreshLoginUI();
 
   // 实时双时区时钟
   function updateClock() {
@@ -279,6 +358,13 @@ if (token && userEmail) {
       window.history.replaceState({}, '', '/');
     }
   });
+  // 切换 Tab 时也刷新登录状态
+  const originalSwitchTab = switchTab;
+  switchTab = function(tabName) {
+    originalSwitchTab(tabName);
+    refreshLoginUI();
+  };
+  
 </script>
 </body>
 </html>

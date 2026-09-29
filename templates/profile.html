@@ -150,6 +150,7 @@
 <div id="topBar">
   <button class="back-btn" onclick="goBack()">←</button>
   <div class="title">👤 个人中心</div>
+  <div id="loginState" style="margin-left:auto; font-size:13px; color:#a0d8b3; cursor:pointer;"></div>
 </div>
 
 <div id="content">
@@ -207,6 +208,39 @@
 </div>
 
 <script>
+  // ===== 检查登录状态 =====
+  (function checkLogin() {
+    const token = localStorage.getItem('access_token');
+    const email = localStorage.getItem('user_email');
+    const stateEl = document.getElementById('loginState');
+
+    if (!token || !email) {
+      stateEl.textContent = '请先登录 →';
+      stateEl.onclick = () => location.href = '/login';
+      // 未登录，弹窗提示后跳走
+      setTimeout(() => {
+        if (confirm('请先登录再访问个人中心')) {
+          location.href = '/login';
+        } else {
+          location.href = '/';
+        }
+      }, 300);
+      return;
+    }
+
+    stateEl.textContent = '🚪 退出登录';
+    stateEl.onclick = () => {
+      if (!confirm('确定要退出登录吗？')) return;
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('user_email');
+      location.href = '/';
+    };
+
+    // 显示当前用户邮箱
+    const emailEl = document.querySelector('.hero-card .email');
+    if (emailEl) emailEl.textContent = email;
+  })();
+  
   // ===== 智能返回 =====
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
