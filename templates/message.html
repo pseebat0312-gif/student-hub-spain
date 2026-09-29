@@ -33,7 +33,6 @@
     margin-bottom: 20px;
   }
 
-  /* 卡片通用 */
   .section-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -47,7 +46,6 @@
     display: flex; align-items: center; gap: 8px;
   }
 
-  /* 输入框 */
   .msg-input {
     width: 100%; min-height: 120px;
     padding: 14px; border-radius: 12px;
@@ -67,7 +65,6 @@
   }
   .primary-btn:active { transform: scale(0.97); }
 
-  /* 留言记录 */
   .msg-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.06);
@@ -119,20 +116,17 @@
     作者如果觉得内容不错，可能会把它公开~
   </div>
 
-  <!-- 写留言 -->
   <div class="section-card">
     <div class="section-title">📝 写一条新留言</div>
     <textarea class="msg-input" id="msgContent" placeholder="你想对作者说什么？"></textarea>
     <button class="primary-btn" onclick="submitMsg()">发送留言</button>
   </div>
 
-  <!-- 我的留言记录 -->
   <div class="section-card">
     <div class="section-title">📜 我的留言记录</div>
     <div id="myMsgList"></div>
   </div>
 
-  <!-- 公开留言区 -->
   <div class="section-card">
     <div class="section-title">🌟 精选公开留言</div>
     <div id="publicMsgList"></div>
@@ -141,58 +135,49 @@
 </div>
 
 <script>
-  // ===== 智能返回 =====
+  let allMessages = [];
+
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (window.history.length > 1) window.history.back();
     else location.href = '/?tab=tools';
   }
 
-  // ===== 从后端读取留言 =====
-  let allMessages = [];
-
+  // ===== 加载留言（公开 + 我自己的） =====
   async function loadMessages() {
     const myEmail = localStorage.getItem('user_email') || 'anonymous';
 
     let pubData = [];
     let myData = [];
 
-    // 1. 公开留言
     try {
       const resp = await fetch('/api/messages');
       pubData = await resp.json();
       if (!Array.isArray(pubData)) pubData = [];
     } catch(e) { pubData = []; }
 
-    // 2. 我自己的留言（含私密）
     try {
       const resp = await fetch('/api/messages/mine?email=' + encodeURIComponent(myEmail));
       myData = await resp.json();
       if (!Array.isArray(myData)) myData = [];
     } catch(e) { myData = []; }
 
-    // 3. 合并去重
     const allData = pubData.concat(myData);
-    const uniqueData = [];
     const seen = {};
+    allMessages = [];
     allData.forEach(m => {
-      if (!seen[m.id]) { seen[m.id] = true; uniqueData.push(m); }
+      if (!seen[m.id]) { seen[m.id] = true; allMessages.push(m); }
     });
 
-    // 4. 渲染
-    renderMyMessages(uniqueData.filter(m => m.user_email === myEmail));
-    renderPublicMessages(uniqueData.filter(m => m.is_public));
+    renderMyMessages();
+    renderPublicMessages();
   }
-
-  // 页面打开时自动加载
-  loadMessages();
 
   // ===== 渲染我的留言 =====
   function renderMyMessages() {
     const list = document.getElementById('myMsgList');
-    const myMsgs = allMessages
-      .filter(m => m.user_email === currentUser)
-      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const myEmail = localStorage.getItem('user_email') || 'anonymous';
+    const myMsgs = allMessages.filter(m => m.user_email === myEmail);
 
     if (myMsgs.length === 0) {
       list.innerHTML = '<div class="empty-state">你还没有发过留言。</div>';
@@ -207,7 +192,7 @@
       card.className = 'msg-card';
       card.innerHTML = `
         <div class="msg-head">
-          <span>${m.created_at}</span>
+          <span>${(m.created_at || '').slice(0, 19).replace('T', ' ')}</span>
           <span class="${statusClass}">${statusText}</span>
         </div>
         <div class="msg-content">${m.content}</div>
@@ -220,9 +205,7 @@
   // ===== 渲染公开留言 =====
   function renderPublicMessages() {
     const list = document.getElementById('publicMsgList');
-    const pubMsgs = allMessages
-      .filter(m => m.is_public)
-      .sort((a, b) => b.created_at.localeCompare(a.created_at));
+    const pubMsgs = allMessages.filter(m => m.is_public);
 
     if (pubMsgs.length === 0) {
       list.innerHTML = '<div class="empty-state">还没有公开的留言，期待你的第一条！</div>';
@@ -235,7 +218,7 @@
       card.className = 'msg-card';
       card.innerHTML = `
         <div class="msg-head">
-          <span>${m.created_at}</span>
+          <span>${(m.created_at || '').slice(0, 19).replace('T', ' ')}</span>
         </div>
         <div class="msg-content">${m.content}</div>
         ${m.reply ? `<div class="msg-reply"><span class="reply-label">💬 作者回复：</span>${m.reply}</div>` : ''}
@@ -249,6 +232,8 @@
     const content = document.getElementById('msgContent').value.trim();
     const myEmail = localStorage.getItem('user_email') || 'anonymous';
     if (!content) { alert('留言不能为空'); return; }
+
+    if (navigator.vibrate) navigator.vibrate(15);
 
     try {
       const resp = await fetch('/api/messages/add', {
@@ -270,8 +255,7 @@
   }
 
   // ===== 初始化 =====
-  renderMyMessages();
-  renderPublicMessages();
+  loadMessages();
 </script>
 </body>
 </html>
