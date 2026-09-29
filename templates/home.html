@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f0c29">
 <title>西班牙留学生工具站</title>
+<link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#0f0c29">
+<link rel="apple-touch-icon" href="/static/icon-192.png">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
   html, body { height: 100%; }
@@ -268,6 +271,9 @@
       window.history.replaceState({}, '', '/');
     }
   });
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js');
+  }
 </script>
 </body>
 </html>
