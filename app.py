@@ -99,6 +99,26 @@ def currency():
 def login_page():
     return render_template("login.html")
 
+@app.route("/reset-password")
+def reset_password_page():
+    return render_template("reset_password.html")
+
+
+@app.route("/api/reset_password", methods=["POST"])
+def api_reset_password():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少邮箱"}), 400
+    try:
+        supabase.auth.reset_password_email(email)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
 
 # ===== 留言板 =====
 @app.route("/api/messages")
