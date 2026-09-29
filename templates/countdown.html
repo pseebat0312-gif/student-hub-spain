@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>倒数日 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 100px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; flex-shrink: 0;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+
+  #content { padding: 10px 20px 40px; }
+
+  /* 顶部大倒计时卡片 */
+  .hero-card {
+    background: linear-gradient(135deg, #1a4d2e, #4a7c59);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 8px 24px rgba(74, 124, 89, 0.4);
+  }
+  .hero-card .hero-label { font-size: 13px; color: rgba(255,255,255,0.8); margin-bottom: 8px; }
+  .hero-card .hero-num {
+    font-size: 72px; font-weight: 900; line-height: 1;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+  }
+  .hero-card .hero-date { font-size: 12px; color: rgba(255,255,255,0.7); }
+
+  /* 添加按钮 */
+  .add-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1px dashed rgba(160, 216, 179, 0.4);
+    background: rgba(160, 216, 179, 0.08);
+    color: #a0d8b3; font-size: 14px; font-weight: bold;
+    cursor: pointer; margin-bottom: 16px;
+  }
+  .add-btn:active { transform: scale(0.98); }
+
+  /* 列表 */
+  .list-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 12px;
+    position: relative;
+  }
+  .list-item .item-info { flex: 1; min-width: 0; }
+  .list-item .item-name {
+    font-size: 14px; font-weight: bold; color: #fff;
+    margin-bottom: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .list-item .item-date { font-size: 11px; color: #888; }
+  .list-item .item-days {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 16px; font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #ff8c42, #ff6b1a);
+    padding: 8px 14px;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .list-item .item-days.future {
+    background: linear-gradient(135deg, #4a9eff, #2d7cdc);
+  }
+  .list-item .item-days .num { font-size: 20px; }
+  .list-item .item-days .unit { font-size: 12px; opacity: 0.85; }
+  .list-item .item-del {
+    background: none; border: none; color: #666;
+    font-size: 16px; cursor: pointer; padding: 6px;
+  }
+  .list-item .item-del:active { transform: scale(0.9); color: #ff6b6b; }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: #666; font-size: 13px;
+  }
+
+  /* 弹窗 */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none; justify-content: center; align-items: center;
+    z-index: 200; padding: 20px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #1a1a2e;
+    width: 100%; max-width: 400px;
+    border-radius: 20px;
+    padding: 24px 20px 28px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .modal-content h3 {
+    font-size: 17px; margin-bottom: 16px;
+    color: #a0d8b3; text-align: center;
+  }
+  .modal-content input {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 12px; font-family: inherit;
+  }
+  .modal-content input:focus { border-color: #a0d8b3; }
+  .modal-content input[type="date"] { color-scheme: dark; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .form-actions button {
+    flex: 1; padding: 12px; border-radius: 12px;
+    border: none; font-size: 14px; font-weight: bold; cursor: pointer;
+  }
+  .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+  .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">⏳ 倒数日</div>
+</div>
+
+<div id="content">
+
+  <!-- 顶部大卡片 -->
+  <div class="hero-card" id="heroCard">
+    <div class="hero-label">距离</div>
+    <div class="hero-num" id="heroNum">--</div>
+    <div class="hero-date" id="heroDate">加载中...</div>
+  </div>
+
+  <button class="add-btn" onclick="openAddForm()">➕ 添加新事件</button>
+
+  <div id="listContainer"></div>
+
+</div>
+
+<!-- 添加弹窗 -->
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <h3>➕ 添加新事件</h3>
+    <input type="text" id="eventName" placeholder="事件名称（例如：回西班牙）">
+    <input type="date" id="eventDate">
+    <div class="form-actions">
+      <button class="cancel" onclick="closeAddForm()">取消</button>
+      <button class="submit" onclick="addEvent()">添加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
+  let items = [];
+
+  // ===== 加载数据 =====
+  async function loadItems() {
+    try {
+      const resp = await fetch('/api/countdowns?owner=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      items = Array.isArray(data) ? data : [];
+    } catch(e) { items = []; }
+    renderHero();
+    renderList();
+  }
+
+  // ===== 计算天数差 =====
+  function daysDiff(dateStr) {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const target = new Date(dateStr + 'T00:00:00');
+    return Math.round((target - today) / (1000 * 60 * 60 * 24));
+  }
+
+  // ===== 顶部大卡片：最近的一个事件 =====
+  function renderHero() {
+    const heroNum = document.getElementById('heroNum');
+    const heroDate = document.getElementById('heroDate');
+
+    // 找最近的一个未来事件
+    const future = items
+      .map(i => ({...i, days: daysDiff(i.event_date)}))
+      .filter(i => i.days >= 0)
+      .sort((a,b) => a.days - b.days);
+
+    if (future.length > 0) {
+      const next = future[0];
+      heroNum.textContent = next.days;
+      heroNum.style.fontSize = '72px';
+      heroNum.style.color = '#fff';
+      heroDate.textContent = `${next.event_name} · ${next.event_date}`;
+    } else if (items.length > 0) {
+      // 没有未来的事件，显示最近一个已过去的
+      const past = items
+        .map(i => ({...i, days: daysDiff(i.event_date)}))
+        .sort((a,b) => b.days - a.days);
+      const last = past[0];
+      heroNum.textContent = Math.abs(last.days);
+      heroDate.textContent = `${last.event_name} 已经过了`;
+    } else {
+      heroNum.textContent = '—';
+      heroDate.textContent = '还没有添加事件';
+    }
+  }
+
+  // ===== 列表 =====
+  function renderList() {
+    const list = document.getElementById('listContainer');
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty-state">还没有事件，点上面的按钮添加吧～</div>';
+      return;
+    }
+
+    // 按日期倒序（最近的在上面）
+    const sorted = items.slice().sort((a,b) => {
+      const da = Math.abs(daysDiff(a.event_date));
+      const db = Math.abs(daysDiff(b.event_date));
+      return da - db;
+    });
+
+    list.innerHTML = '';
+    sorted.forEach(item => {
+      const days = daysDiff(item.event_date);
+      const isFuture = days >= 0;
+      const displayDays = Math.abs(days);
+      const unit = isFuture ? '天' : '天';
+      const label = isFuture ? '' : '已经';
+
+      const card = document.createElement('div');
+      card.className = 'list-item';
+      card.innerHTML = `
+        <div class="item-info">
+          <div class="item-name">${item.event_name} ${label}</div>
+          <div class="item-date">${item.event_date}</div>
+        </div>
+        <div class="item-days ${isFuture ? 'future' : ''}">
+          <span class="num">${displayDays}</span>
+          <span class="unit">${unit}</span>
+        </div>
+        <button class="item-del" onclick="delEvent(${item.id})">✕</button>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  // ===== 添加 =====
+  function openAddForm() {
+    document.getElementById('eventName').value = '';
+    document.getElementById('eventDate').value = '';
+    document.getElementById('addModal').classList.add('show');
+  }
+
+  function closeAddForm() {
+    document.getElementById('addModal').classList.remove('show');
+  }
+
+  async function addEvent() {
+    const name = document.getElementById('eventName').value.trim();
+    const date = document.getElementById('eventDate').value;
+
+    if (!name || !date) { alert('名称和日期不能为空'); return; }
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    try {
+      const resp = await fetch('/api/countdowns/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, event_name: name, event_date: date })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('添加失败：' + data.error); return; }
+    } catch(e) {
+      alert('网络错误'); return;
+    }
+
+    closeAddForm();
+    await loadItems();
+  }
+
+  // ===== 删除 =====
+  async function delEvent(id) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!confirm('确定删除这个事件吗？')) return;
+    try {
+      await fetch('/api/countdowns/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+    } catch(e) {}
+    await loadItems();
+  }
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/?tab=tools';
+  }
+
+  loadItems();
+</script>
+</body>
+</html>

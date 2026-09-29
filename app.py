@@ -109,6 +109,11 @@ def reset_password_page():
 def menu():
     return render_template("menu.html")
 
+@app.route("/countdown")
+def countdown():
+    return render_template("countdown.html")
+
+
 
 # ===== 重置密码（发邮件） =====
 @app.route("/api/reset_password", methods=["POST"])
@@ -468,6 +473,61 @@ def api_orders_add():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ===== 倒数日：读取（按 owner 邮箱） =====
+@app.route("/api/countdowns")
+def api_countdowns():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    try:
+        if owner:
+            result = supabase.table("countdowns").select("*").eq("user_email", owner).order("event_date", desc=False).execute()
+        else:
+            result = supabase.table("countdowns").select("*").order("event_date", desc=False).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+# ===== 倒数日：添加 =====
+@app.route("/api/countdowns/add", methods=["POST"])
+def api_countdowns_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    name = data.get("event_name", "").strip()
+    date = data.get("event_date", "").strip()
+    if not name or not date:
+        return jsonify({"error": "名称和日期不能为空"}), 400
+    try:
+        supabase.table("countdowns").insert({
+            "user_email": email,
+            "event_name": name,
+            "event_date": date
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 倒数日：删除 =====
+@app.route("/api/countdowns/delete", methods=["POST"])
+def api_countdowns_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("id")
+    if not item_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        supabase.table("countdowns").delete().eq("id", item_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+    
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
