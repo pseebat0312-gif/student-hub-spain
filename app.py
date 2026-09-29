@@ -104,6 +104,7 @@ def login_page():
 def reset_password_page():
     return render_template("reset_password.html")
 
+
 @app.route("/menu")
 def menu():
     return render_template("menu.html")
@@ -278,13 +279,18 @@ def api_admin_login_logs():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ===== 菜品：读取全部 =====
+
+# ===== 菜品：读取（按 owner 邮箱） =====
 @app.route("/api/dishes")
 def api_dishes():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
     try:
-        result = supabase.table("dishes").select("*").order("created_at", desc=True).execute()
+        if owner:
+            result = supabase.table("dishes").select("*").eq("user_email", owner).order("created_at", desc=True).execute()
+        else:
+            result = supabase.table("dishes").select("*").order("created_at", desc=True).execute()
         return jsonify(result.data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -332,6 +338,22 @@ def api_dishes_delete():
         return jsonify({"error": str(e)}), 500
 
 
+# ===== 订单：读取（按 owner 邮箱） =====
+@app.route("/api/orders")
+def api_orders():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    try:
+        if owner:
+            result = supabase.table("orders").select("*").eq("user_email", owner).order("created_at", desc=True).limit(50).execute()
+        else:
+            result = supabase.table("orders").select("*").order("created_at", desc=True).limit(50).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # ===== 订单：保存 =====
 @app.route("/api/orders/add", methods=["POST"])
 def api_orders_add():
@@ -351,7 +373,7 @@ def api_orders_add():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
