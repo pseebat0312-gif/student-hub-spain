@@ -36,11 +36,13 @@ cursor: pointer; flex-shrink: 0; min-width: 44px;
 #topBar .icon-btn:active { transform: scale(0.95); }
 
 #menuContainer {
-    display: flex; height: calc(100vh - 56px - 84px);
-    transition: height 0.3s;
+    display: flex;
+    height: calc(100vh - 56px - 84px);
     margin-top: 56px;
+    box-sizing: border-box;
   }
   #menuContainer.no-cart { height: calc(100vh - 56px); }
+  
 
 #categorySide {
 width: 88px; background: rgba(0,0,0,0.3);
