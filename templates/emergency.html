@@ -340,7 +340,7 @@ cloudSync = true;
 }
 
 // ===== 检查是否要 Face ID 解锁 =====
-if (card && card.face_id_protected && localStorage.getItem(LOCK_KEY) !== 'unlocked') {
+if (card && card.face_id_protected) {
 document.getElementById('lockedOverlay').classList.add('show');
 renderCard();
 return;
@@ -565,7 +565,7 @@ function showInstallTip() {
     let tip = '';
 
     if (ua.includes('iphone') || ua.includes('ipad')) {
-      tip = '📱 苹果手机：\n\n1. 点底部中间的“分享”按钮（方框向上箭头）\n2. 往下滑，找到“添加到主屏幕”\n3. 点添加\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
+      tip = '📱 苹果手机：\n\n1. 用safari浏览器打开网站，点底部中间的“分享”按钮（方框向上箭头）\n2. 往下滑，找到“添加到主屏幕”\n3. 点添加\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
     } else if (ua.includes('android')) {
       tip = '📱 安卓手机：\n\n1. 点右上角的三个点菜单\n2. 选“添加到主屏幕”或“安装应用”\n3. 点确认\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
     } else {

@@ -117,6 +117,10 @@ def countdown():
 def emergency():
     return render_template("emergency.html")
 
+@app.route("/homesick")
+def homesick():
+    return render_template("homesick.html")
+
 
 
 # ===== 重置密码（发邮件） =====

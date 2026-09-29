@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a0f0a">
+<title>想家急救包 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #1a0f0a;
+    color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 1s;
+  }
+
+  /* ============ 房间场景 ============ */
+  .room {
+    position: relative;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 70%, #3a2010 0%, #1a0f0a 70%);
+    overflow: hidden;
+    padding: 40px 20px 80px;
+  }
+
+  /* 窗户 */
+  .window {
+    position: absolute;
+    top: 40px; left: 50%;
+    transform: translateX(-50%);
+    width: 180px; height: 220px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #1e3a5f 0%, #2a4a6f 100%);
+    border: 6px solid #2a1a10;
+    box-shadow: 0 0 60px rgba(120, 180, 255, 0.15) inset, 0 0 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+  .window::before {
+    /* 十字窗框 */
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    width: 4px; height: 100%;
+    background: #2a1a10;
+    transform: translateX(-50%);
+  }
+  .window::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 0;
+    width: 100%; height: 4px;
+    background: #2a1a10;
+    transform: translateY(-50%);
+  }
+  /* 雪 */
+  .snow {
+    position: absolute;
+    top: -10px;
+    color: #fff;
+    font-size: 10px;
+    animation: fall linear infinite;
+    opacity: 0.8;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-10px) translateX(0); }
+    100% { transform: translateY(240px) translateX(20px); opacity: 0; }
+  }
+
+  /* 沙发 */
+  .sofa {
+    position: absolute;
+    bottom: 180px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 100px;
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.6));
+    animation: breathe 4s infinite ease-in-out;
+  }
+  @keyframes breathe {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.02); }
+  }
+
+  /* 热可可 */
+  .cocoa {
+    position: absolute;
+    bottom: 200px; left: 50%;
+    transform: translateX(60px);
+    font-size: 40px;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  }
+
+  /* 灯光：屏幕中心的暖光 */
+  .warm-light {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 180, 100, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    animation: flicker 5s infinite ease-in-out;
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+
+  /* 文字区 */
+  .content {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    margin-top: 320px;
+  }
+  .content .big-line {
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    text-shadow: 0 2px 20px rgba(255,180,100,0.4);
+  }
+  .content .small-line {
+    font-size: 14px;
+    color: #c8b8a8;
+    line-height: 1.8;
+    margin-bottom: 36px;
+  }
+
+  /* 按钮组 */
+  .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .comfort-btn {
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 200, 150, 0.25);
+    background: rgba(255, 180, 100, 0.08);
+    color: #ffd8b0;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .comfort-btn:active { transform: scale(0.97); background: rgba(255, 180, 100, 0.15); }
+  .comfort-btn.primary {
+    background: linear-gradient(135deg, #ff8c42, #d9661a);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 24px rgba(255, 140, 66, 0.3);
+  }
+
+  /* 漂浮爱心 */
+  .floating-heart {
+    position: fixed;
+    bottom: 0;
+    font-size: 28px;
+    pointer-events: none;
+    z-index: 100;
+    animation: floatUp 4s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+  }
+
+  /* 弹窗 */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #2a1a10;
+    width: 100%;
+    max-width: 400px;
+    border-radius: 20px;
+    padding: 24px 20px;
+    border: 1px solid rgba(255, 200, 150, 0.15);
+  }
+  .modal-content h3 {
+    font-size: 17px;
+    color: #ffd8b0;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .modal-content p {
+    font-size: 13px;
+    color: #a89080;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .modal-content textarea {
+    width: 100%;
+    height: 160px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 200, 150, 0.15);
+    background: rgba(0,0,0,0.3);
+    color: #fff;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    resize: none;
+    line-height: 1.7;
+  }
+  .modal-content textarea:focus { border-color: #ff8c42; }
+  .modal-btns {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .modal-btns button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .modal-btns .cancel { background: rgba(255,255,255,0.08); color: #ccc; }
+  .modal-btns .submit { background: linear-gradient(135deg, #ff8c42, #d9661a); color: #fff; }
+
+  /* 底部提示 */
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: #6a5a50;
+    margin-top: 40px;
+    padding: 0 20px;
+    line-height: 1.8;
+  }
+</style>
+</head>
+<body>
+
+<div class="room">
+  <div class="warm-light"></div>
+
+  <!-- 窗户 -->
+  <div class="window" id="window"></div>
+
+  <!-- 沙发和可可 -->
+  <div class="sofa">🛋️</div>
+  <div class="cocoa">☕</div>
+
+  <div class="content">
+    <div class="big-line" id="bigLine">你已经做得很好了。</div>
+    <div class="small-line" id="smallLine">
+      今天不用坚强。<br>
+      先在这里坐一会儿，等雪停。
+    </div>
+
+    <div class="btn-group">
+      <button class="comfort-btn primary" onclick="hugMe()">💗 抱抱我</button>
+      <button class="comfort-btn" onclick="playRain()" id="rainBtn">🌧️ 播放雨声</button>
+      <button class="comfort-btn" onclick="playFire()" id="fireBtn">🔥 播放火炉声</button>
+      <button class="comfort-btn" onclick="openLetter()">✍️ 写一封信给家人</button>
+      <button class="comfort-btn" onclick="newSentence()">✨ 换一句话</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    这个房间只属于你。<br>
+    你写的信，只存在你自己的手机里。
+  </div>
+</div>
+
+<!-- 写信弹窗 -->
+<div class="modal" id="letterModal">
+  <div class="modal-content">
+    <h3>✍️ 写给家人</h3>
+    <p>写下来，就当已经说出口了。<br>信只保存在你自己手机里。</p >
+    <textarea id="letterText" placeholder="亲爱的爸爸妈妈……"></textarea>
+    <div class="modal-btns">
+      <button class="cancel" onclick="closeLetter()">取消</button>
+      <button class="submit" onclick="saveLetter()">保存这封信</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============ 雪 ============
+  (function makeSnow() {
+    const win = document.getElementById('window');
+    for (let i = 0; i < 15; i++) {
+      const s = document.createElement('div');
+      s.className = 'snow';
+      s.textContent = '❄';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.animationDuration = (4 + Math.random() * 4) + 's';
+      s.style.animationDelay = Math.random() * 4 + 's';
+      win.appendChild(s);
+    }
+  })();
+
+  // ============ 抱抱我 ============
+  function hugMe() {
+    if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+
+    // 飘 30 个爱心
+    const emojis = ['💗', '💖', '💕', '🌸', '✨', '🤗', '💝'];
+    for (let i = 0; i < 30; i++) {
+      setTimeout(() => {
+        const h = document.createElement('div');
+        h.className = 'floating-heart';
+        h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        h.style.left = Math.random() * 100 + 'vw';
+        h.style.animationDuration = (3 + Math.random() * 3) + 's';
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 6000);
+      }, i * 100);
+    }
+
+    // 温柔的文字
+    document.getElementById('bigLine').textContent = '抱抱你。';
+    setTimeout(() => {
+      document.getElementById('bigLine').textContent = '你已经做得很好了。';
+    }, 4000);
+  }
+
+  // ============ 雨声 / 火炉声 ============
+  let audioCtx = null;
+  let rainNode = null;
+  let fireNode = null;
+
+  function getCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+  }
+
+  // 雨声 = 白噪音 + 低通滤波
+  function playRain() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const btn = document.getElementById('rainBtn');
+
+    if (rainNode) {
+      rainNode.stop();
+      rainNode = null;
+      btn.textContent = '🌧️ 播放雨声';
+      return;
+    }
+
+    const ctx = getCtx();
+    const bufferSize = 2 * ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 800;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.15;
+
+    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.start();
+    rainNode = source;
+    btn.textContent = '⏸️ 暂停雨声';
+  }
+
+  // 火炉声 = 低频白噪音 + 颤音
+  function playFire() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const btn = document.getElementById('fireBtn');
+
+    if (fireNode) {
+      fireNode.stop();
+      fireNode = null;
+      btn.textContent = '🔥 播放火炉声';
+      return;
+    }
+
+    const ctx = getCtx();
+    const bufferSize = 2 * ctx.sampleRate;
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.5;
+    }
+
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 400;
+
+    const gain = ctx.createGain();
+    gain.gain.value = 0.12;
+
+    // 用 LFO 给音量加一点波动，模拟火焰跳动
+    const lfo = ctx.createOscillator();
+    lfo.frequency.value = 3;
+    const lfoGain = ctx.createGain();
+    lfoGain.gain.value = 0.05;
+    lfo.connect(lfoGain).connect(gain.gain);
+    lfo.start();
+
+    source.connect(filter).connect(gain).connect(ctx.destination);
+    source.start();
+    fireNode = source;
+    btn.textContent = '⏸️ 暂停火炉声';
+  }
+
+  // ============ 写信 ============
+  function openLetter() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const saved = localStorage.getItem('homesick_letter') || '';
+    document.getElementById('letterText').value = saved;
+    document.getElementById('letterModal').classList.add('show');
+  }
+
+  function closeLetter() {
+    document.getElementById('letterModal').classList.remove('show');
+  }
+
+  function saveLetter() {
+    const text = document.getElementById('letterText').value.trim();
+    if (!text) { alert('写点什么吧～'); return; }
+    localStorage.setItem('homesick_letter', text);
+    localStorage.setItem('homesick_letter_time', new Date().toISOString());
+    closeLetter();
+    alert('✅ 信已保存。只有你自己能看到。');
+  }
+
+  // ============ 换一句话 ============
+  const sentences = [
+    ['你已经做得很好了。', '今天不用坚强。<br>先在这里坐一会儿，等雪停。'],
+    ['没关系的。', '想家不代表软弱。<br>那是因为有人值得你想。'],
+    ['你很勇敢。', '一个人来这么远的地方，<br>已经很了不起了。'],
+    ['今天也辛苦了。', '不用向谁证明什么。<br>你已经足够好。'],
+    ['深呼吸一下。', '这杯热可可还热着，<br>窗外的雪也还在下。'],
+    ['会好起来的。', '不是“马上”，但一定会。<br>我陪着你等。'],
+    ['允许自己休息。', '不是每分钟都要努力。<br>停下来，也是前进的一部分。'],
+    ['你被爱着。', '哪怕现在隔着 10000 公里，<br>那份爱没有少一分。']
+  ];
+  let sentenceIndex = 0;
+
+  function newSentence() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    sentenceIndex = (sentenceIndex + 1) % sentences.length;
+    document.getElementById('bigLine').textContent = sentences[sentenceIndex][0];
+    document.getElementById('smallLine').innerHTML = sentences[sentenceIndex][1];
+  }
+</script>
+</body>
+</html>
