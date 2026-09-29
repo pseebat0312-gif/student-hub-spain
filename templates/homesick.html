@@ -14,51 +14,34 @@ font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
 min-height: 100vh;
 overflow-x: hidden;
 }
-
-/* ============ 房间整体 ============ */
 .room {
 position: relative;
 min-height: 100vh;
-background:
-linear-gradient(180deg, #3a2010 0%, #1e1008 60%, #150c08 100%);
+background: linear-gradient(180deg, #3a2010 0%, #1e1008 60%, #150c08 100%);
 overflow: hidden;
 padding: 0 0 60px;
 }
-
-/* 地板纹理 */
 .room::after {
 content: '';
 position: absolute;
 bottom: 0; left: 0; right: 0;
 height: 40%;
 background:
-repeating-linear-gradient(
-90deg,
-rgba(80, 40, 20, 0.3) 0px,
-rgba(80, 40, 20, 0.3) 1px,
-transparent 1px,
-transparent 60px
-),
+repeating-linear-gradient(90deg, rgba(80,40,20,0.3) 0px, rgba(80,40,20,0.3) 1px, transparent 1px, transparent 60px),
 linear-gradient(180deg, #2a1a10 0%, #1a0f08 100%);
 }
-
-/* 暖光 */
 .warm-light {
 position: absolute;
 top: 30%; left: 50%;
 transform: translate(-50%, -50%);
 width: 600px; height: 600px;
 border-radius: 50%;
-background: radial-gradient(circle, rgba(255, 170, 90, 0.18) 0%, transparent 70%);
+background: radial-gradient(circle, rgba(255,170,90,0.18) 0%, transparent 70%);
 pointer-events: none;
 animation: flicker 6s infinite ease-in-out;
 }
-@keyframes flicker {
-0%, 100% { opacity: 0.85; }
-50% { opacity: 1; }
-}
+@keyframes flicker { 0%,100% { opacity:0.85; } 50% { opacity:1; } }
 
-/* ============ 窗户 ============ */
 .window {
 position: absolute;
 top: 50px; left: 50%;
@@ -67,29 +50,15 @@ width: 200px; height: 240px;
 border-radius: 16px;
 background: linear-gradient(180deg, #1e3a5f 0%, #0f1f3a 100%);
 border: 8px solid #2a1608;
-box-shadow:
-inset 0 0 60px rgba(120, 180, 255, 0.15),
-0 8px 40px rgba(0,0,0,0.7);
+box-shadow: inset 0 0 60px rgba(120,180,255,0.15), 0 8px 40px rgba(0,0,0,0.7);
 overflow: hidden;
 z-index: 2;
 }
-.window::before {
-content: '';
-position: absolute;
-top: 0; left: 50%;
-width: 4px; height: 100%;
-background: #2a1608;
-transform: translateX(-50%);
+.window::before, .window::after {
+content: ''; position: absolute; background: #2a1608;
 }
-.window::after {
-content: '';
-position: absolute;
-top: 50%; left: 0;
-width: 100%; height: 4px;
-background: #2a1608;
-transform: translateY(-50%);
-}
-/* 月亮 */
+.window::before { top:0; left:50%; width:4px; height:100%; transform:translateX(-50%); }
+.window::after { top:50%; left:0; width:100%; height:4px; transform:translateY(-50%); }
 .moon {
 position: absolute;
 top: 30px; right: 30px;
@@ -98,7 +67,6 @@ border-radius: 50%;
 background: radial-gradient(circle, #fff8e0, #f5e6a8);
 box-shadow: 0 0 30px #fff8e0;
 }
-/* 雪花 */
 .snow {
 position: absolute;
 top: -10px;
@@ -112,152 +80,106 @@ opacity: 0.85;
 100% { transform: translateY(260px) translateX(20px); opacity: 0; }
 }
 
-/* ============ 家具 ============ */
 .sofa {
-position: absolute;
-bottom: 200px; left: 50%;
+position: absolute; bottom: 200px; left: 50%;
 transform: translateX(-50%);
-z-index: 3;
-width: 240px;
-height: 110px;
+z-index: 3; width: 240px; height: 110px;
 }
-.sofa .sofa-back {
-position: absolute;
-top: 0; left: 10px; right: 10px;
-height: 70px;
+.sofa-back {
+position: absolute; top:0; left:10px; right:10px; height:70px;
 background: linear-gradient(180deg, #8a4a2a, #5a2f1a);
 border-radius: 20px 20px 8px 8px;
 box-shadow: inset 0 -8px 12px rgba(0,0,0,0.3);
 }
-.sofa .sofa-seat {
-position: absolute;
-bottom: 0; left: 0; right: 0;
-height: 50px;
+.sofa-seat {
+position: absolute; bottom:0; left:0; right:0; height:50px;
 background: linear-gradient(180deg, #a85a30, #6a3a1a);
 border-radius: 12px;
 box-shadow: inset 0 -6px 10px rgba(0,0,0,0.35), 0 10px 25px rgba(0,0,0,0.5);
 }
-.sofa .pillow {
-position: absolute;
-width: 40px; height: 40px;
+.pillow {
+position: absolute; width:40px; height:40px;
 background: linear-gradient(135deg, #ffb87a, #d97a3a);
-border-radius: 12px;
-top: 20px;
+border-radius: 12px; top:20px;
 box-shadow: inset 0 -4px 8px rgba(0,0,0,0.2);
 }
-.sofa .pillow.l { left: 20px; transform: rotate(-8deg); }
-.sofa .pillow.r { right: 20px; transform: rotate(8deg); }
+.pillow.l { left: 20px; transform: rotate(-8deg); }
+.pillow.r { right: 20px; transform: rotate(8deg); }
 
-/* 茶几上的热可可 */
 .cocoa {
-position: absolute;
-bottom: 130px; left: 50%;
+position: absolute; bottom: 130px; left: 50%;
 transform: translateX(80px);
-z-index: 4;
-width: 44px; height: 50px;
+z-index: 4; width: 44px; height: 50px;
 }
 .cocoa .cup {
-width: 100%; height: 40px;
+width:100%; height:40px;
 background: linear-gradient(180deg, #fff, #e8e0d0);
 border-radius: 6px 6px 12px 12px;
 box-shadow: inset 0 -4px 8px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.4);
 position: relative;
 }
 .cocoa .cup::after {
-content: '';
-position: absolute;
-top: -8px; left: 8px; right: 8px;
-height: 12px;
+content:''; position:absolute; top:-8px; left:8px; right:8px; height:12px;
 background: radial-gradient(circle, #c68a4a, #8a5a2a);
 border-radius: 50%;
 }
 .cocoa .steam {
-position: absolute;
-top: -20px; left: 50%;
-transform: translateX(-50%);
-font-size: 16px;
-color: rgba(255,255,255,0.5);
+position: absolute; top:-20px; left:50%; transform:translateX(-50%);
+font-size: 16px; color: rgba(255,255,255,0.5);
 animation: steam 3s infinite ease-in-out;
 }
 @keyframes steam {
-0% { transform: translateX(-50%) translateY(0); opacity: 0.6; }
-100% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+0% { transform: translateX(-50%) translateY(0); opacity:0.6; }
+100% { transform: translateX(-50%) translateY(-20px); opacity:0; }
 }
-
-/* 地毯 */
 .rug {
-position: absolute;
-bottom: 80px; left: 50%;
+position: absolute; bottom: 80px; left: 50%;
 transform: translateX(-50%);
 width: 300px; height: 60px;
 background: radial-gradient(ellipse at center, #6a3018 0%, transparent 70%);
-border-radius: 50%;
-z-index: 1;
+border-radius: 50%; z-index: 1;
 }
 
-/* ============ 内容 ============ */
 .content {
-position: relative;
-z-index: 10;
+position: relative; z-index: 10;
 text-align: center;
 padding: 340px 24px 0;
 }
 .big-line {
-font-size: 24px;
-font-weight: bold;
-line-height: 1.5;
-margin-bottom: 12px;
-color: #fff5e0;
-text-shadow: 0 2px 30px rgba(255, 180, 100, 0.5);
-transition: opacity 0.6s;
+font-size: 24px; font-weight: bold; line-height: 1.5;
+margin-bottom: 12px; color: #fff5e0;
+text-shadow: 0 2px 30px rgba(255,180,100,0.5);
 }
 .small-line {
-font-size: 14px;
-color: #c8b0a0;
-line-height: 1.9;
+font-size: 14px; color: #c8b0a0; line-height: 1.9;
 margin-bottom: 40px;
-transition: opacity 0.6s;
 }
-
 .btn-group {
-display: flex;
-flex-direction: column;
-gap: 12px;
-max-width: 320px;
-margin: 0 auto;
+display: flex; flex-direction: column; gap: 12px;
+max-width: 320px; margin: 0 auto;
 }
 .comfort-btn {
-width: 100%;
-padding: 16px;
-border-radius: 16px;
-border: 1px solid rgba(255, 200, 150, 0.2);
-background: rgba(255, 180, 100, 0.06);
-color: #ffd8b0;
-font-size: 15px;
-font-weight: bold;
-cursor: pointer;
-transition: 0.2s;
+width: 100%; padding: 16px; border-radius: 16px;
+border: 1px solid rgba(255,200,150,0.2);
+background: rgba(255,180,100,0.06);
+color: #ffd8b0; font-size: 15px; font-weight: bold;
+cursor: pointer; transition: 0.2s;
 backdrop-filter: blur(6px);
 }
-.comfort-btn:active { transform: scale(0.97); background: rgba(255, 180, 100, 0.15); }
+.comfort-btn:active { transform: scale(0.97); }
 .comfort-btn.primary {
 background: linear-gradient(135deg, #ff8c42, #c94e1a);
-color: #fff;
-border: none;
-box-shadow: 0 8px 28px rgba(255, 140, 66, 0.4);
+color: #fff; border: none;
+box-shadow: 0 8px 28px rgba(255,140,66,0.4);
 }
 .comfort-btn.active {
-background: rgba(255, 140, 66, 0.25);
+background: rgba(255,140,66,0.25);
 border-color: #ff8c42;
 }
 
-/* ============ 漂浮爱心 ============ */
 .floating-heart {
-position: fixed;
-bottom: 0;
-font-size: 28px;
-pointer-events: none;
-z-index: 100;
+position: fixed; bottom: 0; font-size: 28px;
+pointer-events: none; z-index: 100;
 animation: floatUp 4s ease-out forwards;
 }
 @keyframes floatUp {
@@ -266,7 +188,6 @@ animation: floatUp 4s ease-out forwards;
 100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
 }
 
-/* ============ 弹窗 ============ */
 .modal {
 position: fixed; inset: 0;
 background: rgba(0,0,0,0.85);
@@ -280,56 +201,69 @@ background: #251410;
 width: 100%; max-width: 400px;
 border-radius: 22px;
 padding: 26px 22px;
-border: 1px solid rgba(255, 200, 150, 0.15);
+border: 1px solid rgba(255,200,150,0.15);
 box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-max-height: 85vh;
-overflow-y: auto;
+max-height: 85vh; overflow-y: auto;
 }
 .modal-content h3 {
 font-size: 17px; color: #ffd8b0;
 margin-bottom: 14px; text-align: center;
 }
-.modal-content .modal-sub {
+.modal-sub {
 font-size: 12px; color: #a89080;
 line-height: 1.7; text-align: center;
 margin-bottom: 16px;
 }
-/* 收信人选择 */
 .recipient-grid {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 8px;
-margin-bottom: 14px;
+display: grid; grid-template-columns: repeat(3, 1fr);
+gap: 8px; margin-bottom: 14px;
 }
 .recipient-btn {
-padding: 12px 6px;
-border-radius: 12px;
-border: 1px solid rgba(255, 200, 150, 0.15);
-background: rgba(255, 180, 100, 0.05);
-color: #c8b0a0;
-font-size: 12px;
-cursor: pointer;
-text-align: center;
-line-height: 1.4;
+padding: 12px 6px; border-radius: 12px;
+border: 1px solid rgba(255,200,150,0.15);
+background: rgba(255,180,100,0.05);
+color: #c8b0a0; font-size: 12px;
+cursor: pointer; text-align: center; line-height: 1.4;
 transition: 0.2s;
 }
 .recipient-btn.active {
-background: rgba(255, 140, 66, 0.2);
+background: rgba(255,140,66,0.2);
 border-color: #ff8c42;
-color: #ffd8b0;
-font-weight: bold;
+color: #ffd8b0; font-weight: bold;
 }
 .modal-content textarea {
 width: 100%; height: 160px;
 padding: 14px; border-radius: 12px;
-border: 1px solid rgba(255, 200, 150, 0.15);
+border: 1px solid rgba(255,200,150,0.15);
 background: rgba(0,0,0,0.3);
 color: #fff; font-size: 14px;
 font-family: inherit; outline: none;
 resize: none; line-height: 1.7;
+margin-bottom: 12px;
 }
 .modal-content textarea:focus { border-color: #ff8c42; }
-.modal-btns { display: flex; gap: 10px; margin-top: 14px; }
+.date-row {
+display: flex; align-items: center; gap: 10px;
+margin-bottom: 12px;
+padding: 12px 14px;
+background: rgba(0,0,0,0.25);
+border-radius: 12px;
+border: 1px solid rgba(255,200,150,0.1);
+}
+.date-row label {
+flex: 1; font-size: 12px; color: #c8b0a0;
+}
+.date-row input[type="date"] {
+background: rgba(0,0,0,0.3);
+border: 1px solid rgba(255,200,150,0.15);
+border-radius: 10px;
+color: #fff;
+padding: 8px 10px;
+font-size: 13px;
+outline: none;
+color-scheme: dark;
+}
+.modal-btns { display: flex; gap: 10px; margin-top: 6px; }
 .modal-btns button {
 flex: 1; padding: 12px; border-radius: 12px;
 border: none; font-size: 14px; font-weight: bold; cursor: pointer;
@@ -338,15 +272,31 @@ border: none; font-size: 14px; font-weight: bold; cursor: pointer;
 .modal-btns .submit { background: linear-gradient(135deg, #ff8c42, #c94e1a); color: #fff; }
 
 .footer-note {
-text-align: center;
-font-size: 11px;
-color: #6a5a50;
-margin-top: 50px;
-padding: 0 20px;
-line-height: 1.9;
-position: relative;
-z-index: 10;
+text-align: center; font-size: 11px;
+color: #6a5a50; margin-top: 50px;
+padding: 0 20px; line-height: 1.9;
+position: relative; z-index: 10;
 }
+
+/* 已保存信件列表 */
+.letters-list {
+margin-top: 14px;
+border-top: 1px solid rgba(255,200,150,0.1);
+padding-top: 14px;
+}
+.letter-item {
+padding: 10px 12px;
+background: rgba(0,0,0,0.2);
+border-radius: 10px;
+margin-bottom: 8px;
+font-size: 12px;
+color: #c8b0a0;
+display: flex;
+justify-content: space-between;
+align-items: center;
+gap: 8px;
+}
+.letter-item .recip { color: #ffd8b0; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -354,12 +304,10 @@ z-index: 10;
 <div class="room">
 <div class="warm-light"></div>
 
-<!-- 窗户 -->
 <div class="window" id="window">
 <div class="moon"></div>
 </div>
 
-<!-- 家具 -->
 <div class="rug"></div>
 <div class="sofa">
 <div class="sofa-back"></div>
@@ -383,13 +331,14 @@ z-index: 10;
 <button class="comfort-btn primary" onclick="hugMe()">💗 抱抱我</button>
 <button class="comfort-btn" onclick="toggleMusic()" id="musicBtn">🎵 播放温柔音乐</button>
 <button class="comfort-btn" onclick="openLetter()">✍️ 写一封信</button>
+<button class="comfort-btn" onclick="showLetters()">📜 我写过的信</button>
 <button class="comfort-btn" onclick="newSentence()">✨ 换一句话</button>
 </div>
 </div>
 
 <div class="footer-note">
 这个房间只属于你。<br>
-你写的信，只存在你自己的手机里。
+你写的信，只有你自己能看到。
 </div>
 </div>
 
@@ -397,7 +346,7 @@ z-index: 10;
 <div class="modal" id="letterModal">
 <div class="modal-content">
 <h3>✍️ 写一封信</h3>
-<div class="modal-sub">写给谁都可以。信只保存在你自己手机里。</div>
+<div class="modal-sub">写给谁都可以。<br>如果写给未来的自己，可以选择什么时候收到。</div>
 
 <div class="recipient-grid" id="recipientGrid">
 <div class="recipient-btn" data-r="爸爸">👨 爸爸</div>
@@ -410,6 +359,11 @@ z-index: 10;
 
 <textarea id="letterText" placeholder="亲爱的……"></textarea>
 
+<div class="date-row" id="dateRow" style="display:none;">
+<label>📅 什么时候收到？</label>
+<input type="date" id="deliverAt">
+</div>
+
 <div class="modal-btns">
 <button class="cancel" onclick="closeLetter()">取消</button>
 <button class="submit" onclick="saveLetter()">保存这封信</button>
@@ -417,81 +371,50 @@ z-index: 10;
 </div>
 </div>
 
+<!-- 我写过的信 -->
+<div class="modal" id="lettersModal">
+<div class="modal-content">
+<h3>📜 我写过的信</h3>
+<div id="lettersListContainer" class="letters-list"></div>
+<div class="modal-btns" style="margin-top:14px;">
+<button class="cancel" onclick="closeLetters()">关闭</button>
+</div>
+</div>
+</div>
+
 <script>
-// ============ 雪 ============
-(function makeSnow() {
-const win = document.getElementById('window');
-for (let i = 0; i < 15; i++) {
-const s = document.createElement('div');
-s.className = 'snow';
-s.textContent = '❄';
-s.style.left = Math.random() * 100 + '%';
-s.style.animationDuration = (4 + Math.random() * 4) + 's';
-s.style.animationDelay = Math.random() * 4 + 's';
-win.appendChild(s);
-}
-})();
+const MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
 
-// ============ 抱抱我 ============
-function hugMe() {
-if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
-const emojis = ['💗', '💖', '💕', '🌸', '✨', '🤗', '💝'];
-for (let i = 0; i < 30; i++) {
-setTimeout(() => {
-const h = document.createElement('div');
-h.className = 'floating-heart';
-h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-h.style.left = Math.random() * 100 + 'vw';
-h.style.animationDuration = (3 + Math.random() * 3) + 's';
-document.body.appendChild(h);
-setTimeout(() => h.remove(), 6000);
-}, i * 80);
-}
-document.getElementById('bigLine').textContent = '抱抱你。';
-setTimeout(() => {
-document.getElementById('bigLine').textContent = '你已经做得很好了。';
-}, 4000);
-}
-
-// ============ 温柔钢琴音乐（Web Audio 合成） ============
+// ============ 温柔钢琴 ============
 let audioCtx = null;
 let musicPlaying = false;
 let musicTimer = null;
 let activeOscillators = [];
 
 function getCtx() {
-if (!audioCtx) {
-audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
+if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 return audioCtx;
 }
-
-// 一个温柔的音符
 function playNote(freq, startTime, duration) {
 const ctx = getCtx();
 const osc = ctx.createOscillator();
 osc.type = 'sine';
 osc.frequency.value = freq;
-
 const gain = ctx.createGain();
 gain.gain.setValueAtTime(0, startTime);
 gain.gain.linearRampToValueAtTime(0.12, startTime + 0.05);
 gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-
 osc.connect(gain).connect(ctx.destination);
 osc.start(startTime);
 osc.stop(startTime + duration);
 activeOscillators.push(osc);
 }
-
-// 一小段旋律循环（C 大调温柔和弦）
 const melody = [
-[523.25, 1.0], [659.25, 1.0], [783.99, 2.0],
-[698.46, 1.0], [587.33, 1.0], [523.25, 2.0],
-[587.33, 1.0], [698.46, 1.0], [880.00, 2.0],
-[783.99, 1.0], [659.25, 1.0], [523.25, 2.5]
+[523.25,1.0],[659.25,1.0],[783.99,2.0],
+[698.46,1.0],[587.33,1.0],[523.25,2.0],
+[587.33,1.0],[698.46,1.0],[880.00,2.0],
+[783.99,1.0],[659.25,1.0],[523.25,2.5]
 ];
-
 function scheduleMelody() {
 const ctx = getCtx();
 let t = ctx.currentTime + 0.1;
@@ -499,14 +422,11 @@ melody.forEach(([freq, dur]) => {
 playNote(freq, t, dur);
 t += dur * 0.9;
 });
-// 循环
 musicTimer = setTimeout(scheduleMelody, (t - ctx.currentTime) * 1000 + 2000);
 }
-
 function toggleMusic() {
 if (navigator.vibrate) navigator.vibrate(10);
 const btn = document.getElementById('musicBtn');
-
 if (musicPlaying) {
 musicPlaying = false;
 clearTimeout(musicTimer);
@@ -516,7 +436,6 @@ btn.textContent = '🎵 播放温柔音乐';
 btn.classList.remove('active');
 return;
 }
-
 musicPlaying = true;
 btn.textContent = '⏸️ 暂停音乐';
 btn.classList.add('active');
@@ -525,55 +444,114 @@ scheduleMelody();
 
 // ============ 写信 ============
 let selectedRecipient = '妈妈';
-
 document.querySelectorAll('.recipient-btn').forEach(btn => {
 btn.addEventListener('click', () => {
 document.querySelectorAll('.recipient-btn').forEach(b => b.classList.remove('active'));
 btn.classList.add('active');
 selectedRecipient = btn.dataset.r;
+// 只有"未来的自己"显示日期选择
+document.getElementById('dateRow').style.display =
+(selectedRecipient === '未来的自己') ? 'flex' : 'none';
 });
 });
-
-// 默认选中"妈妈"
 document.querySelector('.recipient-btn[data-r="妈妈"]').classList.add('active');
 
 function openLetter() {
 if (navigator.vibrate) navigator.vibrate(10);
-const saved = localStorage.getItem('homesick_letter') || '';
-document.getElementById('letterText').value = saved;
+document.getElementById('letterText').value = '';
+document.getElementById('deliverAt').value = '';
+document.getElementById('dateRow').style.display = 'none';
+document.querySelectorAll('.recipient-btn').forEach(b => b.classList.remove('active'));
+document.querySelector('.recipient-btn[data-r="妈妈"]').classList.add('active');
+selectedRecipient = '妈妈';
 document.getElementById('letterModal').classList.add('show');
 }
-
 function closeLetter() {
 document.getElementById('letterModal').classList.remove('show');
 }
 
-function saveLetter() {
+async function saveLetter() {
 const text = document.getElementById('letterText').value.trim();
 if (!text) { alert('写点什么吧～'); return; }
-const data = {
+
+const deliverAt = document.getElementById('deliverAt').value || null;
+if (selectedRecipient === '未来的自己' && !deliverAt) {
+alert('选择未来的日期吧');
+return;
+}
+
+if (navigator.vibrate) navigator.vibrate(15);
+
+try {
+const resp = await fetch('/api/letters/add', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+email: MY_EMAIL,
 recipient: selectedRecipient,
-text: text,
-time: new Date().toISOString()
-};
-localStorage.setItem('homesick_letter', JSON.stringify(data));
+content: text,
+deliver_at: deliverAt
+})
+});
+const data = await resp.json();
+if (data.error) { alert('保存失败：' + data.error); return; }
+} catch(e) {
+alert('网络错误，请稍后重试'); return;
+}
+
 closeLetter();
-alert('✅ 给' + selectedRecipient + '的信已保存。只有你自己能看到。');
+alert('✅ 给' + selectedRecipient + '的信已保存。');
+}
+
+// ============ 我写过的信 ============
+async function showLetters() {
+if (navigator.vibrate) navigator.vibrate(10);
+const container = document.getElementById('lettersListContainer');
+container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
+document.getElementById('lettersModal').classList.add('show');
+
+try {
+const resp = await fetch('/api/letters?owner=' + encodeURIComponent(MY_EMAIL));
+const data = await resp.json();
+if (!Array.isArray(data) || data.length === 0) {
+container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">你还没有写过信</div>';
+return;
+}
+container.innerHTML = '';
+data.forEach(letter => {
+const div = document.createElement('div');
+div.className = 'letter-item';
+const time = (letter.created_at || '').slice(0, 10);
+const deliverInfo = letter.deliver_at ? ` · 收信日 ${letter.deliver_at}` : '';
+div.innerHTML = `
+<span class="recip">💌 给${letter.recipient || '未知'}${deliverInfo}</span>
+<span>${time}</span>
+`;
+div.addEventListener('click', () => {
+alert(`给${letter.recipient}的信：\n\n${letter.content}`);
+});
+container.appendChild(div);
+});
+} catch(e) {
+container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载失败</div>';
+}
+}
+function closeLetters() {
+document.getElementById('lettersModal').classList.remove('show');
 }
 
 // ============ 换一句话 ============
 const sentences = [
-['宝宝！你已经做得很好了。', '今天不用坚强。<br>先在这里坐一会儿，我陪陪你'],
-['没关系的~', '想家不代表软弱，<br>那是因为有人值得你想呀~'],
-['你很勇敢，你很坚强。', '一个人来这么远的地方，<br>已经很了不起了。'],
-['今天也辛苦了。', '不用向谁证明什么，<br>你在我眼里是最优秀的人呐！！'],
-['深呼吸一下！', '这杯热可可还热着，<br>窗外的雪也还在下。'],
-['会好起来的。', '不好也没关系，<br>我陪你！'],
+['你已经做得很好了。', '今天不用坚强。<br>先在这里坐一会儿，等雪停。'],
+['没关系的。', '想家不代表软弱。<br>那是因为有人值得你想。'],
+['你很勇敢。', '一个人来这么远的地方，<br>已经很了不起了。'],
+['今天也辛苦了。', '不用向谁证明什么。<br>你已经足够好。'],
+['深呼吸一下。', '这杯热可可还热着，<br>窗外的雪也还在下。'],
+['会好起来的。', '不是"马上"，但一定会。<br>我陪着你等。'],
 ['允许自己休息。', '不是每分钟都要努力。<br>停下来，也是前进的一部分。'],
-['你被爱着。', '哪怕现在隔着 10000 公里，<br>那份爱没有少一分']
+['你被爱着。', '哪怕现在隔着 10000 公里，<br>那份爱没有少一分。']
 ];
 let sentenceIndex = 0;
-
 function newSentence() {
 if (navigator.vibrate) navigator.vibrate(10);
 sentenceIndex = (sentenceIndex + 1) % sentences.length;

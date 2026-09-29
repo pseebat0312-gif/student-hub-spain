@@ -274,6 +274,34 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/static/sw.js');
   }
+
+// ===== 检查"未来的信"到期 =====
+  (async function checkDueLetters() {
+    const token = localStorage.getItem('access_token');
+    if (!token) return; // 没登录就不检查
+    const email = localStorage.getItem('user_email');
+    if (!email) return;
+
+    try {
+      const resp = await fetch('/api/letters/due?owner=' + encodeURIComponent(email));
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) return;
+
+      // 有到期的信，弹出显示
+      data.forEach(letter => {
+        setTimeout(() => {
+          alert('📬 一封来自过去的信\n\n给：' + letter.recipient + '\n\n' + letter.content);
+          // 标记已读
+          fetch('/api/letters/read', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: letter.id })
+          });
+        }, 1500);
+      });
+    } catch(e) {}
+  })();
+  
 </script>
 </body>
 </html>

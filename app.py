@@ -595,6 +595,86 @@ def api_emergency_delete():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ===== 想家信：读取我的全部信 =====
+@app.route("/api/letters")
+def api_letters():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = supabase.table("homesick_letters").select("*").eq("user_email", owner).order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 想家信：保存 =====
+@app.route("/api/letters/add", methods=["POST"])
+def api_letters_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    recipient = data.get("recipient", "").strip()
+    content = data.get("content", "").strip()
+    deliver_at = data.get("deliver_at") or None
+    if not email or not content:
+        return jsonify({"error": "缺少内容"}), 400
+    try:
+        supabase.table("homesick_letters").insert({
+            "user_email": email,
+            "recipient": recipient,
+            "content": content,
+            "deliver_at": deliver_at
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 想家信：检查有没有到期的信 =====
+@app.route("/api/letters/due")
+def api_letters_due():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    from datetime import date
+    today = date.today().isoformat()
+    try:
+        result = supabase.table("homesick_letters").select("*")\
+            .eq("user_email", owner)\
+            .eq("is_delivered", False)\
+            .lte("deliver_at", today)\
+            .not_.is_("deliver_at", "null")\
+            .execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 想家信：标记已读 =====
+@app.route("/api/letters/read", methods=["POST"])
+def api_letters_read():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    letter_id = data.get("id")
+    if not letter_id:
+        return jsonify({"error": "缺少 id"}), 400
+    from datetime import datetime
+    try:
+        supabase.table("homesick_letters").update({
+            "is_delivered": True,
+            "read_at": datetime.utcnow().isoformat()
+        }).eq("id", letter_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
     
 
     
