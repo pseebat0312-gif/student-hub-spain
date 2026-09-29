@@ -171,19 +171,7 @@ def api_messages_add():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# ===== 留言板：读取我自己的留言（含私密） =====
-@app.route("/api/messages/mine")
-def api_messages_mine():
-    if not supabase:
-        return jsonify({"error": "数据库未连接"}), 500
-    email = request.args.get("email", "").strip()
-    if not email:
-        return jsonify({"error": "缺少 email"}), 400
-    try:
-        result = supabase.table("messages").select("*").eq("user_email", email).order("created_at", desc=True).execute()
-        return jsonify(result.data)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+
 
 
 # ===== 管理员：读取所有留言 =====
