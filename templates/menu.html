@@ -8,10 +8,11 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
 body {
-background: #0f0c29; color: #fff;
-font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-height: 100vh; overflow: hidden;
-}
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    height: 100vh;
+    overflow: hidden;
+  }
 #topBar {
 padding: 12px 14px; display: flex; align-items: center; gap: 8px;
 background: #0f0c29; border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -37,12 +38,11 @@ cursor: pointer; flex-shrink: 0; min-width: 44px;
 
 #menuContainer {
     display: flex;
-    height: calc(100vh - 56px - 84px);
+    height: calc(100vh - 56px);
     margin-top: 56px;
-    box-sizing: border-box;
   }
   #menuContainer.no-cart { height: calc(100vh - 56px); }
-  
+
 
 #categorySide {
 width: 88px; background: rgba(0,0,0,0.3);
@@ -68,7 +68,9 @@ background: #a0d8b3; border-radius: 0 3px 3px 0;
 
 #dishArea {
 flex: 1; overflow-y: auto;
-padding: 12px 12px 24px; -webkit-overflow-scrolling: touch;
+-webkit-overflow-scrolling: touch;
+padding: 12px 12px 12px;
+padding-bottom: 100px
 }
 #dishArea::-webkit-scrollbar { width: 0; }
 
@@ -170,12 +172,13 @@ z-index: 50; display: flex; align-items: center; justify-content: center;
 position: fixed; inset: 0; background: rgba(0,0,0,0.8);
 display: none; justify-content: center; align-items: flex-end;
 z-index: 200;
+padding-top: 60px
 }
 .modal.show { display: flex; }
 .modal-content {
 background: #1a1a2e; width: 100%; max-width: 500px;
 border-radius: 25px 25px 0 0; padding: 20px 18px 30px;
-max-height: 88vh; overflow-y: auto;
+max-height: 70vh; overflow-y: auto;
 animation: slideUp 0.3s ease;
 }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
