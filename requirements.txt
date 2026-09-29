@@ -1,4 +1,4 @@
 flask
 gunicorn
-supabase
+supabase>=2.10.0
 pytz

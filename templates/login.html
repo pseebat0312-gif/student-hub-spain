@@ -161,6 +161,33 @@
       alert('网络错误，请稍后重试');
     }
   }
+  // ===== 处理 Google 回调 =====
+  (async function handleOAuthCallback() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (!code) return;  // 没有 code，说明不是 Google 回调
+
+    // 有 code，去后端换 token
+    try {
+      const resp = await fetch('/api/exchange_code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+      });
+      const data = await resp.json();
+
+      if (data.access_token) {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_email', data.email || '');
+        window.location.href = '/';
+      } else {
+        alert('Google 登录失败：' + (data.error || '未知错误'));
+      }
+    } catch (e) {
+      alert('网络错误，请稍后重试');
+    }
+  })();
 </script>
 </body>
 </html>
