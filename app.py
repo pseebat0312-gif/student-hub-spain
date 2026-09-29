@@ -113,6 +113,10 @@ def menu():
 def countdown():
     return render_template("countdown.html")
 
+@app.route("/emergency")
+def emergency():
+    return render_template("emergency.html")
+
 
 
 # ===== 重置密码（发邮件） =====
@@ -526,7 +530,68 @@ def api_countdowns_delete():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ===== 急救卡：读取 =====
+@app.route("/api/emergency")
+def api_emergency_get():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = supabase.table("emergency_cards").select("*").eq("user_email", owner).execute()
+        return jsonify(result.data[0] if result.data else {})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+# ===== 急救卡：保存 =====
+@app.route("/api/emergency/save", methods=["POST"])
+def api_emergency_save():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少用户"}), 400
+    payload = {
+        "user_email": email,
+        "full_name": data.get("full_name", ""),
+        "phone": data.get("phone", ""),
+        "passport": data.get("passport", ""),
+        "nie": data.get("nie", ""),
+        "emergency_contact_name": data.get("emergency_contact_name", ""),
+        "emergency_contact_phone": data.get("emergency_contact_phone", ""),
+        "notes": data.get("notes", ""),
+        "face_id_protected": bool(data.get("face_id_protected", False))
+    }
+    try:
+        exist = supabase.table("emergency_cards").select("id").eq("user_email", email).execute()
+        if exist.data:
+            supabase.table("emergency_cards").update(payload).eq("user_email", email).execute()
+        else:
+            supabase.table("emergency_cards").insert(payload).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 急救卡：删除 =====
+@app.route("/api/emergency/delete", methods=["POST"])
+def api_emergency_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少用户"}), 400
+    try:
+        supabase.table("emergency_cards").delete().eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    
 
     
 if __name__ == "__main__":

@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>急救卡 · 西班牙留学生工具站</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+body {
+background: #0f0c29; color: #fff;
+font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+min-height: 100vh; padding-bottom: 60px;
+}
+#topBar {
+padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+background: linear-gradient(to bottom, #0f0c29, transparent);
+position: sticky; top: 0; z-index: 10;
+}
+#topBar .back-btn {
+background: rgba(255,255,255,0.08); border: none; color: #fff;
+font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+cursor: pointer;
+}
+#topBar .back-btn:active { transform: scale(0.9); }
+#topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+#topBar .edit-btn {
+background: rgba(160,216,179,0.15); border: none; color: #a0d8b3;
+font-size: 12px; padding: 8px 14px; border-radius: 10px; cursor: pointer;
+}
+
+#content { padding: 10px 20px 40px; }
+
+.privacy-note {
+background: rgba(160, 216, 179, 0.08);
+border-left: 3px solid #a0d8b3;
+padding: 12px 14px;
+border-radius: 8px;
+font-size: 12px; color: #ccc; line-height: 1.7;
+margin-bottom: 20px;
+}
+.privacy-note b { color: #a0d8b3; }
+
+.howto-note {
+    background: rgba(160, 216, 179, 0.06);
+    border: 1px solid rgba(160, 216, 179, 0.2);
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 12px; color: #ccc; line-height: 1.9;
+    margin-bottom: 20px;
+  }
+  .howto-note b { color: #a0d8b3; }
+  
+.card {
+background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+border-radius: 20px;
+padding: 24px;
+box-shadow: 0 8px 24px rgba(185, 28, 28, 0.4);
+margin-bottom: 16px;
+}
+.card .card-title {
+font-size: 22px; font-weight: 900; letter-spacing: 1px;
+margin-bottom: 4px;
+}
+.card .card-sub {
+font-size: 12px; color: rgba(255,255,255,0.8);
+margin-bottom: 20px;
+}
+.card .row {
+display: flex; justify-content: space-between;
+padding: 10px 0;
+border-bottom: 1px solid rgba(255,255,255,0.15);
+font-size: 14px;
+gap: 10px;
+}
+.card .row:last-of-type { border-bottom: none; }
+.card .row .label { color: rgba(255,255,255,0.7); font-size: 12px; flex-shrink: 0; }
+.card .row .value { font-weight: bold; text-align: right; word-break: break-all; }
+.card .actions { margin-top: 20px; display: flex; gap: 10px; }
+.card .actions button {
+flex: 1; padding: 14px; border-radius: 12px; border: none;
+font-size: 14px; font-weight: bold; cursor: pointer;
+}
+.card .actions .call-btn { background: #fff; color: #b91c1c; }
+.card .actions .contact-btn { background: rgba(255,255,255,0.2); color: #fff; }
+.card .actions button:active { transform: scale(0.97); }
+
+.phrases {
+background: rgba(255,255,255,0.04);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 16px;
+padding: 16px;
+margin-bottom: 16px;
+}
+.phrases .phrase-item {
+padding: 10px 0;
+border-bottom: 1px solid rgba(255,255,255,0.06);
+font-size: 13px; line-height: 1.6;
+}
+.phrases .phrase-item:last-child { border-bottom: none; }
+.phrases .flag { font-size: 16px; margin-right: 6px; }
+.phrases .lang { color: #a0d8b3; font-size: 11px; }
+
+.empty-card {
+background: rgba(255,255,255,0.04);
+border: 1px dashed rgba(160,216,179,0.3);
+border-radius: 20px;
+padding: 60px 20px;
+text-align: center;
+margin-bottom: 20px;
+}
+.empty-card .icon { font-size: 48px; margin-bottom: 16px; }
+.empty-card .text { color: #888; font-size: 14px; line-height: 1.7; }
+
+.primary-btn {
+width: 100%; padding: 16px; border-radius: 14px; border: none;
+background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+color: #fff; font-size: 15px; font-weight: bold;
+cursor: pointer; margin-bottom: 12px;
+}
+.primary-btn:active { transform: scale(0.97); }
+
+.danger-btn {
+width: 100%; padding: 14px; border-radius: 14px;
+border: 1px solid rgba(255,107,107,0.3);
+background: rgba(255,107,107,0.08);
+color: #ff6b6b; font-size: 14px;
+cursor: pointer;
+}
+.danger-btn:active { transform: scale(0.97); }
+
+.modal {
+position: fixed; inset: 0;
+background: rgba(0,0,0,0.85);
+display: none; justify-content: center; align-items: flex-start;
+z-index: 200; padding: 20px;
+overflow-y: auto;
+}
+.modal.show { display: flex; }
+.modal-content {
+background: #1a1a2e;
+width: 100%; max-width: 480px;
+border-radius: 20px;
+padding: 24px 20px 28px;
+margin-top: 40px;
+}
+.modal-content h3 {
+font-size: 17px; margin-bottom: 16px;
+color: #a0d8b3; text-align: center;
+}
+.modal-content label {
+display: block; font-size: 12px; color: #888;
+margin-bottom: 6px; margin-top: 12px;
+}
+.modal-content input, .modal-content textarea {
+width: 100%; padding: 12px 14px; border-radius: 12px;
+border: 1px solid rgba(255,255,255,0.1);
+background: rgba(255,255,255,0.06);
+color: #fff; font-size: 14px; outline: none;
+font-family: inherit;
+}
+.modal-content textarea { height: 70px; resize: none; }
+.modal-content input:focus, .modal-content textarea:focus { border-color: #a0d8b3; }
+
+.checkbox-row {
+display: flex; align-items: center; gap: 10px;
+margin-top: 16px; padding: 12px 14px;
+background: rgba(255,255,255,0.04);
+border-radius: 12px;
+}
+.checkbox-row input { width: auto; }
+.checkbox-row label { margin: 0; flex: 1; font-size: 13px; color: #ccc; }
+
+.form-actions { display: flex; gap: 10px; margin-top: 20px; }
+.form-actions button {
+flex: 1; padding: 14px; border-radius: 12px; border: none;
+font-size: 14px; font-weight: bold; cursor: pointer;
+}
+.form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+.form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+
+/* 锁定页（Face ID 之前的遮罩） */
+.locked-overlay {
+position: fixed; inset: 0;
+background: #0f0c29;
+display: none; flex-direction: column;
+align-items: center; justify-content: center;
+z-index: 500; padding: 30px;
+}
+.locked-overlay.show { display: flex; }
+.locked-overlay .lock-icon { font-size: 64px; margin-bottom: 20px; }
+.locked-overlay .lock-text { font-size: 15px; color: #ccc; margin-bottom: 24px; text-align: center; }
+.locked-overlay button {
+padding: 14px 32px; border-radius: 14px; border: none;
+background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<div id="topBar">
+<button class="back-btn" onclick="goBack()">←</button>
+<div class="title">🆘 急救卡</div>
+<button class="edit-btn" id="editBtn" style="display:none;" onclick="openEdit()">✏️ 编辑</button>
+</div>
+
+<div id="content">
+
+<div class="privacy-note">
+🔒 <b>你的信息只保存在你自己手机里，或你本人的加密账户里。</b><br>
+除非你主动打开“云同步”，否则我们不会上传任何信息。你可以随时删除全部数据。
+</div>
+
+<div class="howto-note">
+    📖 <b>怎么用？</b><br>
+    1. 点“创建我的急救卡”，填写姓名、电话、护照、NIE、紧急联系人。<br>
+    2. 保存后，你的卡片就存在手机里了。<br>
+    3. 紧急情况下，打开它，直接给警察/医生看。<br>
+    4. 点“拨打 112”可一键报警，点“联系家人”可一键拨打紧急联系人。<br>
+    5. 建议把急救卡添加到手机主屏幕，秒开。
+  </div>
+
+<div id="cardContainer"></div>
+
+<div class="phrases">
+<div class="phrase-item">
+<span class="flag">🇪🇸</span><span class="lang">西班牙语</span><br>
+<b>Por favor, lléveme al hospital. Es una emergencia.</b>
+</div>
+<div class="phrase-item">
+<span class="flag">🇬🇧</span><span class="lang">英语</span><br>
+<b>Please take me to the hospital. It's an emergency.</b>
+</div>
+<div class="phrase-item">
+<span class="flag">🇨🇳</span><span class="lang">中文</span><br>
+<b>请送我去医院，这是紧急情况。</b>
+</div>
+<div class="phrase-item">
+<span class="flag">🚨</span><span class="lang">报警</span><br>
+<b>Llame a la policía, por favor. / Please call the police. / 请报警。</b>
+</div>
+</div>
+
+<button class="primary-btn" id="newBtn" onclick="openEdit()">➕ 创建我的急救卡</button>
+<button class="danger-btn" id="deleteBtn" style="display:none;" onclick="deleteCard()">🗑️ 删除我的所有数据</button>
+
+</div>
+
+<!-- Face ID 锁定页 -->
+<div class="locked-overlay" id="lockedOverlay">
+<div class="lock-icon">🔒</div>
+<div class="lock-text">需要验证你的身份才能查看急救卡</div>
+<button onclick="unlockCard()">🔓 使用 Face ID / 指纹解锁</button>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="modal" id="editModal">
+<div class="modal-content">
+<h3>✏️ 编辑急救卡</h3>
+
+<label>姓名 / Name / Nombre</label>
+<input type="text" id="full_name" placeholder="例如：张三 / Zhang San">
+
+<label>手机号 / Phone / Teléfono</label>
+<input type="tel" id="phone" placeholder="+34 6XX XXX XXX">
+
+<label>护照号 / Passport</label>
+<input type="text" id="passport" placeholder="例如：E12345678">
+
+<label>NIE 号 / NIE</label>
+<input type="text" id="nie" placeholder="例如：X1234567A">
+
+<label>紧急联系人姓名</label>
+<input type="text" id="emergency_contact_name" placeholder="爸爸 / 妈妈 / 朋友">
+
+<label>紧急联系人电话</label>
+<input type="tel" id="emergency_contact_phone" placeholder="+86 138 XXXX XXXX">
+
+<label>备注（过敏、病史等）</label>
+<textarea id="notes" placeholder="例如：对青霉素过敏"></textarea>
+
+<div class="checkbox-row">
+<input type="checkbox" id="cloudSync">
+<label for="cloudSync">开启云同步（换手机也能看到）</label>
+</div>
+
+<div class="checkbox-row">
+<input type="checkbox" id="faceIdProtect">
+<label for="faceIdProtect">Face ID / 指纹保护（查看时需要验证）</label>
+</div>
+
+<div class="form-actions">
+<button class="cancel" onclick="closeEdit()">取消</button>
+<button class="submit" onclick="saveCard()">保存</button>
+</div>
+</div>
+</div>
+
+<script>
+const MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
+const LOCAL_KEY = 'emergency_card_local';
+const LOCK_KEY = 'emergency_card_locked';
+
+let card = null;
+let cloudSync = false;
+
+// ===== 加载 =====
+async function loadCard() {
+try {
+const local = localStorage.getItem(LOCAL_KEY);
+if (local) {
+card = JSON.parse(local);
+cloudSync = !!card.cloud_sync;
+}
+} catch(e) {}
+
+if (!card) {
+try {
+const resp = await fetch('/api/emergency?owner=' + encodeURIComponent(MY_EMAIL));
+const data = await resp.json();
+if (data && data.full_name) {
+card = data;
+card.cloud_sync = true;
+cloudSync = true;
+}
+} catch(e) {}
+}
+
+// ===== 检查是否要 Face ID 解锁 =====
+if (card && card.face_id_protected && localStorage.getItem(LOCK_KEY) !== 'unlocked') {
+document.getElementById('lockedOverlay').classList.add('show');
+renderCard();
+return;
+}
+
+renderCard();
+}
+
+// ===== Face ID 解锁 =====
+async function unlockCard() {
+if (navigator.vibrate) navigator.vibrate(15);
+
+// 判断是否支持 WebAuthn
+if (!window.PublicKeyCredential) {
+alert('你的浏览器不支持 Face ID / 指纹，请在 Safari 里打开。');
+// 不支持就直接解锁，避免用户卡住
+localStorage.setItem(LOCK_KEY, 'unlocked');
+document.getElementById('lockedOverlay').classList.remove('show');
+return;
+}
+
+try {
+// 用 WebAuthn 做一次“验证”
+const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+if (!available) {
+alert('你的设备暂不支持 Face ID / 指纹。');
+localStorage.setItem(LOCK_KEY, 'unlocked');
+document.getElementById('lockedOverlay').classList.remove('show');
+return;
+}
+
+// 创建 challenge
+const challenge = new Uint8Array(32);
+crypto.getRandomValues(challenge);
+
+// 尝试注册/验证一个本地凭证
+const credential = await navigator.credentials.create({
+publicKey: {
+challenge: challenge,
+rp: { name: "急救卡" },
+user: {
+id: new Uint8Array(16),
+name: MY_EMAIL,
+displayName: "急救卡"
+},
+pubKeyCredParams: [
+{ alg: -7, type: "public-key" },
+{ alg: -257, type: "public-key" }
+],
+authenticatorSelection: {
+authenticatorAttachment: "platform",
+userVerification: "required"
+},
+timeout: 60000,
+attestation: "none"
+}
+});
+
+if (credential) {
+localStorage.setItem(LOCK_KEY, 'unlocked');
+document.getElementById('lockedOverlay').classList.remove('show');
+}
+} catch (e) {
+// 用户取消 / 验证失败
+if (e.name === 'NotAllowedError') {
+alert('未通过验证');
+} else {
+// 其他错误（比如已注册过），也放行，避免卡死
+localStorage.setItem(LOCK_KEY, 'unlocked');
+document.getElementById('lockedOverlay').classList.remove('show');
+}
+}
+}
+
+// ===== 渲染 =====
+function renderCard() {
+const container = document.getElementById('cardContainer');
+const newBtn = document.getElementById('newBtn');
+const editBtn = document.getElementById('editBtn');
+const deleteBtn = document.getElementById('deleteBtn');
+
+if (!card) {
+container.innerHTML = `
+<div class="empty-card">
+<div class="icon">🆘</div>
+<div class="text">你还没有创建急救卡。<br>点击下方按钮，创建一张救命卡片。</div>
+</div>
+`;
+newBtn.style.display = 'block';
+editBtn.style.display = 'none';
+deleteBtn.style.display = 'none';
+return;
+}
+
+newBtn.style.display = 'none';
+editBtn.style.display = 'block';
+deleteBtn.style.display = 'block';
+
+container.innerHTML = `
+<div class="card">
+<div class="card-title">🆘 紧急情况 / EMERGENCY</div>
+<div class="card-sub">Emergencia · 紧急信息卡</div>
+
+${card.full_name ? `<div class="row"><span class="label">姓名</span><span class="value">${card.full_name}</span></div>` : ''}
+${card.phone ? `<div class="row"><span class="label">电话</span><span class="value">${card.phone}</span></div>` : ''}
+${card.passport ? `<div class="row"><span class="label">护照</span><span class="value">${card.passport}</span></div>` : ''}
+${card.nie ? `<div class="row"><span class="label">NIE</span><span class="value">${card.nie}</span></div>` : ''}
+${card.emergency_contact_name ? `<div class="row"><span class="label">紧急联系人</span><span class="value">${card.emergency_contact_name}</span></div>` : ''}
+${card.emergency_contact_phone ? `<div class="row"><span class="label">联系电话</span><span class="value">${card.emergency_contact_phone}</span></div>` : ''}
+${card.notes ? `<div class="row"><span class="label">备注</span><span class="value">${card.notes}</span></div>` : ''}
+
+<div class="actions">
+<button class="call-btn" onclick="callEmergency()">📞 拨打 112</button>
+${card.emergency_contact_phone ? `<button class="contact-btn" onclick="callContact()">👨‍👩‍👧 联系家人</button>` : ''}
+</div>
+</div>
+`;
+}
+
+function callEmergency() {
+if (navigator.vibrate) navigator.vibrate(20);
+if (confirm('确定要拨打西班牙急救电话 112 吗？')) location.href = 'tel:112';
+}
+
+function callContact() {
+if (navigator.vibrate) navigator.vibrate(20);
+if (card && card.emergency_contact_phone) {
+if (confirm('确定要拨打 ' + card.emergency_contact_phone + ' 吗？')) {
+location.href = 'tel:' + card.emergency_contact_phone;
+}
+}
+}
+
+function openEdit() {
+const c = card || {};
+document.getElementById('full_name').value = c.full_name || '';
+document.getElementById('phone').value = c.phone || '';
+document.getElementById('passport').value = c.passport || '';
+document.getElementById('nie').value = c.nie || '';
+document.getElementById('emergency_contact_name').value = c.emergency_contact_name || '';
+document.getElementById('emergency_contact_phone').value = c.emergency_contact_phone || '';
+document.getElementById('notes').value = c.notes || '';
+document.getElementById('cloudSync').checked = !!c.cloud_sync;
+document.getElementById('faceIdProtect').checked = !!c.face_id_protected;
+document.getElementById('editModal').classList.add('show');
+}
+
+function closeEdit() {
+document.getElementById('editModal').classList.remove('show');
+}
+
+async function saveCard() {
+const payload = {
+full_name: document.getElementById('full_name').value.trim(),
+phone: document.getElementById('phone').value.trim(),
+passport: document.getElementById('passport').value.trim(),
+nie: document.getElementById('nie').value.trim(),
+emergency_contact_name: document.getElementById('emergency_contact_name').value.trim(),
+emergency_contact_phone: document.getElementById('emergency_contact_phone').value.trim(),
+notes: document.getElementById('notes').value.trim(),
+cloud_sync: document.getElementById('cloudSync').checked,
+face_id_protected: document.getElementById('faceIdProtect').checked
+};
+
+if (!payload.full_name) { alert('请填写姓名'); return; }
+if (navigator.vibrate) navigator.vibrate(15);
+
+localStorage.setItem(LOCAL_KEY, JSON.stringify(payload));
+
+if (payload.cloud_sync) {
+try {
+await fetch('/api/emergency/save', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ email: MY_EMAIL, ...payload })
+});
+} catch(e) {}
+}
+
+// 保存后重新锁定（如果开了 Face ID）
+if (payload.face_id_protected) {
+localStorage.removeItem(LOCK_KEY);
+}
+
+card = payload;
+cloudSync = payload.cloud_sync;
+closeEdit();
+renderCard();
+alert('✅ 已保存');
+}
+
+async function deleteCard() {
+if (navigator.vibrate) navigator.vibrate(15);
+if (!confirm('确定删除所有急救卡数据吗？')) return;
+
+localStorage.removeItem(LOCAL_KEY);
+localStorage.removeItem(LOCK_KEY);
+try {
+await fetch('/api/emergency/delete', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ email: MY_EMAIL })
+});
+} catch(e) {}
+
+card = null;
+renderCard();
+alert('✅ 已删除');
+}
+
+function goBack() {
+if (navigator.vibrate) navigator.vibrate(10);
+if (window.history.length > 1) window.history.back();
+else location.href = '/?tab=tools';
+}
+
+loadCard();
+</script>
+</body>
+</html>
