@@ -183,7 +183,7 @@
       div.className = 'app-icon';
       div.onclick = () => {
         if (navigator.vibrate) navigator.vibrate(10);
-        if (['/countdown', '/menu', '/fortune', '/emergency'].includes(app.url)) {
+        if (['/countdown', '/fortune', '/emergency'].includes(app.url)) {
           alert('【' + app.name + '】正在开发中，敬请期待！');
         } else {
           location.href = app.url;
