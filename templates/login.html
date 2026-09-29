@@ -4,240 +4,163 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f0c29">
-<title>西班牙留学生工具站</title>
+<title>登录 · 西班牙留学生工具站</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
-  html, body { height: 100%; }
   body {
-    background: #0f0c29; color: #fff;
-    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    overflow-y: auto;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #fff; font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 24px;
   }
-  #topBar {
-    position: fixed; top: 0; left: 0; right: 0;
-    padding: 16px 20px;
-    display: flex; justify-content: space-between; align-items: center;
-    background: linear-gradient(to bottom, #0f0c29, transparent);
-    z-index: 10;
-  }
-  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
-  #topBar .user { font-size: 13px; color: #a0d8b3; cursor: pointer; }
-
-  #mainContent {
-    padding: 80px 20px 100px;
-    min-height: 100vh;
-  }
-
-  .tab-page { display: none; }
-  .tab-page.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-  .card {
-    background: rgba(255,255,255,0.06);
+  .login-card {
+    width: 100%; max-width: 380px;
+    background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 16px;
-    padding: 20px;
-    margin-bottom: 16px;
-    cursor: pointer;
-    transition: transform 0.1s;
+    border-radius: 24px; padding: 32px 24px; text-align: center;
   }
-  .card:active { transform: scale(0.98); }
-  .card h3 { font-size: 16px; margin-bottom: 8px; color: #fff; }
-  .card p { font-size: 13px; color: #aaa; line-height: 1.6; }
-
-  .big-btn {
-    width: 100%; padding: 16px; border-radius: 16px; border: none;
+  .login-card h1 {
+    font-size: 22px; margin-bottom: 8px;
+    background: linear-gradient(90deg, #fbc2eb, #a6c1ee);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .login-card .sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+  .input-wrap { position: relative; margin-bottom: 12px; }
+  .input-wrap input {
+    width: 100%; padding: 14px 44px 14px 16px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none; font-family: inherit;
+  }
+  .input-wrap input:focus { border-color: #a0d8b3; }
+  .eye-btn {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: #888; font-size: 18px; cursor: pointer;
+  }
+  .btn-primary {
+    width: 100%; padding: 14px; border-radius: 14px; border: none;
     background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-    color: #fff; font-size: 16px; font-weight: bold;
-    cursor: pointer; margin-bottom: 20px;
+    color: #fff; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 6px;
   }
-  .big-btn:active { transform: scale(0.97); }
-
-  #navBar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    display: flex; justify-content: space-around; align-items: center;
-    background: rgba(10,10,26,0.95);
-    border-top: 1px solid rgba(255,255,255,0.08);
-    padding: 8px 0 20px;
-    z-index: 100;
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-google {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 15px; cursor: pointer;
+    margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .nav-item {
-    color: #666; font-size: 11px;
-    display: flex; flex-direction: column; align-items: center; gap: 4px;
-    cursor: pointer; flex: 1;
-  }
-  .nav-item .icon { font-size: 22px; }
-  .nav-item.active { color: #a0d8b3; }
+  .btn-google:active { transform: scale(0.97); }
+  .row-links { display: flex; justify-content: space-between; margin-top: 16px; font-size: 13px; }
+  .row-links span { color: #a0d8b3; cursor: pointer; text-decoration: underline; }
+  .error-msg { color: #ff6b6b; font-size: 13px; min-height: 18px; margin-top: 8px; }
 </style>
 </head>
 <body>
 
-<div id="topBar">
-  <div class="title">🇪🇸 西班牙留学生工具站</div>
-  <div class="user" id="userDisplay">登录 →</div>
-</div>
+<div class="login-card">
+  <h1 id="cardTitle">欢迎回来</h1>
+  <div class="sub" id="cardSub">登录你的账号，解锁全部功能</div>
 
-<div id="mainContent">
-
-  <!-- Tab 1: 主页 -->
-  <div class="tab-page active" id="tab-home">
-    <div class="card" onclick="switchTab('tools')">
-      <h3>👋 欢迎回来</h3>
-      <p>这里是你的西班牙留学生一站式工具箱。点击底部标签，或者点这里进入工具箱。</p >
-    </div>
-    <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-      <div class="card" style="flex: 1; margin-bottom: 0; text-align: center; cursor: default;">
-        <h3 style="font-size: 13px; color: #a0d8b3;">🇪🇸 西班牙</h3>
-        <p id="spainClock" style="font-size: 16px; font-weight: bold; color: #fff; margin-top: 8px;">--:--:--</p >
-      </div>
-      <div class="card" style="flex: 1; margin-bottom: 0; text-align: center; cursor: default;">
-        <h3 style="font-size: 13px; color: #a0d8b3;">🇨🇳 中国</h3>
-        <p id="chinaClock" style="font-size: 16px; font-weight: bold; color: #fff; margin-top: 8px;">--:--:--</p >
-      </div>
-    </div>
-    <button class="big-btn" onclick="switchTab('tools')">进入工具箱</button>
+  <div class="input-wrap">
+    <input type="email" id="email" placeholder="邮箱" autocomplete="email">
+  </div>
+  <div class="input-wrap">
+    <input type="password" id="password" placeholder="密码" autocomplete="current-password">
+    <button class="eye-btn" onclick="togglePassword()">👁</button>
   </div>
 
-  <!-- Tab 2: 工具箱 -->
-  <div class="tab-page" id="tab-tools">
-    <h3 style="margin-bottom: 16px; color: #a0d8b3;">🧰 工具箱</h3>
+  <div class="error-msg" id="errorMsg"></div>
 
-    <div class="card" onclick="location.href='/school'">
-      <h3>🏫 学校导览</h3><p>一键查看西班牙各大高校的信息与攻略。</p >
-    </div>
-    <div class="card" onclick="location.href='/ai_detect'">
-      <h3>🔍 AI 检测器</h3><p>帮你判断一段文字是不是 AI 写的。</p >
-    </div>
-    <div class="card" onclick="location.href='/affairs'">
-      <h3>📋 办事导览</h3><p>居留卡、返乡证、住家证明等办理流程全在这里。</p >
-    </div>
-    <div class="card" onclick="location.href='/market'">
-      <h3>🛒 留学生二手市场</h3><p>闲置出售、同城交易，只做沟通不涉及支付。</p >
-    </div>
-    <div class="card" onclick="location.href='/community'">
-      <h3>💬 留学生互助社区</h3><p>经验分享、踩坑求助、学习交流，一起互助。</p >
-    </div>
-    <div class="card" onclick="location.href='/map'">
-      <h3>🗺️ 留学生探店地图</h3><p>推荐好吃好玩的地方，一起避坑。</p >
-    </div>
-    <div class="card" onclick="location.href='/message'">
-      <h3>✍️ 留言板</h3><p>给作者留言，默认私密，作者可能会公开。</p >
-    </div>
-    <div class="card" onclick="location.href='/currency'">
-      <h3>💱 汇率计算器 + 记账本</h3><p>实时汇率换算欧元/人民币/美元，还能记账。</p >
-    </div>
-  </div>
+  <button class="btn-primary" onclick="handleMain()" id="mainBtn">登录</button>
+  <button class="btn-google" onclick="handleGoogle()">
+    <span style="font-size:18px;">🔵</span> 用 Google 登录
+  </button>
 
-  <!-- Tab 3: 我的 -->
-  <div class="tab-page" id="tab-user">
-    <h3 style="margin-bottom: 16px; color: #a0d8b3;">👤 我的</h3>
-
-    <div class="card" id="userStatusCard" onclick="handleUserCard()">
-      <h3 id="userCardTitle">🔑 点击登录</h3>
-      <p id="userCardDesc">登录后可使用个人中心、留言、社区等功能</p >
-    </div>
-
-    <div id="userOnlyCards" style="display:none;">
-      <div class="card" onclick="location.href='/profile'">
-        <h3>👤 个人中心</h3><p>设置昵称、头像，修改密码，查看会员状态。</p >
-      </div>
-      <div class="card" onclick="location.href='/message'">
-        <h3>✍️ 留言板</h3><p>给作者留言，默认私密，作者可能会公开。</p >
-      </div>
-      <div class="card" id="adminCard" onclick="location.href='/admin'" style="display:none;">
-        <h3>🛠️ 管理后台</h3><p>仅管理员可见。</p >
-      </div>
-      <div class="card" onclick="logout()" style="background: rgba(255,107,157,0.08); border-color: rgba(255,107,157,0.3);">
-        <h3 style="color:#ff6b9d;">🚪 退出登录</h3><p>点了就会退出当前账号</p >
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<div id="navBar">
-  <div class="nav-item active" onclick="switchTab('home')" data-tab="home">
-    <span class="icon">🏠</span><span>主页</span>
-  </div>
-  <div class="nav-item" onclick="switchTab('tools')" data-tab="tools">
-    <span class="icon">🧰</span><span>工具</span>
-  </div>
-  <div class="nav-item" onclick="switchTab('user')" data-tab="user">
-    <span class="icon">👤</span><span>我的</span>
+  <div class="row-links">
+    <span id="switchLink" onclick="toggleMode()">没有账号？点这里注册</span>
+    <span onclick="location.href='/reset-password'">忘记密码？</span>
   </div>
 </div>
 
 <script>
-  const ADMIN_EMAIL = "pseebat0312@gmail.com";
+  let isLoginMode = true;
 
-  function switchTab(tabName) {
-    document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + tabName).classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
+  function toggleMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('cardTitle').textContent = isLoginMode ? '欢迎回来' : '创建账号';
+    document.getElementById('cardSub').textContent = isLoginMode ? '登录你的账号，解锁全部功能' : '注册后即可使用留言、社区、二手市场等功能';
+    document.getElementById('mainBtn').textContent = isLoginMode ? '登录' : '注册';
+    document.getElementById('switchLink').textContent = isLoginMode ? '没有账号？点这里注册' : '已有账号？点这里登录';
+    document.getElementById('errorMsg').textContent = '';
+  }
+
+  function togglePassword() {
+    const pwd = document.getElementById('password');
+    pwd.type = (pwd.type === 'password') ? 'text' : 'password';
+  }
+
+  async function handleMain() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+
+    if (!email || !password) {
+      errorMsg.textContent = '请填写邮箱和密码';
+      return;
+    }
     if (navigator.vibrate) navigator.vibrate(10);
-    refreshLoginUI();
-  }
 
-  function handleUserCard() {
-    if (localStorage.getItem('access_token')) location.href = '/profile';
-    else location.href = '/login';
-  }
+    const endpoint = isLoginMode ? '/api/login' : '/api/register';
+    try {
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await resp.json();
 
-  function logout() {
-    if (navigator.vibrate) navigator.vibrate(15);
-    if (!confirm('确定要退出登录吗？')) return;
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_email');
-    location.reload();
-  }
+      if (data.error) {
+        errorMsg.textContent = data.error;
+        return;
+      }
 
-  function refreshLoginUI() {
-    const token = localStorage.getItem('access_token');
-    const email = localStorage.getItem('user_email');
-    const userOnly = document.getElementById('userOnlyCards');
-    const adminCard = document.getElementById('adminCard');
-    const topDisplay = document.getElementById('userDisplay');
-
-    if (token && email) {
-      document.getElementById('userCardTitle').textContent = '✅ ' + email;
-      document.getElementById('userCardDesc').textContent = '点击进入个人中心';
-      userOnly.style.display = 'block';
-      adminCard.style.display = (email === ADMIN_EMAIL) ? 'block' : 'none';
-      topDisplay.textContent = email;
-      topDisplay.onclick = logout;
-    } else {
-      document.getElementById('userCardTitle').textContent = '🔑 点击登录';
-      document.getElementById('userCardDesc').textContent = '登录后可使用个人中心、留言、社区等功能';
-      userOnly.style.display = 'none';
-      adminCard.style.display = 'none';
-      topDisplay.textContent = '登录 →';
-      topDisplay.onclick = () => location.href = '/login';
+      if (isLoginMode) {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_email', data.email);
+        window.location.href = '/';
+      } else {
+        // 注册成功后立刻登录
+        const loginResp = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const loginData = await loginResp.json();
+        if (loginData.access_token) {
+          localStorage.setItem('access_token', loginData.access_token);
+          localStorage.setItem('user_email', loginData.email);
+          window.location.href = '/';
+        } else {
+          errorMsg.textContent = '注册成功，请返回登录';
+          toggleMode();
+        }
+      }
+    } catch (e) {
+      errorMsg.textContent = '网络错误，请稍后重试';
     }
   }
 
-  function updateClock() {
-    const now = new Date();
-    const spainTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}));
-    const chinaTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}));
-    const pad = (n) => String(n).padStart(2, '0');
-    const fmt = (d) => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    document.getElementById('spainClock').textContent = fmt(spainTime);
-    document.getElementById('chinaClock').textContent = fmt(chinaTime);
-  }
-  updateClock();
-  setInterval(updateClock, 1000);
-
-  refreshLoginUI();
-
-  // 从工具页返回时自动切到工具箱标签
-  window.addEventListener('load', () => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('tab') === 'tools') {
-      switchTab('tools');
-      window.history.replaceState({}, '', '/');
+  async function handleGoogle() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      const resp = await fetch('/api/google_login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const data = await resp.json();
+      if (data.url) window.location.href = data.url;
+      else alert('Google 登录失败：' + (data.error || '未知错误'));
+    } catch (e) {
+      alert('网络错误，请稍后重试');
     }
-  });
+  }
 </script>
 </body>
 </html>
