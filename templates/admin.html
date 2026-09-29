@@ -6,384 +6,404 @@
 <meta name="theme-color" content="#0f0c29">
 <title>管理后台 · 西班牙留学生工具站</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
-  body {
-    background: #0f0c29; color: #fff;
-    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    min-height: 100vh; padding-bottom: 40px;
-  }
+* { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+body {
+background: #0f0c29; color: #fff;
+font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+min-height: 100vh; padding-bottom: 40px;
+}
 
-  #topBar {
-    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
-    background: linear-gradient(to bottom, #0f0c29, transparent);
-    position: sticky; top: 0; z-index: 10;
-  }
-  #topBar .back-btn {
-    background: rgba(255,255,255,0.08); border: none; color: #fff;
-    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
-    cursor: pointer; transition: 0.1s;
-  }
-  #topBar .back-btn:active { transform: scale(0.9); }
-  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+#topBar {
+padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+background: linear-gradient(to bottom, #0f0c29, transparent);
+position: sticky; top: 0; z-index: 10;
+}
+#topBar .back-btn {
+background: rgba(255,255,255,0.08); border: none; color: #fff;
+font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+cursor: pointer; transition: 0.1s;
+}
+#topBar .back-btn:active { transform: scale(0.9); }
+#topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
 
-  #content { padding: 10px 20px 40px; }
+#content { padding: 10px 20px 40px; }
 
-  /* 管理员欢迎条 */
-  .admin-banner {
-    background: rgba(160, 216, 179, 0.1);
-    border: 1px solid rgba(160, 216, 179, 0.3);
-    border-radius: 12px;
-    padding: 12px 16px;
-    font-size: 13px; color: #a0d8b3;
-    margin-bottom: 20px;
-  }
+.admin-banner {
+background: rgba(160, 216, 179, 0.1);
+border: 1px solid rgba(160, 216, 179, 0.3);
+border-radius: 12px;
+padding: 12px 16px;
+font-size: 13px; color: #a0d8b3;
+margin-bottom: 20px;
+}
 
-  /* Tab 切换栏 */
-  .tab-bar {
-    display: flex; gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    margin-bottom: 20px;
-  }
-  .tab-bar::-webkit-scrollbar { display: none; }
-  .tab-btn {
-    padding: 10px 18px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: #ccc; font-size: 13px;
-    white-space: nowrap; cursor: pointer;
-    transition: 0.15s;
-  }
-  .tab-btn.active { background: rgba(160, 216, 179, 0.15); color: #a0d8b3; border-color: #a0d8b3; }
-  .tab-btn:active { transform: scale(0.96); }
+.tab-bar { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 20px; }
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+padding: 10px 18px; border-radius: 12px;
+border: 1px solid rgba(255,255,255,0.1);
+background: rgba(255,255,255,0.05);
+color: #ccc; font-size: 13px;
+white-space: nowrap; cursor: pointer; transition: 0.15s;
+}
+.tab-btn.active { background: rgba(160, 216, 179, 0.15); color: #a0d8b3; border-color: #a0d8b3; }
+.tab-btn:active { transform: scale(0.96); }
 
-  /* 每个 Tab 的内容 */
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* 卡片 */
-  .item-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin-bottom: 10px;
-  }
-  .item-card .head {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 13px; color: #a0d8b3;
-    margin-bottom: 8px; gap: 8px; flex-wrap: wrap;
-  }
-  .item-card .head .email { font-weight: bold; }
-  .item-card .head .time { font-size: 12px; color: #888; }
-  .item-card .body {
-    font-size: 13px; color: #ddd; line-height: 1.6;
-    margin-bottom: 10px; white-space: pre-wrap;
-  }
+.item-card {
+background: rgba(255,255,255,0.05);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+}
+.item-card .head {
+display: flex; justify-content: space-between; align-items: center;
+font-size: 13px; color: #a0d8b3;
+margin-bottom: 8px; gap: 8px; flex-wrap: wrap;
+}
+.item-card .head .email { font-weight: bold; }
+.item-card .head .time { font-size: 12px; color: #888; }
+.item-card .body { font-size: 13px; color: #ddd; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; }
 
-  /* 操作按钮 */
-  .action-row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .action-btn {
-    padding: 8px 14px; border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.05);
-    color: #ccc; font-size: 12px; cursor: pointer;
-    transition: 0.15s;
-  }
-  .action-btn:active { transform: scale(0.95); }
-  .action-btn.danger { color: #ff6b6b; }
-  .action-btn.green { color: #a0d8b3; border-color: rgba(160,216,179,0.3); }
+.action-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.action-btn {
+padding: 8px 14px; border-radius: 10px;
+border: 1px solid rgba(255,255,255,0.1);
+background: rgba(255,255,255,0.05);
+color: #ccc; font-size: 12px; cursor: pointer;
+transition: 0.15s;
+}
+.action-btn:active { transform: scale(0.95); }
+.action-btn.danger { color: #ff6b6b; }
+.action-btn.green { color: #a0d8b3; border-color: rgba(160,216,179,0.3); }
 
-  /* 回复输入 */
-  .reply-input {
-    width: 100%; padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.06);
-    color: #fff; font-size: 13px;
-    outline: none; font-family: inherit;
-    margin-bottom: 10px;
-    min-height: 60px; resize: vertical;
-  }
-  .reply-input:focus { border-color: #a0d8b3; }
+.reply-input {
+width: 100%; padding: 10px 12px; border-radius: 10px;
+border: 1px solid rgba(255,255,255,0.1);
+background: rgba(255,255,255,0.06);
+color: #fff; font-size: 13px; outline: none; font-family: inherit;
+margin-bottom: 10px; min-height: 60px; resize: vertical;
+}
+.reply-input:focus { border-color: #a0d8b3; }
 
-  /* 统计数字 */
-  .stat-row {
-    display: flex; gap: 12px; margin-bottom: 20px;
-  }
-  .stat-box {
-    flex: 1;
-    background: rgba(160, 216, 179, 0.08);
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-  }
-  .stat-box .num { font-size: 22px; font-weight: bold; color: #a0d8b3; }
-  .stat-box .label { font-size: 11px; color: #888; margin-top: 4px; }
+.stat-row { display: flex; gap: 12px; margin-bottom: 20px; }
+.stat-box {
+flex: 1; background: rgba(160, 216, 179, 0.08);
+border-radius: 12px; padding: 14px; text-align: center;
+}
+.stat-box .num { font-size: 22px; font-weight: bold; color: #a0d8b3; }
+.stat-box .label { font-size: 11px; color: #888; margin-top: 4px; }
 
-  .empty-state {
-    text-align: center; padding: 40px 20px;
-    color: #666; font-size: 13px;
-  }
+.empty-state { text-align: center; padding: 40px 20px; color: #666; font-size: 13px; }
 </style>
 </head>
 <body>
 
+<div id="adminGate" style="position:fixed; inset:0; background:#0f0c29; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; padding:30px; text-align:center;">
+<div style="font-size:24px; color:#a0d8b3; margin-bottom:12px;">🔒 管理员验证</div>
+<div style="color:#888; font-size:14px;">正在验证身份...</div>
+</div>
+
 <div id="topBar">
-  <button class="back-btn" onclick="goBack()">←</button>
-  <div class="title">🛠️ 管理后台</div>
+<button class="back-btn" onclick="goBack()">←</button>
+<div class="title">🛠️ 管理后台</div>
 </div>
 
 <div id="content">
+<div class="admin-banner">
+👋 欢迎管理员：pseebat0312@gmail.com
+</div>
 
-  <div class="admin-banner">
-    👋 欢迎管理员：pseebat0312@gmail.com
-  </div>
+<div class="tab-bar">
+<button class="tab-btn active" onclick="switchAdminTab('users', this)">👥 用户</button>
+<button class="tab-btn" onclick="switchAdminTab('detect', this)">🔍 检测</button>
+<button class="tab-btn" onclick="switchAdminTab('messages', this)">✍️ 留言</button>
+<button class="tab-btn" onclick="switchAdminTab('posts', this)">💬 社区</button>
+</div>
 
-  <!-- Tab 切换 -->
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchAdminTab('users', this)">👥 用户</button>
-    <button class="tab-btn" onclick="switchAdminTab('detect', this)">🔍 检测</button>
-    <button class="tab-btn" onclick="switchAdminTab('messages', this)">✍️ 留言</button>
-    <button class="tab-btn" onclick="switchAdminTab('posts', this)">💬 社区</button>
-  </div>
+<div class="tab-panel active" id="panel-users">
+<div class="stat-row">
+<div class="stat-box"><div class="num" id="userCount">0</div><div class="label">用户数</div></div>
+<div class="stat-box"><div class="num" id="loginCount">0</div><div class="label">总登录次数</div></div>
+</div>
+<div id="userList"></div>
+</div>
 
-  <!-- Tab 1：用户 -->
-  <div class="tab-panel active" id="panel-users">
-    <div class="stat-row">
-      <div class="stat-box"><div class="num" id="userCount">0</div><div class="label">用户数</div></div>
-      <div class="stat-box"><div class="num" id="loginCount">0</div><div class="label">总登录次数</div></div>
-    </div>
-    <div id="userList"></div>
-  </div>
+<div class="tab-panel" id="panel-detect">
+<div class="stat-row">
+<div class="stat-box"><div class="num" id="detectCount">0</div><div class="label">总检测数</div></div>
+<div class="stat-box"><div class="num" id="detectUsers">0</div><div class="label">使用用户数</div></div>
+</div>
+<div id="detectList"></div>
+</div>
 
-  <!-- Tab 2：检测记录 -->
-  <div class="tab-panel" id="panel-detect">
-    <div class="stat-row">
-      <div class="stat-box"><div class="num" id="detectCount">0</div><div class="label">总检测数</div></div>
-      <div class="stat-box"><div class="num" id="detectUsers">0</div><div class="label">使用用户数</div></div>
-    </div>
-    <div id="detectList"></div>
-  </div>
+<div class="tab-panel" id="panel-messages">
+<div class="stat-row">
+<div class="stat-box"><div class="num" id="msgCount">0</div><div class="label">总留言数</div></div>
+<div class="stat-box"><div class="num" id="msgPublic">0</div><div class="label">已公开</div></div>
+</div>
+<div id="messageList"></div>
+</div>
 
-  <!-- Tab 3：留言 -->
-  <div class="tab-panel" id="panel-messages">
-    <div class="stat-row">
-      <div class="stat-box"><div class="num" id="msgCount">0</div><div class="label">总留言数</div></div>
-      <div class="stat-box"><div class="num" id="msgPublic">0</div><div class="label">已公开</div></div>
-    </div>
-    <div id="messageList"></div>
-  </div>
-
-  <!-- Tab 4：社区 -->
-  <div class="tab-panel" id="panel-posts">
-    <div class="stat-row">
-      <div class="stat-box"><div class="num" id="postCount">0</div><div class="label">总帖子</div></div>
-      <div class="stat-box"><div class="num" id="replyCount">0</div><div class="label">总回复</div></div>
-    </div>
-    <div id="postList"></div>
-  </div>
-
+<div class="tab-panel" id="panel-posts">
+<div class="stat-row">
+<div class="stat-box"><div class="num" id="postCount">0</div><div class="label">总帖子</div></div>
+<div class="stat-box"><div class="num" id="replyCount">0</div><div class="label">总回复</div></div>
+</div>
+<div id="postList"></div>
+</div>
 </div>
 
 <script>
-  // ===== 智能返回 =====
-  function goBack() {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (window.history.length > 1) window.history.back();
-    else location.href = '/?tab=tools';
-  }
+// ===== 智能返回 =====
+function goBack() {
+if (navigator.vibrate) navigator.vibrate(10);
+if (window.history.length > 1) window.history.back();
+else location.href = '/?tab=tools';
+}
 
-  // ===== Tab 切换 =====
-  function switchAdminTab(tab, el) {
-    if (navigator.vibrate) navigator.vibrate(8);
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + tab).classList.add('active');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-  }
+// ===== Tab 切换 =====
+function switchAdminTab(tab, el) {
+if (navigator.vibrate) navigator.vibrate(8);
+document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+document.getElementById('panel-' + tab).classList.add('active');
+document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+el.classList.add('active');
+}
 
-  // ===== 演示数据（等接数据库后替换） =====
-  const fakeData = {
-    users: [
-      { email: 'molly@example.com', logins: ['2026-09-28 14:20', '2026-09-27 10:15', '2026-09-25 20:00'], nickname: 'Molly', emoji: '🌸' },
-      { email: 'lucas@example.com', logins: ['2026-09-26 09:30'], nickname: 'Lucas', emoji: '🐱' }
-    ],
-    detections: [
-      { email: 'molly@example.com', time: '2026-09-28 14:25', prob: 0.82, snippet: '这是一段看起来很像 AI 写的文本...' },
-      { email: 'molly@example.com', time: '2026-09-27 11:00', prob: 0.15, snippet: '我今天去了马德里的丽池公园...' },
-      { email: 'lucas@example.com', time: '2026-09-26 15:45', prob: 0.63, snippet: '关于西班牙留学的几点建议...' }
-    ],
-    messages: [
-      { email: 'molly@example.com', time: '2026-09-28 14:20', content: '希望能加一个留学费用计算器！', isPublic: false, reply: '' },
-      { email: 'molly@example.com', time: '2026-09-27 10:15', content: '工具站真的很好用，谢谢作者！', isPublic: true, reply: '谢谢支持，会继续加油的！' },
-      { email: 'lucas@example.com', time: '2026-09-26 20:00', content: '希望能加一个关于租房避坑的攻略。', isPublic: true, reply: '' }
-    ],
-    posts: [
-      { email: 'molly@example.com', time: '2026-09-28 14:00', title: '刚到马德里，NIE 办理经验分享', category: '经验分享', content: '今天刚办完 NIE，分享一下整个流程...', replies: [
-        { email: 'lucas@example.com', content: '感谢分享！很有用' }
-      ]},
-      { email: 'lucas@example.com', time: '2026-09-27 18:00', title: '租房遇到黑心房东，求支招', category: '踩坑求助', content: '押金一直不退，房东各种理由拖着...', replies: [] }
-    ]
-  };
+// ===== 管理员权限校验 =====
+(async function checkAdmin() {
+const token = localStorage.getItem('access_token');
+const gate = document.getElementById('adminGate');
 
-  // ===== 渲染用户 =====
-  function renderUsers() {
-    document.getElementById('userCount').textContent = fakeData.users.length;
-    let totalLogins = 0;
-    fakeData.users.forEach(u => totalLogins += u.logins.length);
-    document.getElementById('loginCount').textContent = totalLogins;
+if (!token) {
+gate.innerHTML = '<div style="font-size:24px; color:#ff6b6b; margin-bottom:12px;">❌ 未登录</div><div style="color:#888; font-size:14px;">请先登录后再访问管理页</div><button onclick="location.href=\'/login\'" style="margin-top:20px; padding:12px 30px; border-radius:14px; border:none; background:linear-gradient(135deg, #4a7c59, #2d5a3d); color:#fff; font-size:15px; font-weight:bold; cursor:pointer;">去登录</button>';
+return;
+}
 
-    const list = document.getElementById('userList');
-    list.innerHTML = '';
-    fakeData.users.forEach(u => {
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.innerHTML = `
-        <div class="head">
-          <span class="email">${u.emoji} ${u.nickname}（${u.email}）</span>
-          <span class="time">${u.logins.length} 次登录</span>
-        </div>
-        <div class="body">最近登录：${u.logins[0] || '无'}</div>
-      `;
-      list.appendChild(card);
-    });
-  }
+try {
+const resp = await fetch('/api/check_admin', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ token })
+});
+const data = await resp.json();
+if (data.is_admin) {
+gate.style.display = 'none';
+loadAllData();
+} else {
+gate.innerHTML = '<div style="font-size:24px; color:#ff6b6b; margin-bottom:12px;">🚫 无权限</div><div style="color:#888; font-size:14px;">只有管理员可以访问此页面</div><button onclick="location.href=\'/\'" style="margin-top:20px; padding:12px 30px; border-radius:14px; border:none; background:rgba(255,255,255,0.1); color:#fff; font-size:15px; cursor:pointer;">返回主页</button>';
+}
+} catch (e) {
+gate.innerHTML = '<div style="color:#ff6b6b;">验证失败，请重试</div>';
+}
+})();
 
-  // ===== 渲染检测记录 =====
-  function renderDetections() {
-    document.getElementById('detectCount').textContent = fakeData.detections.length;
-    const users = new Set(fakeData.detections.map(d => d.email));
-    document.getElementById('detectUsers').textContent = users.size;
+// ===== 加载所有数据（演示数据 + 真实登录记录） =====
+const fakeData = {
+detections: [
+{ email: 'molly@example.com', time: '2026-09-28 14:25', prob: 0.82, snippet: '这是一段看起来很像 AI 写的文本...' },
+{ email: 'molly@example.com', time: '2026-09-27 11:00', prob: 0.15, snippet: '我今天去了马德里的丽池公园...' },
+{ email: 'lucas@example.com', time: '2026-09-26 15:45', prob: 0.63, snippet: '关于西班牙留学的几点建议...' }
+],
+messages: [
+{ email: 'molly@example.com', time: '2026-09-28 14:20', content: '希望能加一个留学费用计算器！', isPublic: false, reply: '' },
+{ email: 'molly@example.com', time: '2026-09-27 10:15', content: '工具站真的很好用，谢谢作者！', isPublic: true, reply: '谢谢支持，会继续加油的！' },
+{ email: 'lucas@example.com', time: '2026-09-26 20:00', content: '希望能加一个关于租房避坑的攻略。', isPublic: true, reply: '' }
+],
+posts: [
+{ email: 'molly@example.com', time: '2026-09-28 14:00', title: '刚到马德里，NIE 办理经验分享', category: '经验分享', content: '今天刚办完 NIE，分享一下整个流程...', replies: [ { email: 'lucas@example.com', content: '感谢分享！很有用' } ] },
+{ email: 'lucas@example.com', time: '2026-09-27 18:00', title: '租房遇到黑心房东，求支招', category: '踩坑求助', content: '押金一直不退，房东各种理由拖着...', replies: [] }
+]
+};
 
-    const list = document.getElementById('detectList');
-    list.innerHTML = '';
-    fakeData.detections.forEach((d, i) => {
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.innerHTML = `
-        <div class="head">
-          <span class="email">${d.email}</span>
-          <span class="time">${d.time} · AI概率 ${(d.prob * 100).toFixed(1)}%</span>
-        </div>
-        <div class="body">${d.snippet}</div>
-        <div class="action-row">
-          <button class="action-btn danger" onclick="delDetect(${i})">🗑️ 删除</button>
-        </div>
-      `;
-      list.appendChild(card);
-    });
-  }
+function loadAllData() {
+loadUsers();
+renderDetections();
+renderMessages();
+renderPosts();
+}
 
-  function delDetect(i) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (confirm('确定要删除这条检测记录吗？')) {
-      fakeData.detections.splice(i, 1);
-      renderDetections();
-      alert('✅ 已删除（演示）。\n\n等接上数据库后，会真的从 detection_history 表里删除。');
-    }
-  }
+// ===== 用户：从后台读真实登录记录 =====
+async function loadUsers() {
+const list = document.getElementById('userList');
+list.innerHTML = '<div style="text-align:center; color:#666; padding:20px;">加载中...</div>';
+const token = localStorage.getItem('access_token');
 
-  // ===== 渲染留言 =====
-  function renderMessages() {
-    document.getElementById('msgCount').textContent = fakeData.messages.length;
-    document.getElementById('msgPublic').textContent = fakeData.messages.filter(m => m.isPublic).length;
+try {
+const resp = await fetch('/api/admin/login_logs', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ token })
+});
+const logs = await resp.json();
 
-    const list = document.getElementById('messageList');
-    list.innerHTML = '';
-    fakeData.messages.forEach((m, i) => {
-      const status = m.isPublic ? '🌍 已公开' : '🔒 私密';
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.innerHTML = `
-        <div class="head">
-          <span class="email">${status} · ${m.email}</span>
-          <span class="time">${m.time}</span>
-        </div>
-        <div class="body">${m.content}</div>
-        <textarea class="reply-input" placeholder="输入回复..." id="reply_${i}">${m.reply}</textarea>
-        <div class="action-row">
-          <button class="action-btn green" onclick="saveReply(${i})">💾 保存回复</button>
-          <button class="action-btn" onclick="togglePublic(${i})">${m.isPublic ? '🔒 取消公开' : '🌍 公开'}</button>
-          <button class="action-btn danger" onclick="delMessage(${i})">🗑️ 删除</button>
-        </div>
-      `;
-      list.appendChild(card);
-    });
-  }
+if (!Array.isArray(logs)) {
+list.innerHTML = '<div class="empty-state">暂时无法加载，请稍后重试</div>';
+return;
+}
 
-  function saveReply(i) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    const text = document.getElementById('reply_' + i).value;
-    fakeData.messages[i].reply = text;
-    alert('✅ 回复已保存（演示）。\n\n等接上数据库后，会真的写入 messages 表的 reply 字段。');
-  }
+const byUser = {};
+logs.forEach(log => {
+const email = log.user_email;
+if (!byUser[email]) byUser[email] = [];
+byUser[email].push(log.login_time);
+});
 
-  function togglePublic(i) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    fakeData.messages[i].isPublic = !fakeData.messages[i].isPublic;
-    renderMessages();
-  }
+document.getElementById('userCount').textContent = Object.keys(byUser).length;
+document.getElementById('loginCount').textContent = logs.length;
 
-  function delMessage(i) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (confirm('确定删除这条留言吗？')) {
-      fakeData.messages.splice(i, 1);
-      renderMessages();
-    }
-  }
+list.innerHTML = '';
+if (Object.keys(byUser).length === 0) {
+list.innerHTML = '<div class="empty-state">暂无登录记录</div>';
+return;
+}
 
-  // ===== 渲染社区帖子 =====
-  function renderPosts() {
-    document.getElementById('postCount').textContent = fakeData.posts.length;
-    let totalReplies = 0;
-    fakeData.posts.forEach(p => totalReplies += p.replies.length);
-    document.getElementById('replyCount').textContent = totalReplies;
+Object.keys(byUser).forEach(email => {
+const times = byUser[email];
+const card = document.createElement('div');
+card.className = 'item-card';
+card.innerHTML = `
+<div class="head">
+<span class="email">${email}</span>
+<span class="time">${times.length} 次登录</span>
+</div>
+<div class="body">最近登录：${String(times[0]).slice(0, 19)}</div>
+`;
+list.appendChild(card);
+});
+} catch (e) {
+list.innerHTML = '<div class="empty-state">加载失败</div>';
+}
+}
 
-    const list = document.getElementById('postList');
-    list.innerHTML = '';
-    fakeData.posts.forEach((p, i) => {
-      let replyHtml = '';
-      if (p.replies.length > 0) {
-        replyHtml = '<div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08);">';
-        p.replies.forEach(r => {
-          replyHtml += `<div style="font-size:12px; color:#bbb; margin-bottom:4px;">💬 <b style="color:#a0d8b3;">${r.email}</b>：${r.content}</div>`;
-        });
-        replyHtml += '</div>';
-      }
+// ===== 检测记录（演示数据） =====
+function renderDetections() {
+document.getElementById('detectCount').textContent = fakeData.detections.length;
+const users = new Set(fakeData.detections.map(d => d.email));
+document.getElementById('detectUsers').textContent = users.size;
 
-      const card = document.createElement('div');
-      card.className = 'item-card';
-      card.innerHTML = `
-        <div class="head">
-          <span class="email">[${p.category}] ${p.title}</span>
-          <span class="time">${p.time} · ${p.email}</span>
-        </div>
-        <div class="body">${p.content}</div>
-        ${replyHtml}
-        <div class="action-row">
-          <button class="action-btn danger" onclick="delPost(${i})">🗑️ 删除帖子</button>
-        </div>
-      `;
-      list.appendChild(card);
-    });
-  }
+const list = document.getElementById('detectList');
+list.innerHTML = '';
+fakeData.detections.forEach((d, i) => {
+const card = document.createElement('div');
+card.className = 'item-card';
+card.innerHTML = `
+<div class="head">
+<span class="email">${d.email}</span>
+<span class="time">${d.time} · AI概率 ${(d.prob * 100).toFixed(1)}%</span>
+</div>
+<div class="body">${d.snippet}</div>
+<div class="action-row">
+<button class="action-btn danger" onclick="delDetect(${i})">🗑️ 删除</button>
+</div>
+`;
+list.appendChild(card);
+});
+}
 
-  function delPost(i) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (confirm('确定删除这条帖子吗？')) {
-      fakeData.posts.splice(i, 1);
-      renderPosts();
-    }
-  }
+function delDetect(i) {
+if (navigator.vibrate) navigator.vibrate(10);
+if (confirm('确定要删除这条检测记录吗？')) {
+fakeData.detections.splice(i, 1);
+renderDetections();
+}
+}
 
-  // ===== 初始化 =====
-  renderUsers();
-  renderDetections();
-  renderMessages();
-  renderPosts();
+// ===== 留言（演示数据） =====
+function renderMessages() {
+document.getElementById('msgCount').textContent = fakeData.messages.length;
+document.getElementById('msgPublic').textContent = fakeData.messages.filter(m => m.isPublic).length;
+
+const list = document.getElementById('messageList');
+list.innerHTML = '';
+fakeData.messages.forEach((m, i) => {
+const status = m.isPublic ? '🌍 已公开' : '🔒 私密';
+const card = document.createElement('div');
+card.className = 'item-card';
+card.innerHTML = `
+<div class="head">
+<span class="email">${status} · ${m.email}</span>
+<span class="time">${m.time}</span>
+</div>
+<div class="body">${m.content}</div>
+<textarea class="reply-input" placeholder="输入回复..." id="reply_${i}">${m.reply}</textarea>
+<div class="action-row">
+<button class="action-btn green" onclick="saveReply(${i})">💾 保存回复</button>
+<button class="action-btn" onclick="togglePublic(${i})">${m.isPublic ? '🔒 取消公开' : '🌍 公开'}</button>
+<button class="action-btn danger" onclick="delMessage(${i})">🗑️ 删除</button>
+</div>
+`;
+list.appendChild(card);
+});
+}
+
+function saveReply(i) {
+if (navigator.vibrate) navigator.vibrate(10);
+const text = document.getElementById('reply_' + i).value;
+fakeData.messages[i].reply = text;
+alert('✅ 回复已保存（演示）。等接上数据库后，会真的写入 messages 表。');
+}
+
+function togglePublic(i) {
+if (navigator.vibrate) navigator.vibrate(10);
+fakeData.messages[i].isPublic = !fakeData.messages[i].isPublic;
+renderMessages();
+}
+
+function delMessage(i) {
+if (navigator.vibrate) navigator.vibrate(10);
+if (confirm('确定删除这条留言吗？')) {
+fakeData.messages.splice(i, 1);
+renderMessages();
+}
+}
+
+// ===== 社区帖子（演示数据） =====
+function renderPosts() {
+document.getElementById('postCount').textContent = fakeData.posts.length;
+let totalReplies = 0;
+fakeData.posts.forEach(p => totalReplies += p.replies.length);
+document.getElementById('replyCount').textContent = totalReplies;
+
+const list = document.getElementById('postList');
+list.innerHTML = '';
+fakeData.posts.forEach((p, i) => {
+let replyHtml = '';
+if (p.replies.length > 0) {
+replyHtml = '<div style="margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.08);">';
+p.replies.forEach(r => {
+replyHtml += `<div style="font-size:12px; color:#bbb; margin-bottom:4px;">💬 <b style="color:#a0d8b3;">${r.email}</b>：${r.content}</div>`;
+});
+replyHtml += '</div>';
+}
+
+const card = document.createElement('div');
+card.className = 'item-card';
+card.innerHTML = `
+<div class="head">
+<span class="email">[${p.category}] ${p.title}</span>
+<span class="time">${p.time} · ${p.email}</span>
+</div>
+<div class="body">${p.content}</div>
+${replyHtml}
+<div class="action-row">
+<button class="action-btn danger" onclick="delPost(${i})">🗑️ 删除帖子</button>
+</div>
+`;
+list.appendChild(card);
+});
+}
+
+function delPost(i) {
+if (navigator.vibrate) navigator.vibrate(10);
+if (confirm('确定删除这条帖子吗？')) {
+fakeData.posts.splice(i, 1);
+renderPosts();
+}
+}
 </script>
 </body>
 </html>

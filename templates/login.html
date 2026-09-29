@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>登录 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #fff; font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; display: flex; justify-content: center; align-items: center;
+    padding: 24px;
+  }
+  .login-card {
+    width: 100%; max-width: 380px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px; padding: 32px 24px;
+    text-align: center;
+  }
+  .login-card h1 {
+    font-size: 22px; margin-bottom: 8px;
+    background: linear-gradient(90deg, #fbc2eb, #a6c1ee);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .login-card .sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+  .login-card input {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 12px; font-family: inherit;
+  }
+  .login-card input:focus { border-color: #a0d8b3; }
+  .btn-primary {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 15px; font-weight: bold;
+    cursor: pointer; margin-top: 6px;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-google {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 15px; cursor: pointer;
+    margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-google:active { transform: scale(0.97); }
+  .switch-link {
+    font-size: 13px; color: #a0d8b3; margin-top: 16px;
+    cursor: pointer; text-decoration: underline;
+  }
+  .error-msg {
+    color: #ff6b6b; font-size: 13px; min-height: 18px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <h1 id="cardTitle">欢迎回来</h1>
+  <div class="sub" id="cardSub">登录你的账号，解锁全部功能</div>
+
+  <input type="email" id="email" placeholder="邮箱" autocomplete="email">
+  <input type="password" id="password" placeholder="密码" autocomplete="current-password">
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <button class="btn-primary" id="mainBtn" onclick="handleMain()">登录</button>
+  <button class="btn-google" onclick="handleGoogle()">
+    <span style="font-size:18px;">🔵</span> 用 Google 登录
+  </button>
+
+  <div class="switch-link" id="switchLink" onclick="toggleMode()">没有账号？点这里注册</div>
+</div>
+
+<script>
+  let isLoginMode = true;
+
+  function toggleMode() {
+    isLoginMode = !isLoginMode;
+    document.getElementById('cardTitle').textContent = isLoginMode ? '欢迎回来' : '创建账号';
+    document.getElementById('cardSub').textContent = isLoginMode ? '登录你的账号，解锁全部功能' : '注册后即可使用留言、社区、二手市场等功能';
+    document.getElementById('mainBtn').textContent = isLoginMode ? '登录' : '注册';
+    document.getElementById('switchLink').textContent = isLoginMode ? '没有账号？点这里注册' : '已有账号？点这里登录';
+    document.getElementById('errorMsg').textContent = '';
+  }
+
+  async function handleMain() {
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+
+    if (!email || !password) {
+      errorMsg.textContent = '请填写邮箱和密码';
+      return;
+    }
+
+    if (navigator.vibrate) navigator.vibrate(10);
+
+    const endpoint = isLoginMode ? '/api/login' : '/api/register';
+
+    try {
+      const resp = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await resp.json();
+
+      if (data.error) {
+        errorMsg.textContent = data.error;
+        return;
+      }
+
+      if (isLoginMode) {
+        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('user_email', data.email);
+        window.location.href = '/';
+      } else {
+        errorMsg.style.color = '#a0d8b3';
+        errorMsg.textContent = '注册成功！请查收邮件确认后登录';
+      }
+    } catch (e) {
+      errorMsg.textContent = '网络错误，请稍后重试';
+    }
+  }
+
+  // ===== Google 登录 =====
+  async function handleGoogle() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      const resp = await fetch('/api/google_login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await resp.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert('Google 登录失败：' + (data.error || '未知错误'));
+      }
+    } catch (e) {
+      alert('网络错误，请稍后重试');
+    }
+  }
+
+  // ===== 处理 Google 回调（自动抓 token） =====
+  (function handleOAuthCallback() {
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.slice(1));
+      const token = params.get('access_token');
+      if (token) {
+        localStorage.setItem('access_token', token);
+        fetch('/api/me', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        })
+        .then(r => r.json())
+        .then(data => {
+          if (data.email) {
+            localStorage.setItem('user_email', data.email);
+          }
+          window.location.href = '/';
+        })
+        .catch(() => {
+          window.location.href = '/';
+        });
+      }
+    }
+  })();
+</script>
+</body>
+</html>

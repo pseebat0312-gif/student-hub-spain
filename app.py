@@ -1,5 +1,8 @@
 import os
 from flask import Flask, render_template, request, jsonify
+from datetime import datetime
+import pytz
+import calendar
 from supabase import create_client
 
 app = Flask(__name__)
@@ -13,65 +16,17 @@ else:
     supabase = None
     print("⚠️ 环境变量未设置")
 
-
-from flask import Flask, render_template
-from datetime import datetime
-import pytz
-import calendar
-
-app = Flask(__name__)
-
-@app.route("/school")
-def school():
-    return render_template("school.html")
-
-@app.route("/ai_detect")
-def ai_detect():
-    return render_template("ai_detect.html")
-
-@app.route("/affairs")
-def affairs():
-    return render_template("affairs.html")
-
-@app.route("/market")
-def market():
-    return render_template("market.html")
-
-@app.route("/community")
-def community():
-    return render_template("community.html")
-
-@app.route("/profile")
-def profile():
-    return render_template("profile.html")
-
-@app.route("/map")
-def map_page():
-    return render_template("map.html")
-
-@app.route("/message")
-def message():
-    return render_template("message.html")
-
-@app.route("/admin")
-def admin():
-    return render_template("admin.html")
-
-@app.route("/currency")
-def currency():
-    return render_template("currency.html")
+ADMIN_EMAIL = "pseebat0312@gmail.com"
 
 
+# ===== 页面路由 =====
 @app.route("/")
 def index():
-    # 西班牙时间
     spain_tz = pytz.timezone("Europe/Madrid")
     now_spain = datetime.now(spain_tz)
-    # 中国时间
     china_tz = pytz.timezone("Asia/Shanghai")
     now_china = datetime.now(china_tz)
 
-    # 今年进度
     today = now_spain.date()
     year = today.year
     days_in_year = 366 if calendar.isleap(year) else 365
@@ -90,7 +45,62 @@ def index():
     )
 
 
-# ===== 留言板：读取公开留言 =====
+@app.route("/school")
+def school():
+    return render_template("school.html")
+
+
+@app.route("/ai_detect")
+def ai_detect():
+    return render_template("ai_detect.html")
+
+
+@app.route("/affairs")
+def affairs():
+    return render_template("affairs.html")
+
+
+@app.route("/market")
+def market():
+    return render_template("market.html")
+
+
+@app.route("/community")
+def community():
+    return render_template("community.html")
+
+
+@app.route("/profile")
+def profile():
+    return render_template("profile.html")
+
+
+@app.route("/map")
+def map_page():
+    return render_template("map.html")
+
+
+@app.route("/message")
+def message():
+    return render_template("message.html")
+
+
+@app.route("/admin")
+def admin():
+    return render_template("admin.html")
+
+
+@app.route("/currency")
+def currency():
+    return render_template("currency.html")
+
+
+@app.route("/login")
+def login_page():
+    return render_template("login.html")
+
+
+# ===== 留言板 =====
 @app.route("/api/messages")
 def api_messages():
     if not supabase:
@@ -102,7 +112,6 @@ def api_messages():
         return jsonify({"error": str(e)}), 500
 
 
-# ===== 留言板：提交新留言 =====
 @app.route("/api/messages/add", methods=["POST"])
 def api_messages_add():
     if not supabase:
@@ -123,7 +132,106 @@ def api_messages_add():
         return jsonify({"error": str(e)}), 500
 
 
-    
+# ===== 邮箱注册 =====
+@app.route("/api/register", methods=["POST"])
+def api_register():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    if not email or not password:
+        return jsonify({"error": "邮箱和密码不能为空"}), 400
+    try:
+        resp = supabase.auth.sign_up({"email": email, "password": password})
+        return jsonify({"success": True, "email": resp.user.email})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# ===== 邮箱登录 =====
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    try:
+        resp = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        return jsonify({
+            "success": True,
+            "access_token": resp.session.access_token,
+            "email": resp.user.email
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# ===== 获取当前登录用户 =====
+@app.route("/api/me", methods=["POST"])
+def api_me():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    try:
+        resp = supabase.auth.get_user(token)
+        return jsonify({"email": resp.user.email})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 401
+
+
+# ===== Google OAuth 登录 =====
+@app.route("/api/google_login", methods=["POST"])
+def api_google_login():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        resp = supabase.auth.sign_in_with_oauth({
+            "provider": "google",
+            "options": {
+                "redirect_to": "https://student-hub-spain.onrender.com/login"
+            }
+        })
+        return jsonify({"url": resp.url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+# ===== 管理员：检查身份 =====
+@app.route("/api/check_admin", methods=["POST"])
+def api_check_admin():
+    data = request.get_json()
+    token = data.get("token", "")
+    if not token or not supabase:
+        return jsonify({"is_admin": False}), 401
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email == ADMIN_EMAIL:
+            return jsonify({"is_admin": True, "email": resp.user.email})
+        else:
+            return jsonify({"is_admin": False}), 403
+    except Exception as e:
+        return jsonify({"is_admin": False, "error": str(e)}), 401
+
+
+# ===== 管理员：所有登录记录 =====
+@app.route("/api/admin/login_logs", methods=["POST"])
+def api_admin_login_logs():
+    data = request.get_json()
+    token = data.get("token", "")
+    if not token or not supabase:
+        return jsonify({"error": "未授权"}), 401
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email != ADMIN_EMAIL:
+            return jsonify({"error": "无权限"}), 403
+        logs = supabase.table("login_logs").select("*").order("login_time", desc=True).limit(100).execute()
+        return jsonify(logs.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
