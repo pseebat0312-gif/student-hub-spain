@@ -121,6 +121,10 @@ def emergency():
 def homesick():
     return render_template("homesick.html")
 
+@app.route("/treehole")
+def treehole():
+    return render_template("treehole.html")
+
 
 
 # ===== 重置密码（发邮件） =====
@@ -675,7 +679,73 @@ def api_letters_read():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    
+# ===== 树洞：读取全部 =====
+@app.route("/api/treeholes")
+def api_treeholes():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = supabase.table("treeholes").select("*").order("created_at", desc=True).limit(100).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 树洞：发布 =====
+@app.route("/api/treeholes/add", methods=["POST"])
+def api_treeholes_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip() or "anonymous"
+    content = data.get("content", "").strip()
+    if not content:
+        return jsonify({"error": "内容不能为空"}), 400
+    try:
+        supabase.table("treeholes").insert({
+            "user_email": email,
+            "content": content
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 树洞：读取某条的评论 =====
+@app.route("/api/treeholes/replies")
+def api_treeholes_replies():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    tid = request.args.get("id", "").strip()
+    if not tid:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        result = supabase.table("treehole_replies").select("*").eq("treehole_id", tid).order("created_at", desc=False).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 树洞：发布评论 =====
+@app.route("/api/treeholes/reply", methods=["POST"])
+def api_treeholes_reply():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    tid = data.get("treehole_id")
+    email = data.get("email", "").strip() or "anonymous"
+    content = data.get("content", "").strip()
+    if not tid or not content:
+        return jsonify({"error": "缺少内容"}), 400
+    try:
+        supabase.table("treehole_replies").insert({
+            "treehole_id": tid,
+            "user_email": email,
+            "content": content
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
     
 if __name__ == "__main__":

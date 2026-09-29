@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>匿名树洞 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+  }
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+
+  #content { padding: 10px 20px 40px; }
+
+  .intro {
+    font-size: 13px; color: #aaa; line-height: 1.7;
+    margin-bottom: 16px;
+  }
+
+  /* 发布区 */
+  .post-box {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .post-box textarea {
+    width: 100%; min-height: 100px;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px;
+    font-family: inherit; outline: none;
+    resize: vertical;
+    margin-bottom: 12px;
+  }
+  .post-box textarea:focus { border-color: #a0d8b3; }
+  .post-btn {
+    width: 100%; padding: 12px; border-radius: 12px;
+    border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 14px; font-weight: bold;
+    cursor: pointer;
+  }
+  .post-btn:active { transform: scale(0.98); }
+
+  /* 树洞卡片 */
+  .treehole-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .treehole-card.mine {
+    border-color: rgba(160,216,179,0.35);
+    background: rgba(160,216,179,0.06);
+  }
+  .treehole-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 10px;
+  }
+  .treehole-user {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: #a0d8b3;
+  }
+  .treehole-time {
+    font-size: 11px; color: #666;
+  }
+  .mine-tag {
+    font-size: 10px; padding: 2px 6px;
+    background: rgba(160,216,179,0.2);
+    color: #a0d8b3;
+    border-radius: 6px;
+    margin-left: 6px;
+  }
+  .treehole-body {
+    font-size: 14px; color: #ddd;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    margin-bottom: 12px;
+  }
+  .treehole-actions {
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .reply-count {
+    font-size: 12px; color: #888;
+  }
+  .reply-btn {
+    padding: 6px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(160,216,179,0.3);
+    background: rgba(160,216,179,0.08);
+    color: #a0d8b3;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .reply-btn:active { transform: scale(0.95); }
+
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: #666; font-size: 13px;
+  }
+
+  /* 评论弹窗 */
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none; justify-content: center; align-items: flex-end;
+    z-index: 200;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #1a1a2e;
+    width: 100%; max-width: 500px;
+    border-radius: 22px 22px 0 0;
+    padding: 20px 20px 24px;
+    max-height: 85vh;
+    overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-content h3 {
+    font-size: 15px; color: #a0d8b3; text-align: center;
+    margin-bottom: 16px;
+  }
+  .original-post {
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #a0d8b3;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px; color: #bbb;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    white-space: pre-wrap;
+  }
+  .reply-item {
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .reply-item .reply-user {
+    font-size: 11px; color: #a0d8b3;
+    margin-bottom: 4px;
+  }
+  .reply-input-row {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
+  .reply-input-row input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 13px;
+    outline: none; font-family: inherit;
+  }
+  .reply-input-row button {
+    padding: 0 18px;
+    border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-weight: bold; font-size: 13px;
+    cursor: pointer;
+  }
+  .close-btn {
+    width: 100%; padding: 12px;
+    border-radius: 12px; border: none;
+    background: rgba(255,255,255,0.1);
+    color: #fff; font-size: 14px; cursor: pointer;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">🌳 匿名树洞</div>
+</div>
+
+<div id="content">
+
+  <div class="intro">
+    🌲 在这里，你可以匿名倾诉任何事。<br>
+    没人知道是你发的。你可以对别人的树洞留言。
+  </div>
+
+  <div class="post-box">
+    <textarea id="postContent" placeholder="今天想说什么？没人知道是你。"></textarea>
+    <button class="post-btn" onclick="postTreehole()">发布到树洞</button>
+  </div>
+
+  <div id="treeholeList"></div>
+
+</div>
+
+<!-- 评论弹窗 -->
+<div class="modal" id="replyModal">
+  <div class="modal-content">
+    <h3>💬 树洞评论</h3>
+    <div class="original-post" id="originalPost"></div>
+    <div id="replyList"></div>
+    <div class="reply-input-row">
+      <input type="text" id="replyInput" placeholder="匿名回复...">
+      <button onclick="sendReply()">发送</button>
+    </div>
+    <button class="close-btn" onclick="closeReply()">关闭</button>
+  </div>
+</div>
+
+<script>
+  const MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
+  let allTreeholes = [];
+  let currentTid = null;
+
+  // 匿名 emoji
+  const anonEmojis = ['🦊', '🐼', '🐸', '🦁', '🐯', '🐨', '🐱', '🐶', '🐰', '🦉'];
+
+  function getAnonEmoji(email) {
+    // 用邮箱算一个固定的 emoji，同一个用户始终同一个
+    let hash = 0;
+    for (let i = 0; i < email.length; i++) {
+      hash = email.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return anonEmojis[Math.abs(hash) % anonEmojis.length];
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const diff = Date.now() - d.getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return '刚刚';
+    if (m < 60) return m + ' 分钟前';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + ' 小时前';
+    const days = Math.floor(h / 24);
+    if (days < 30) return days + ' 天前';
+    return d.toLocaleDateString('zh-CN');
+  }
+
+  // ===== 加载树洞 =====
+  async function loadTreeholes() {
+    const list = document.getElementById('treeholeList');
+    list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
+    try {
+      const resp = await fetch('/api/treeholes');
+      const data = await resp.json();
+      allTreeholes = Array.isArray(data) ? data : [];
+    } catch(e) { allTreeholes = []; }
+
+    renderTreeholes();
+  }
+
+  function renderTreeholes() {
+    const list = document.getElementById('treeholeList');
+    if (allTreeholes.length === 0) {
+      list.innerHTML = '<div class="empty-state">还没有树洞。你可以发第一条。</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    allTreeholes.forEach(t => {
+      const isMine = t.user_email === MY_EMAIL;
+      const emoji = getAnonEmoji(t.user_email || 'unknown');
+
+      const card = document.createElement('div');
+      card.className = 'treehole-card' + (isMine ? ' mine' : '');
+      card.innerHTML = `
+        <div class="treehole-head">
+          <div class="treehole-user">
+            <span>${emoji}</span>
+            <span>匿名</span>
+            ${isMine ? '<span class="mine-tag">你发的</span>' : ''}
+          </div>
+          <div class="treehole-time">${timeAgo(t.created_at)}</div>
+        </div>
+        <div class="treehole-body">${t.content}</div>
+        <div class="treehole-actions">
+          <span class="reply-count" id="count-${t.id}">💬 加载中...</span>
+          <button class="reply-btn" onclick="openReply(${t.id})">💬 回复</button>
+        </div>
+      `;
+      list.appendChild(card);
+      loadReplyCount(t.id);
+    });
+  }
+
+  // ===== 加载评论数 =====
+  async function loadReplyCount(tid) {
+    try {
+      const resp = await fetch('/api/treeholes/replies?id=' + tid);
+      const data = await resp.json();
+      const el = document.getElementById('count-' + tid);
+      if (el) el.textContent = '💬 ' + (Array.isArray(data) ? data.length : 0) + ' 条回复';
+    } catch(e) {}
+  }
+
+  // ===== 发布树洞 =====
+  async function postTreehole() {
+    const content = document.getElementById('postContent').value.trim();
+    if (!content) { alert('写点什么吧～'); return; }
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    try {
+      const resp = await fetch('/api/treeholes/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, content })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('发布失败：' + data.error); return; }
+    } catch(e) {
+      alert('网络错误'); return;
+    }
+
+    document.getElementById('postContent').value = '';
+    await loadTreeholes();
+  }
+
+  // ===== 打开评论 =====
+  async function openReply(tid) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    currentTid = tid;
+    const t = allTreeholes.find(x => x.id === tid);
+    document.getElementById('originalPost').textContent = t ? t.content : '';
+    document.getElementById('replyInput').value = '';
+    document.getElementById('replyModal').classList.add('show');
+    await loadReplies(tid);
+  }
+
+  async function loadReplies(tid) {
+    const list = document.getElementById('replyList');
+    list.innerHTML = '<div style="text-align:center;color:#666;padding:10px;font-size:12px;">加载中...</div>';
+    try {
+      const resp = await fetch('/api/treeholes/replies?id=' + tid);
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        list.innerHTML = '<div style="text-align:center;color:#666;padding:10px;font-size:12px;">还没有评论</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.forEach(r => {
+        const emoji = getAnonEmoji(r.user_email || 'unknown');
+        const div = document.createElement('div');
+        div.className = 'reply-item';
+        div.innerHTML = `
+          <div class="reply-user">${emoji} 匿名 · ${timeAgo(r.created_at)}</div>
+          <div>${r.content}</div>
+        `;
+        list.appendChild(div);
+      });
+    } catch(e) {
+      list.innerHTML = '<div style="text-align:center;color:#666;padding:10px;font-size:12px;">加载失败</div>';
+    }
+  }
+
+  async function sendReply() {
+    const content = document.getElementById('replyInput').value.trim();
+    if (!content) return;
+    if (!currentTid) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+
+    try {
+      const resp = await fetch('/api/treeholes/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          treehole_id: currentTid,
+          email: MY_EMAIL,
+          content: content
+        })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('回复失败：' + data.error); return; }
+    } catch(e) {
+      alert('网络错误'); return;
+    }
+
+    document.getElementById('replyInput').value = '';
+    await loadReplies(currentTid);
+    loadReplyCount(currentTid);
+  }
+
+  function closeReply() {
+    document.getElementById('replyModal').classList.remove('show');
+    currentTid = null;
+  }
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/?tab=tools';
+  }
+
+  loadTreeholes();
+</script>
+</body>
+</html>
