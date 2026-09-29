@@ -148,36 +148,22 @@
     else location.href = '/?tab=tools';
   }
 
-  // ===== 演示数据（等接数据库后替换） =====
-  // 当前用户 = 'molly@example.com'
-  const currentUser = 'molly@example.com';
+  // ===== 从后端读取留言 =====
+  let allMessages = [];
 
-  let allMessages = [
-    {
-      id: 1,
-      user_email: 'molly@example.com',
-      content: '希望加一个留学费用计算器！',
-      is_public: false,
-      reply: '',
-      created_at: '2026-09-28 14:20:00'
-    },
-    {
-      id: 2,
-      user_email: 'molly@example.com',
-      content: '工具站真的很好用，谢谢作者！',
-      is_public: true,
-      reply: '谢谢支持，会继续加油的！',
-      created_at: '2026-09-27 10:15:00'
-    },
-    {
-      id: 3,
-      user_email: 'lucas@example.com',
-      content: '希望能加一个关于租房避坑的攻略。',
-      is_public: true,
-      reply: '',
-      created_at: '2026-09-26 20:00:00'
+  async function loadMessages() {
+    try {
+      const resp = await fetch('/api/messages');
+      const data = await resp.json();
+      allMessages = data;
+    
+    } catch (e) {
+      console.error('加载留言失败', e);
     }
-  ];
+  }
+
+  // 页面打开时自动加载
+  loadMessages();
 
   // ===== 渲染我的留言 =====
   function renderMyMessages() {
@@ -237,7 +223,7 @@
   }
 
   // ===== 提交留言 =====
-  function submitMsg() {
+  async function submitMsg() {
     const content = document.getElementById('msgContent').value.trim();
     if (!content) {
       alert('留言不能为空');
@@ -246,20 +232,26 @@
 
     if (navigator.vibrate) navigator.vibrate(15);
 
-    // 默认 is_public = false（私密）
-    allMessages.unshift({
-      id: Date.now(),
-      user_email: currentUser,
-      content: content,
-      is_public: false,
-      reply: '',
-      created_at: new Date().toISOString().replace('T', ' ').slice(0, 19)
-    });
-
-    document.getElementById('msgContent').value = '';
-    renderMyMessages();
-    renderPublicMessages();
-    alert('✅ 留言已发送。\n\n等接上 Supabase 后，这里会真的写入 messages 表（is_public 默认 false）。');
+    try {
+      const resp = await fetch('/api/messages/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: 'test@example.com',  // 暂时写死，等接登录后替换成真实用户
+          content: content
+        })
+      });
+      const result = await resp.json();
+      if (result.success) {
+        document.getElementById('msgContent').value = '';
+        await loadMessages();  // 重新加载
+        alert('✅ 留言已发送！');
+      } else {
+        alert('发送失败：' + result.error);
+      }
+    } catch (e) {
+      alert('发送失败，请检查网络');
+    }
   }
 
   // ===== 初始化 =====
