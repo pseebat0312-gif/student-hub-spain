@@ -31,6 +31,16 @@ font-size: 12px; padding: 8px 14px; border-radius: 10px; cursor: pointer;
 
 #content { padding: 10px 20px 40px; }
 
+.install-btn {
+    width: 100%; padding: 12px; border-radius: 12px;
+    border: 1px solid rgba(160, 216, 179, 0.4);
+    background: rgba(160, 216, 179, 0.08);
+    color: #a0d8b3; font-size: 13px;
+    cursor: pointer; margin-bottom: 20px;
+  }
+  .install-btn:active { transform: scale(0.98); }
+
+
 .privacy-note {
 background: rgba(160, 216, 179, 0.08);
 border-left: 3px solid #a0d8b3;
@@ -50,7 +60,7 @@ margin-bottom: 20px;
     margin-bottom: 20px;
   }
   .howto-note b { color: #a0d8b3; }
-  
+
 .card {
 background: linear-gradient(135deg, #b91c1c, #7f1d1d);
 border-radius: 20px;
@@ -220,6 +230,8 @@ color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
     4. 点“拨打 112”可一键报警，点“联系家人”可一键拨打紧急联系人。<br>
     5. 建议把急救卡添加到手机主屏幕，秒开。
   </div>
+
+<button class="install-btn" id="installBtn" onclick="showInstallTip()">📱 如何添加到主屏幕</button>
 
 <div id="cardContainer"></div>
 
@@ -546,6 +558,23 @@ else location.href = '/?tab=tools';
 }
 
 loadCard();
+
+function showInstallTip() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const ua = navigator.userAgent.toLowerCase();
+    let tip = '';
+
+    if (ua.includes('iphone') || ua.includes('ipad')) {
+      tip = '📱 苹果手机：\n\n1. 点底部中间的“分享”按钮（方框向上箭头）\n2. 往下滑，找到“添加到主屏幕”\n3. 点添加\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
+    } else if (ua.includes('android')) {
+      tip = '📱 安卓手机：\n\n1. 点右上角的三个点菜单\n2. 选“添加到主屏幕”或“安装应用”\n3. 点确认\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
+    } else {
+      tip = '请打开手机浏览器，用“分享 → 添加到主屏幕”功能，就能把急救卡放到桌面上。';
+    }
+
+    alert(tip);
+  }
+
 </script>
 </body>
 </html>
