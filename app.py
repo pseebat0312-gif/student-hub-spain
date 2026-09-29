@@ -747,6 +747,43 @@ def api_treeholes_reply():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# ===== 我的回复：查所有回复我树洞的评论 =====
+@app.route("/api/my_replies")
+def api_my_replies():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        # 1. 先找我发过的所有树洞
+        my_trees = supabase.table("treeholes").select("id, content").eq("user_email", owner).execute()
+        if not my_trees.data:
+            return jsonify([])
+        tree_ids = [t["id"] for t in my_trees.data]
+        tree_map = {t["id"]: t["content"] for t in my_trees.data}
+
+        # 2. 找这些树洞下面所有回复
+        replies = supabase.table("treehole_replies").select("*").in_("treehole_id", tree_ids).order("created_at", desc=True).limit(50).execute()
+
+        # 3. 组合结果（过滤掉自己回复自己的）
+        result = []
+        for r in replies.data:
+            if r.get("user_email") == owner:
+                continue
+            result.append({
+                "id": r["id"],
+                "treehole_id": r["treehole_id"],
+                "content": r["content"],
+                "created_at": r["created_at"],
+                "tree_content": tree_map.get(r["treehole_id"], "")
+            })
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
     
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

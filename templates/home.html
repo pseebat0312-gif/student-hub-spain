@@ -328,10 +328,22 @@ letter-spacing: -0.2px;
 
 <div id="topBar">
 <div class="title">西班牙留学生工具站</div>
-<div class="user" id="userDisplay">登录 →</div>
+<div style="display:flex; align-items:center; gap:10px;">
+    <div id="bellBtn" style="display:none; position:relative; cursor:pointer; padding:8px; font-size:20px;" onclick="toggleBell()">🔔<span id="bellDot" style="display:none; position:absolute; top:2px; right:2px; min-width:16px; height:16px; border-radius:8px; background:#e8a8b8; color:#1a0f14; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 4px;"></span></div>
+    <div class="user" id="userDisplay">登录 →</div>
+  </div>
 </div>
 
 <div id="mainContent">
+
+  <!-- 消息面板 -->
+<div id="bellPanel" style="display:none; position:fixed; top:70px; right:16px; left:16px; max-width:420px; margin:0 auto; background:rgba(28,28,32,0.95); border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:16px; z-index:200; backdrop-filter:blur(40px) saturate(200%); -webkit-backdrop-filter:blur(40px) saturate(200%); box-shadow:0 20px 60px rgba(0,0,0,0.6); max-height:70vh; overflow-y:auto;">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+    <div style="font-size:15px; font-weight:700; color:#fff;">💬 我的消息</div>
+    <button onclick="toggleBell()" style="background:none; border:none; color:#e8a8b8; font-size:14px; cursor:pointer;">关闭</button>
+  </div>
+  <div id="bellList"></div>
+</div>
 
 <div class="tab-page active" id="tab-home">
 <div class="card" onclick="switchTab('tools')">
@@ -504,6 +516,94 @@ switchTab('tools');
 window.history.replaceState({}, '', '/');
 }
 });
+
+// ============ 铃铛消息 ============
+  let bellOpen = false;
+
+  async function loadBellCount() {
+    const token = localStorage.getItem('access_token');
+    const email = localStorage.getItem('user_email');
+    const bell = document.getElementById('bellBtn');
+    const dot = document.getElementById('bellDot');
+
+    if (!token || !email) {
+      bell.style.display = 'none';
+      return;
+    }
+    bell.style.display = 'block';
+
+    try {
+      const resp = await fetch('/api/my_replies?owner=' + encodeURIComponent(email));
+      const data = await resp.json();
+      if (!Array.isArray(data)) return;
+
+      // 上次读消息时间
+      const lastSeen = localStorage.getItem('bell_last_seen') || '1970-01-01';
+      const unread = data.filter(r => r.created_at > lastSeen);
+
+      if (unread.length > 0) {
+        dot.style.display = 'flex';
+        dot.textContent = unread.length > 99 ? '99+' : unread.length;
+      } else {
+        dot.style.display = 'none';
+      }
+
+      window._bellData = data;
+    } catch(e) {}
+  }
+
+  async function toggleBell() {
+    const panel = document.getElementById('bellPanel');
+    bellOpen = !bellOpen;
+
+    if (bellOpen) {
+      panel.style.display = 'block';
+      await renderBellList();
+      // 标记已读
+      localStorage.setItem('bell_last_seen', new Date().toISOString());
+      document.getElementById('bellDot').style.display = 'none';
+    } else {
+      panel.style.display = 'none';
+    }
+  }
+
+  async function renderBellList() {
+    const list = document.getElementById('bellList');
+    list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
+
+    const email = localStorage.getItem('user_email');
+    try {
+      const resp = await fetch('/api/my_replies?owner=' + encodeURIComponent(email));
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;font-size:13px;">还没有收到新回复</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.forEach(r => {
+        const div = document.createElement('div');
+        div.style.cssText = 'padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:12px; margin-bottom:8px; cursor:pointer;';
+        div.innerHTML = `
+          <div style="font-size:12px; color:#e8a8b8; margin-bottom:6px;">💬 有人回复了你的树洞</div>
+          <div style="font-size:13px; color:#fff; line-height:1.5; margin-bottom:6px;">"${r.content}"</div>
+          <div style="font-size:11px; color:#888;">你的树洞：${(r.tree_content || '').slice(0, 30)}...</div>
+        `;
+        div.addEventListener('click', () => {
+          location.href = '/treehole';
+        });
+        list.appendChild(div);
+      });
+    } catch(e) {
+      list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载失败</div>';
+    }
+  }
+
+  // 页面加载时检查铃铛
+  setTimeout(loadBellCount, 1000);
+
+  // 每分钟刷新一次
+  setInterval(loadBellCount, 60000);
+
 </script>
 </body>
 </html>
