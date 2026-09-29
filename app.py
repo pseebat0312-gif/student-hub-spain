@@ -1,3 +1,19 @@
+import os
+from flask import Flask, render_template, request, jsonify
+from supabase import create_client
+
+app = Flask(__name__)
+
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+
+if SUPABASE_URL and SUPABASE_KEY:
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+else:
+    supabase = None
+    print("⚠️ 环境变量未设置")
+
+
 from flask import Flask, render_template
 from datetime import datetime
 import pytz
@@ -72,6 +88,42 @@ def index():
         progress=progress,
         year=year
     )
+
+
+# ===== 留言板：读取公开留言 =====
+@app.route("/api/messages")
+def api_messages():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = supabase.table("messages").select("*").eq("is_public", True).order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 留言板：提交新留言 =====
+@app.route("/api/messages/add", methods=["POST"])
+def api_messages_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        data = request.get_json()
+        email = data.get("email", "").strip()
+        content = data.get("content", "").strip()
+        if not email or not content:
+            return jsonify({"error": "缺少内容"}), 400
+        supabase.table("messages").insert({
+            "user_email": email,
+            "content": content,
+            "is_public": False
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+    
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
