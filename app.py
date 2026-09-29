@@ -171,7 +171,80 @@ def api_messages_add():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ===== 留言板：读取我自己的留言（含私密） =====
+@app.route("/api/messages/mine")
+def api_messages_mine():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = supabase.table("messages").select("*").eq("user_email", email).order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+# ===== 管理员：读取所有留言 =====
+@app.route("/api/admin/messages", methods=["POST"])
+def api_admin_messages():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    if not token:
+        return jsonify({"error": "未授权"}), 401
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email != ADMIN_EMAIL:
+            return jsonify({"error": "无权限"}), 403
+        result = supabase.table("messages").select("*").order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 管理员：更新留言（回复/公开/取消公开） =====
+@app.route("/api/admin/messages/update", methods=["POST"])
+def api_admin_messages_update():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    msg_id = data.get("id")
+    updates = data.get("updates", {})
+    if not token or not msg_id:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email != ADMIN_EMAIL:
+            return jsonify({"error": "无权限"}), 403
+        supabase.table("messages").update(updates).eq("id", msg_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 管理员：删除留言 =====
+@app.route("/api/admin/messages/delete", methods=["POST"])
+def api_admin_messages_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    msg_id = data.get("id")
+    if not token or not msg_id:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email != ADMIN_EMAIL:
+            return jsonify({"error": "无权限"}), 403
+        supabase.table("messages").delete().eq("id", msg_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 # ===== 邮箱注册 =====
 @app.route("/api/register", methods=["POST"])
 def api_register():

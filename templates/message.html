@@ -152,29 +152,36 @@
   let allMessages = [];
 
   async function loadMessages() {
-    try {
-      // 公开留言
-    const pubResp = await fetch('/api/messages');
-    const pubData = await pubResp.json();
-
-    // 我自己的留言（包含私密）
     const myEmail = localStorage.getItem('user_email') || 'anonymous';
-    const myResp = await fetch('/api/messages/mine?email=' + encodeURIComponent(myEmail));
-    const myData = await myResp.json();
 
-    // 合并
-    const allData = [...(Array.isArray(pubData) ? pubData : []), ...(Array.isArray(myData) ? myData : [])];
+    let pubData = [];
+    let myData = [];
+
+    // 1. 公开留言
+    try {
+      const resp = await fetch('/api/messages');
+      pubData = await resp.json();
+      if (!Array.isArray(pubData)) pubData = [];
+    } catch(e) { pubData = []; }
+
+    // 2. 我自己的留言（含私密）
+    try {
+      const resp = await fetch('/api/messages/mine?email=' + encodeURIComponent(myEmail));
+      myData = await resp.json();
+      if (!Array.isArray(myData)) myData = [];
+    } catch(e) { myData = []; }
+
+    // 3. 合并去重
+    const allData = pubData.concat(myData);
     const uniqueData = [];
     const seen = {};
     allData.forEach(m => {
       if (!seen[m.id]) { seen[m.id] = true; uniqueData.push(m); }
     });
-    renderMessages(uniqueData);
-      allMessages = data;
-    
-    } catch (e) {
-      console.error('加载留言失败', e);
-    }
+
+    // 4. 渲染
+    renderMyMessages(uniqueData.filter(m => m.user_email === myEmail));
+    renderPublicMessages(uniqueData.filter(m => m.is_public));
   }
 
   // 页面打开时自动加载
@@ -240,32 +247,25 @@
   // ===== 提交留言 =====
   async function submitMsg() {
     const content = document.getElementById('msgContent').value.trim();
-    if (!content) {
-      alert('留言不能为空');
-      return;
-    }
-
-    if (navigator.vibrate) navigator.vibrate(15);
+    const myEmail = localStorage.getItem('user_email') || 'anonymous';
+    if (!content) { alert('留言不能为空'); return; }
 
     try {
       const resp = await fetch('/api/messages/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: 'test@example.com',  // 暂时写死，等接登录后替换成真实用户
-          content: content
-        })
+        body: JSON.stringify({ email: myEmail, content: content })
       });
-      const result = await resp.json();
-      if (result.success) {
+      const data = await resp.json();
+      if (data.success) {
         document.getElementById('msgContent').value = '';
-        await loadMessages();  // 重新加载
-        alert('✅ 留言已发送！');
+        await loadMessages();
+        alert('✅ 留言已发送');
       } else {
-        alert('发送失败：' + result.error);
+        alert('发送失败：' + data.error);
       }
-    } catch (e) {
-      alert('发送失败，请检查网络');
+    } catch(e) {
+      alert('网络错误');
     }
   }
 

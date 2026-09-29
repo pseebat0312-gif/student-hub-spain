@@ -313,53 +313,97 @@ renderDetections();
 }
 
 // ===== 留言（演示数据） =====
-function renderMessages() {
-document.getElementById('msgCount').textContent = fakeData.messages.length;
-document.getElementById('msgPublic').textContent = fakeData.messages.filter(m => m.isPublic).length;
+async function renderMessages() {
+    const list = document.getElementById('messageList');
+    list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
+    const token = localStorage.getItem('access_token');
 
-const list = document.getElementById('messageList');
-list.innerHTML = '';
-fakeData.messages.forEach((m, i) => {
-const status = m.isPublic ? '🌍 已公开' : '🔒 私密';
-const card = document.createElement('div');
-card.className = 'item-card';
-card.innerHTML = `
-<div class="head">
-<span class="email">${status} · ${m.email}</span>
-<span class="time">${m.time}</span>
-</div>
-<div class="body">${m.content}</div>
-<textarea class="reply-input" placeholder="输入回复..." id="reply_${i}">${m.reply}</textarea>
-<div class="action-row">
-<button class="action-btn green" onclick="saveReply(${i})">💾 保存回复</button>
-<button class="action-btn" onclick="togglePublic(${i})">${m.isPublic ? '🔒 取消公开' : '🌍 公开'}</button>
-<button class="action-btn danger" onclick="delMessage(${i})">🗑️ 删除</button>
-</div>
-`;
-list.appendChild(card);
-});
-}
+    try {
+      const resp = await fetch('/api/admin/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const data = await resp.json();
 
-function saveReply(i) {
-if (navigator.vibrate) navigator.vibrate(10);
-const text = document.getElementById('reply_' + i).value;
-fakeData.messages[i].reply = text;
-alert('✅ 回复已保存（演示）。等接上数据库后，会真的写入 messages 表。');
-}
+      if (!Array.isArray(data)) {
+        list.innerHTML = '<div class="empty-state">加载失败</div>';
+        return;
+      }
 
-function togglePublic(i) {
-if (navigator.vibrate) navigator.vibrate(10);
-fakeData.messages[i].isPublic = !fakeData.messages[i].isPublic;
-renderMessages();
-}
+      document.getElementById('msgCount').textContent = data.length;
+      document.getElementById('msgPublic').textContent = data.filter(m => m.is_public).length;
 
-function delMessage(i) {
-if (navigator.vibrate) navigator.vibrate(10);
-if (confirm('确定删除这条留言吗？')) {
-fakeData.messages.splice(i, 1);
-renderMessages();
-}
-}
+      if (data.length === 0) {
+        list.innerHTML = '<div class="empty-state">暂无留言</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      data.forEach(m => {
+        const status = m.is_public ? '🌍 已公开' : '🔒 私密';
+        const card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `
+          <div class="head">
+            <span class="email">${status} · ${m.user_email}</span>
+            <span class="time">${(m.created_at || '').slice(0, 19).replace('T', ' ')}</span>
+          </div>
+          <div class="body">${m.content}</div>
+          <textarea class="reply-input" placeholder="输入回复..." id="reply_${m.id}">${m.reply || ''}</textarea>
+          <div class="action-row">
+            <button class="action-btn green" onclick="saveReply(${m.id})">💾 保存回复</button>
+            <button class="action-btn" onclick="togglePublic(${m.id}, ${!m.is_public})">${m.is_public ? '🔒 取消公开' : '🌍 公开'}</button>
+            <button class="action-btn danger" onclick="delMessage(${m.id})">🗑️ 删除</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    } catch (e) {
+      list.innerHTML = '<div class="empty-state">加载失败</div>';
+    }
+  }
+
+async function saveReply(id) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const text = document.getElementById('reply_' + id).value;
+    const token = localStorage.getItem('access_token');
+    const resp = await fetch('/api/admin/messages/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, id, updates: { reply: text } })
+    });
+    const data = await resp.json();
+    if (data.success) alert('✅ 回复已保存');
+    else alert('保存失败：' + data.error);
+  }
+
+  async function togglePublic(id, makePublic) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const token = localStorage.getItem('access_token');
+    const resp = await fetch('/api/admin/messages/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, id, updates: { is_public: makePublic } })
+    });
+    const data = await resp.json();
+    if (data.success) renderMessages();
+    else alert('操作失败：' + data.error);
+  }
+
+  async function delMessage(id) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!confirm('确定删除这条留言吗？')) return;
+    const token = localStorage.getItem('access_token');
+    const resp = await fetch('/api/admin/messages/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, id })
+    });
+    const data = await resp.json();
+    if (data.success) renderMessages();
+    else alert('删除失败：' + data.error);
+  }
 
 // ===== 社区帖子（演示数据） =====
 function renderPosts() {
