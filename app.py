@@ -278,6 +278,80 @@ def api_admin_login_logs():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ===== 菜品：读取全部 =====
+@app.route("/api/dishes")
+def api_dishes():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = supabase.table("dishes").select("*").order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 菜品：添加 =====
+@app.route("/api/dishes/add", methods=["POST"])
+def api_dishes_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    name = data.get("name", "").strip()
+    note = data.get("note", "").strip()
+    category = data.get("category", "").strip()
+    image_url = data.get("image_url", "").strip()
+    if not name:
+        return jsonify({"error": "菜名不能为空"}), 400
+    try:
+        supabase.table("dishes").insert({
+            "user_email": email,
+            "name": name,
+            "note": note,
+            "category": category,
+            "image_url": image_url
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 菜品：删除 =====
+@app.route("/api/dishes/delete", methods=["POST"])
+def api_dishes_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    dish_id = data.get("id")
+    if not dish_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        supabase.table("dishes").delete().eq("id", dish_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 订单：保存 =====
+@app.route("/api/orders/add", methods=["POST"])
+def api_orders_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    dish_names = data.get("dishes", [])
+    if not dish_names:
+        return jsonify({"error": "购物车为空"}), 400
+    try:
+        import json
+        supabase.table("orders").insert({
+            "user_email": email,
+            "dishes": json.dumps(dish_names, ensure_ascii=False)
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

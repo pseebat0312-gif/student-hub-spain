@@ -338,7 +338,9 @@ border: none; font-size: 14px; font-weight: bold; cursor: pointer;
 <option value="汤">🍲 汤</option>
 <option value="其他">✨ 其他</option>
 </select>
-<input type="text" id="dishImage" placeholder="图片链接（可选）">
+<input type="file" id="dishImage" accept="image/*" style="display:none" onchange="previewLocalImage(event)">
+<button type="button" class="upload-img-btn" onclick="document.getElementById('dishImage').click()" style="width:100%; padding:12px; border-radius:12px; border:1px dashed rgba(160,216,179,0.4); background:rgba(160,216,179,0.08); color:#a0d8b3; font-size:14px; cursor:pointer; margin-bottom:10px;">📷 从手机选择图片</button>
+<div id="imgPreview" style="margin-bottom:10px;"></div>
 <div class="form-actions">
 <button class="cancel" onclick="toggleAddForm()">取消</button>
 <button class="submit" onclick="addDish()">添加</button>
@@ -369,218 +371,228 @@ border: none; font-size: 14px; font-weight: bold; cursor: pointer;
 </div>
 
 <script>
-// ===== 分类 =====
-const categories = ['主食', '蔬菜', '肉类', '甜品', '汤', '其他'];
-const catEmoji = { '主食': '🍚', '蔬菜': '🥬', '肉类': '🍖', '甜品': '🍰', '汤': '🍲', '其他': '✨' };
+  // ===== 分类 =====
+  const categories = ['主食', '蔬菜', '肉类', '甜品', '汤', '其他'];
+  const catEmoji = { '主食': '🍚', '蔬菜': '🥬', '肉类': '🍖', '甜品': '🍰', '汤': '🍲', '其他': '✨' };
 
-// ===== 数据 =====
-let dishes = [
-{ name: '番茄炒蛋', note: '家常菜，微辣', cat: '蔬菜', image: '' },
-{ name: '红烧肉', note: '肥而不腻', cat: '肉类', image: '' },
-{ name: '紫菜蛋花汤', note: '清淡', cat: '汤', image: '' },
-{ name: '蛋炒饭', note: '简单快手', cat: '主食', image: '' }
-];
-const savedDishes = localStorage.getItem('menu_dishes_v2');
-if (savedDishes) { try { dishes = JSON.parse(savedDishes); } catch(e) {} }
+  let dishes = [];
+  let currentCat = '主食';
+  let cart = [];
+  let localImageData = '';
 
-let orders = JSON.parse(localStorage.getItem('menu_orders_v2') || '[]');
-let currentCat = '主食';
-let cart = [];
+  // ===== 从数据库拉菜品 =====
+  async function loadDishes() {
+    try {
+      const resp = await fetch('/api/dishes');
+      dishes = await resp.json();
+      if (!Array.isArray(dishes)) dishes = [];
+    } catch (e) {
+      dishes = [];
+    }
+    renderCategories();
+    renderDishes();
+  }
 
-// ===== 渲染左侧分类 =====
-function renderCategories() {
-const side = document.getElementById('categorySide');
-side.innerHTML = '';
-categories.forEach(cat => {
-const count = dishes.filter(d => d.cat === cat).length;
-const div = document.createElement('div');
-div.className = 'cat-item' + (cat === currentCat ? ' active' : '');
-div.innerHTML = `${catEmoji[cat]}<br>${cat}<span class="cat-count">${count} 道</span>`;
-div.onclick = () => {
-if (navigator.vibrate) navigator.vibrate(8);
-currentCat = cat;
-renderCategories();
-renderDishes();
-};
-side.appendChild(div);
-});
-}
+  // ===== 渲染左侧分类 =====
+  function renderCategories() {
+    const side = document.getElementById('categorySide');
+    side.innerHTML = '';
+    categories.forEach(cat => {
+      const count = dishes.filter(d => d.category === cat).length;
+      const div = document.createElement('div');
+      div.className = 'cat-item' + (cat === currentCat ? ' active' : '');
+      div.innerHTML = `${catEmoji[cat]}<br>${cat}<span class="cat-count">${count} 道</span>`;
+      div.onclick = () => {
+        if (navigator.vibrate) navigator.vibrate(8);
+        currentCat = cat;
+        renderCategories();
+        renderDishes();
+      };
+      side.appendChild(div);
+    });
+  }
 
-// ===== 渲染右侧菜品 =====
-function renderDishes() {
-const area = document.getElementById('dishArea');
-const filtered = dishes
-.map((d, i) => ({...d, idx: i}))
-.filter(d => d.cat === currentCat);
+  // ===== 渲染右侧菜品 =====
+  function renderDishes() {
+    const area = document.getElementById('dishArea');
+    const filtered = dishes.filter(d => d.category === currentCat);
 
-if (filtered.length === 0) {
-area.innerHTML = `<div class="empty-state">这个分类下还没有菜～<br>点右下角 ➕ 添加吧</div>`;
-return;
-}
+    if (filtered.length === 0) {
+      area.innerHTML = `<div class="empty-state">这个分类下还没有菜～<br>点右下角 ➕ 添加吧</div>`;
+      return;
+    }
 
-area.innerHTML = `<div class="section-title">${catEmoji[currentCat]} ${currentCat}（${filtered.length} 道）</div>`;
+    area.innerHTML = `<div class="section-title">${catEmoji[currentCat]} ${currentCat}（${filtered.length} 道）</div>`;
 
-filtered.forEach(dish => {
-const card = document.createElement('div');
-card.className = 'dish-card';
+    filtered.forEach(dish => {
+      const card = document.createElement('div');
+      card.className = 'dish-card';
 
-const imgHtml = dish.image
-? `<img src="${dish.image}" alt="${dish.name}">`
-: '🍽️';
+      const imgHtml = dish.image_url
+        ? `< img src="${dish.image_url}" alt="${dish.name}">`
+        : '🍽️';
 
-card.innerHTML = `
-<div class="dish-img">${imgHtml}</div>
-<div class="dish-info">
-<div class="dish-name">${dish.name}</div>
-<div class="dish-note">${dish.note || ''}</div>
-<div class="dish-cat-tag">${catEmoji[dish.cat]} ${dish.cat}</div>
-</div>
-<button class="add-cart-btn" onclick="addToCart(${dish.idx})">+</button>
-<button class="remove-dish" onclick="removeDish(${dish.idx})">✕</button>
-`;
-area.appendChild(card);
-});
-}
+      card.innerHTML = `
+        <div class="dish-img">${imgHtml}</div>
+        <div class="dish-info">
+          <div class="dish-name">${dish.name}</div>
+          <div class="dish-note">${dish.note || ''}</div>
+          <div class="dish-cat-tag">${catEmoji[dish.category]} ${dish.category}</div>
+        </div>
+        <button class="add-cart-btn" onclick="addToCart(${dish.id})">+</button>
+        <button class="remove-dish" onclick="removeDish(${dish.id})">✕</button>
+      `;
+      area.appendChild(card);
+    });
+  }
 
-// ===== 加购物车 =====
-function addToCart(idx) {
-if (navigator.vibrate) navigator.vibrate(8);
-cart.push(idx);
-updateCartBar();
-}
+  // ===== 加购物车 =====
+  function addToCart(dishId) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    const dish = dishes.find(d => d.id === dishId);
+    if (dish) {
+      cart.push(dish);
+      updateCartBar();
+    }
+  }
 
-function updateCartBar() {
-document.getElementById('cartNum').textContent = cart.length;
-document.getElementById('cartBadge').textContent = cart.length;
-if (cart.length > 0) {
-document.getElementById('cartBar').classList.add('show');
-} else {
-document.getElementById('cartBar').classList.remove('show');
-}
-}
+  function updateCartBar() {
+    document.getElementById('cartNum').textContent = cart.length;
+    document.getElementById('cartBadge').textContent = cart.length;
+    if (cart.length > 0) {
+      document.getElementById('cartBar').classList.add('show');
+    } else {
+      document.getElementById('cartBar').classList.remove('show');
+    }
+  }
 
-// ===== 添加菜 =====
-function toggleAddForm() {
-document.getElementById('addModal').classList.toggle('show');
-}
+  // ===== 添加菜 =====
+  function toggleAddForm() {
+    document.getElementById('addModal').classList.toggle('show');
+  }
 
-function addDish() {
-const name = document.getElementById('dishName').value.trim();
-const note = document.getElementById('dishNote').value.trim();
-const cat = document.getElementById('dishCat').value;
-const image = document.getElementById('dishImage').value.trim();
+  function previewLocalImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('请选择图片文件'); return; }
+    if (file.size > 2 * 1024 * 1024) { alert('图片太大了，请选 2MB 以内的'); return; }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      localImageData = e.target.result;
+      document.getElementById('imgPreview').innerHTML = `< img src="${localImageData}" style="width:80px;height:80px;border-radius:10px;object-fit:cover;">`;
+    };
+    reader.readAsDataURL(file);
+  }
 
-if (!name) { alert('菜名不能为空'); return; }
-if (navigator.vibrate) navigator.vibrate(15);
+  async function addDish() {
+    const name = document.getElementById('dishName').value.trim();
+    const note = document.getElementById('dishNote').value.trim();
+    const category = document.getElementById('dishCat').value;
 
-dishes.push({ name, note, cat, image });
-localStorage.setItem('menu_dishes_v2', JSON.stringify(dishes));
-currentCat = cat;
+    if (!name) { alert('菜名不能为空'); return; }
+    if (navigator.vibrate) navigator.vibrate(15);
 
-renderCategories();
-renderDishes();
+    const email = localStorage.getItem('user_email') || 'anonymous';
+    const image_url = localImageData; // 暂时存 base64，等接 Storage 后改
 
-document.getElementById('dishName').value = '';
-document.getElementById('dishNote').value = '';
-document.getElementById('dishImage').value = '';
-toggleAddForm();
-}
+    try {
+      const resp = await fetch('/api/dishes/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name, note, category, image_url })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('添加失败：' + data.error); return; }
+    } catch (e) {
+      alert('网络错误，请稍后重试');
+      return;
+    }
 
-// ===== 删除菜 =====
-function removeDish(idx) {
-if (navigator.vibrate) navigator.vibrate(10);
-if (!confirm('确定删除这道菜吗？')) return;
-dishes.splice(idx, 1);
-localStorage.setItem('menu_dishes_v2', JSON.stringify(dishes));
-cart = [];
-renderCategories();
-renderDishes();
-updateCartBar();
-}
+    document.getElementById('dishName').value = '';
+    document.getElementById('dishNote').value = '';
+    document.getElementById('imgPreview').innerHTML = '';
+    localImageData = '';
+    toggleAddForm();
+    currentCat = category;
+    await loadDishes();
+  }
 
-// ===== 下单 =====
-function submitOrder() {
-if (cart.length === 0) return;
-if (navigator.vibrate) navigator.vibrate(20);
+  // ===== 删除菜 =====
+  async function removeDish(dishId) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!confirm('确定删除这道菜吗？')) return;
+    try {
+      await fetch('/api/dishes/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: dishId })
+      });
+    } catch (e) {}
+    cart = [];
+    updateCartBar();
+    await loadDishes();
+  }
 
-const selectedDishes = cart.map(i => dishes[i]);
-const now = new Date();
-const dateStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  // ===== 下单 =====
+  async function submitOrder() {
+    if (cart.length === 0) return;
+    if (navigator.vibrate) navigator.vibrate(20);
 
-let itemsHtml = '';
-selectedDishes.forEach(d => {
-itemsHtml += `<div class="order-item">· ${d.name}${d.note ? ' <span style="opacity:0.7;">（' + d.note + '）</span>' : ''}</div>`;
-});
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
-const cardHtml = `
-<div class="order-card">
-<div class="order-date">${dateStr}</div>
-<div class="order-title">🍽️ 今日菜单</div>
-<div>${itemsHtml}</div>
-<div class="order-footer">来自「独家菜单」</div>
-</div>
-`;
+    let itemsHtml = '';
+    cart.forEach(d => {
+      itemsHtml += `<div class="order-item">· ${d.name}${d.note ? ' <span style="opacity:0.7;">（' + d.note + '）</span>' : ''}</div>`;
+    });
 
-document.getElementById('orderCardContainer').innerHTML = cardHtml;
-document.getElementById('orderModal').classList.add('show');
-window._pendingOrder = { date: dateStr, dishes: selectedDishes.map(d => d.name) };
-}
+    const cardHtml = `
+      <div class="order-card">
+        <div class="order-date">${dateStr}</div>
+        <div class="order-title">🍽️ 今日菜单</div>
+        <div>${itemsHtml}</div>
+        <div class="order-footer">来自「独家菜单」</div>
+      </div>
+    `;
 
-function closeOrderModal() {
-document.getElementById('orderModal').classList.remove('show');
-cart = [];
-updateCartBar();
-}
+    document.getElementById('orderCardContainer').innerHTML = cardHtml;
+    document.getElementById('orderModal').classList.add('show');
+  }
 
-function saveOrder() {
-if (window._pendingOrder) {
-orders.unshift(window._pendingOrder);
-localStorage.setItem('menu_orders_v2', JSON.stringify(orders));
-window._pendingOrder = null;
-}
-document.getElementById('orderModal').classList.remove('show');
-cart = [];
-updateCartBar();
-alert('✅ 订单已保存到历史记录');
-}
+  function closeOrderModal() {
+    document.getElementById('orderModal').classList.remove('show');
+    cart = [];
+    updateCartBar();
+  }
 
-// ===== 历史订单 =====
-function showHistory() {
-const list = document.getElementById('historyList');
-if (orders.length === 0) {
-list.innerHTML = '<div class="empty-state">还没有历史订单</div>';
-} else {
-list.innerHTML = '';
-orders.forEach(o => {
-const div = document.createElement('div');
-div.style.cssText = 'background: rgba(255,255,255,0.05); border-radius: 14px; padding: 14px; margin-bottom: 10px;';
-div.innerHTML = `
-<div style="font-size:12px; color:#888; margin-bottom:6px;">${o.date}</div>
-<div style="font-size:13px; line-height:1.8; color:#ddd;">
-${o.dishes.map(d => '· ' + d).join('<br>')}
-</div>
-`;
-list.appendChild(div);
-});
-}
-document.getElementById('historyModal').classList.add('show');
-}
+  async function saveOrder() {
+    const email = localStorage.getItem('user_email') || 'anonymous';
+    const dishNames = cart.map(d => d.name);
+    try {
+      await fetch('/api/orders/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, dishes: dishNames })
+      });
+      alert('✅ 订单已保存到数据库');
+    } catch (e) {
+      alert('保存失败，请稍后重试');
+    }
+    document.getElementById('orderModal').classList.remove('show');
+    cart = [];
+    updateCartBar();
+  }
 
-function closeHistory() {
-document.getElementById('historyModal').classList.remove('show');
-}
+  // ===== 返回 =====
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/?tab=tools';
+  }
 
-// ===== 返回 =====
-function goBack() {
-if (navigator.vibrate) navigator.vibrate(10);
-if (window.history.length > 1) window.history.back();
-else location.href = '/?tab=tools';
-}
-
-// 初始化
-renderCategories();
-renderDishes();
-updateCartBar();
+  // 初始化
+  loadDishes();
+  updateCartBar();
 </script>
 </body>
 </html>
