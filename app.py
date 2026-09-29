@@ -120,12 +120,31 @@ def api_reset_password():
     if not email:
         return jsonify({"error": "缺少邮箱"}), 400
     try:
-        supabase.auth.reset_password_email(email)
+        supabase.auth.reset_password_email(
+            email,
+            {"redirect_to": "https://student-hub-spain.onrender.com/reset-password"}
+        )
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+# ===== 用 token 更新密码 =====
+@app.route("/api/update_password", methods=["POST"])
+def api_update_password():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    password = data.get("password", "")
+    if not token or not password:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.auth.update_user({"password": password}, jwt=token)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
+    
 # ===== 留言板 =====
 @app.route("/api/messages")
 def api_messages():

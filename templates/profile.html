@@ -180,14 +180,7 @@
     <button class="primary-btn" onclick="saveProfile()">💾 保存资料</button>
   </div>
 
-  <div class="section-card">
-    <div class="section-title">🔑 修改密码</div>
-    <div class="field-label">旧密码</div>
-    <input class="text-input" type="password" id="oldPwd" placeholder="输入旧密码...">
-    <div class="field-label">新密码</div>
-    <input class="text-input" type="password" id="newPwd" placeholder="输入新密码...">
-    <button class="primary-btn" onclick="changePassword()">确认修改</button>
-  </div>
+
 
   <div class="section-card">
     <div class="section-title">💎 会员状态</div>
@@ -240,7 +233,7 @@
     const emailEl = document.querySelector('.hero-card .email');
     if (emailEl) emailEl.textContent = email;
   })();
-  
+
   // ===== 智能返回 =====
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
@@ -297,7 +290,7 @@
     const reader = new FileReader();
     reader.onload = (e) => {
       uploadedImageData = e.target.result;
-      document.getElementById('heroAvatar').innerHTML = `< img src="${uploadedImageData}" alt="avatar">`;
+      document.getElementById('heroAvatar').innerHTML = `<img src="${uploadedImageData}" alt="avatar">`;
       const uploadText = document.getElementById('uploadText');
       if (uploadText) uploadText.textContent = '✅ 已选择图片（点击可替换）';
       if (navigator.vibrate) navigator.vibrate(15);
@@ -317,7 +310,7 @@
     document.getElementById('heroNickname').textContent = nickname;
 
     if (uploadedImageData) {
-      document.getElementById('heroAvatar').innerHTML = `< img src="${uploadedImageData}" alt="avatar">`;
+      document.getElementById('heroAvatar').innerHTML = `<img src="${uploadedImageData}" alt="avatar">`;
       alert('✅ 资料已保存（图片头像）。\n\n等接上数据库后，图片会先上传到 Supabase Storage，再把链接存进 user_profiles 表。');
     } else {
       document.getElementById('heroAvatar').textContent = selectedEmoji;
@@ -326,18 +319,7 @@
   }
 
   // ===== 修改密码 =====
-  function changePassword() {
-    const oldPwd = document.getElementById('oldPwd').value;
-    const newPwd = document.getElementById('newPwd').value;
-    if (!oldPwd || !newPwd) {
-      alert('请填写完整');
-      return;
-    }
-    if (navigator.vibrate) navigator.vibrate(15);
-    alert('✅ 密码修改请求已提交。\n\n等接上数据库后，这里会校验旧密码并更新到 app_users 表。');
-    document.getElementById('oldPwd').value = '';
-    document.getElementById('newPwd').value = '';
-  }
+
 
   // ===== 升级会员 =====
   function upgradeMember() {
