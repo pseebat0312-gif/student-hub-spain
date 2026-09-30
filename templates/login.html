@@ -89,7 +89,6 @@
   // 登录成功后跳回原来的页面
   function goAfterLogin() {
   const back = new URLSearchParams(window.location.search).get('back') || '/';
-  // 用 replace 替换历史记录里的登录页，这样用户按返回不会回到登录页
   window.location.replace(back);
 }
 

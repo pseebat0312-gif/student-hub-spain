@@ -182,11 +182,19 @@
   .add-form .field-row { margin-bottom: 10px; }
   .add-form label { font-size: 11px; color: #888; display: block; margin-bottom: 6px; }
   .add-form input, .add-form select {
-    width: 100%; padding: 12px 14px; border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.10);
-    background: rgba(255,255,255,0.045);
-    color: #fff; font-size: 14px; outline: none; font-family: inherit;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
   }
+  
   .add-form input:focus, .add-form select:focus { border-color: rgba(255,255,255,0.24); }
   .add-form select option { background: #1a1a1e; }
   .add-form input[type="date"] { color-scheme: dark; }
