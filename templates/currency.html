@@ -11,47 +11,55 @@
     position: fixed; top: 0; left: 0; right: 0;
     padding: 16px 20px;
     display: flex; align-items: center; gap: 12px;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);
+    background: rgba(0,0,0,0.75);
     z-index: 10;
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
   }
   .top-bar .back-btn {
     background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.10);
     color: #fff; font-size: 18px;
     width: 40px; height: 40px;
     border-radius: 999px; cursor: pointer;
   }
   .top-bar .back-btn:active { transform: scale(0.9); }
-  .top-bar .title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.4px; }
+  .top-bar .title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.4px; flex: 1; }
+  .top-bar .refresh-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    color: #fff; font-size: 12px; font-weight: 600;
+    padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  }
+  .top-bar .refresh-btn:active { transform: scale(0.94); }
 
   #content { padding: 80px 20px 120px; }
 
   .rate-bar {
     display: flex; justify-content: space-around;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 22px; padding: 14px 10px; margin-bottom: 20px;
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
   }
   .rate-bar .rate-item { flex: 1; text-align: center; }
   .rate-bar .rate-label { font-size: 11px; color: #888; margin-bottom: 4px; }
-  .rate-bar .rate-value { font-size: 14px; font-weight: 700; color: #e8a8b8; }
+  .rate-bar .rate-value { font-size: 14px; font-weight: 700; color: #fff; }
   .rate-bar .rate-time { font-size: 10px; color: #666; margin-top: 4px; }
 
   .tab-bar { display: flex; gap: 6px; margin-bottom: 16px; }
   .tab-btn {
     flex: 1; padding: 12px; border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #aaa; font-size: 14px; cursor: pointer; transition: 0.2s;
+    font-family: inherit;
   }
   .tab-btn.active {
-    background: rgba(232,168,184,0.14); color: #e8a8b8;
-    border-color: rgba(232,168,184,0.28); font-weight: 700;
+    background: rgba(255,255,255,0.11); color: #fff;
+    border-color: rgba(255,255,255,0.22); font-weight: 700;
   }
   .tab-btn:active { transform: scale(0.96); }
 
@@ -60,48 +68,47 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
   .card {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 22px; padding: 20px; margin-bottom: 14px;
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
   }
 
   .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
   .input-row input {
     flex: 1; padding: 14px 16px; border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #fff; font-size: 18px; outline: none; font-family: inherit;
   }
-  .input-row input:focus { border-color: rgba(232,168,184,0.28); }
+  .input-row input:focus { border-color: rgba(255,255,255,0.24); }
   .input-row select {
-    width: 110px;
-    flex-shrink: 0;
+    width: 116px; flex-shrink: 0;
     padding: 14px 12px; border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #fff; font-size: 14px; outline: none; font-family: inherit;
   }
   .input-row select option { background: #1a1a1e; }
 
   .result-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06);
   }
   .result-row:last-child { border-bottom: none; }
   .result-row .label { font-size: 13px; color: #888; }
-  .result-row .value { font-size: 18px; font-weight: 700; color: #e8a8b8; }
+  .result-row .value { font-size: 18px; font-weight: 700; color: #fff; }
 
   .quick-amounts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
   .quick-amounts button {
     padding: 8px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #ccc; font-size: 13px; cursor: pointer;
+    font-family: inherit;
   }
-  .quick-amounts button:active { transform: scale(0.95); background: rgba(232,168,184,0.15); }
+  .quick-amounts button:active { transform: scale(0.95); background: rgba(255,255,255,0.11); }
 
   .filter-row {
     display: flex; gap: 8px; overflow-x: auto;
@@ -110,14 +117,15 @@
   .filter-row::-webkit-scrollbar { display: none; }
   .filter-chip {
     padding: 8px 16px; border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #ccc; font-size: 13px;
     white-space: nowrap; cursor: pointer; transition: 0.2s;
+    font-family: inherit;
   }
   .filter-chip.active {
-    background: rgba(232,168,184,0.14); color: #e8a8b8;
-    border-color: rgba(232,168,184,0.28); font-weight: 700;
+    background: rgba(255,255,255,0.13); color: #fff;
+    border-color: rgba(255,255,255,0.26); font-weight: 700;
   }
   .filter-chip:active { transform: scale(0.95); }
 
@@ -127,76 +135,82 @@
   .custom-date-row.show { display: flex; }
   .custom-date-row input {
     flex: 1; padding: 10px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #fff; font-size: 13px; outline: none;
     font-family: inherit; color-scheme: dark;
   }
 
   .summary-card {
     display: flex; justify-content: space-around;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 22px; padding: 18px; margin-bottom: 16px;
-    backdrop-filter: blur(30px) saturate(180%);
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
   }
   .summary-item { text-align: center; flex: 1; }
   .summary-item .label { font-size: 11px; color: #888; margin-bottom: 6px; }
   .summary-item .value { font-size: 18px; font-weight: 700; }
-  .summary-item .value.income { color: #6fbf8e; }
-  .summary-item .value.expense { color: #e8a8b8; }
+  .summary-item .value.income { color: #7ad19f; }
+  .summary-item .value.expense { color: #ff8b95; }
   .summary-item .value.balance { color: #ffffff; }
 
   .add-form {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.10);
     border-radius: 22px; padding: 18px; margin-bottom: 16px;
   }
   .add-form .type-row { display: flex; gap: 8px; margin-bottom: 12px; }
   .add-form .type-row button {
     flex: 1; padding: 12px; border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #ccc; font-size: 14px; cursor: pointer; transition: 0.2s;
+    font-family: inherit;
   }
   .add-form .type-row button.active {
-    background: rgba(232,168,184,0.14); color: #e8a8b8;
-    border-color: rgba(232,168,184,0.28); font-weight: 700;
+    background: rgba(255,255,255,0.13); color: #fff;
+    border-color: rgba(255,255,255,0.26); font-weight: 700;
   }
   .add-form .field-row { margin-bottom: 10px; }
   .add-form label { font-size: 11px; color: #888; display: block; margin-bottom: 6px; }
   .add-form input, .add-form select {
     width: 100%; padding: 12px 14px; border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    background: rgba(255,255,255,0.045);
     color: #fff; font-size: 14px; outline: none; font-family: inherit;
   }
-  .add-form input:focus, .add-form select:focus { border-color: rgba(232,168,184,0.28); }
+  .add-form input:focus, .add-form select:focus { border-color: rgba(255,255,255,0.24); }
   .add-form select option { background: #1a1a1e; }
   .add-form input[type="date"] { color-scheme: dark; }
 
+  .amount-currency-row { display: flex; gap: 10px; }
+  .amount-currency-row input { flex: 1; }
+  .amount-currency-row select { width: 120px; flex-shrink: 0; }
+
   .primary-btn {
-    width: 100%; padding: 14px; border-radius: 999px; border: none;
-    background: linear-gradient(135deg, #e8a8b8, #c98094);
-    color: #1a0f14; font-size: 15px; font-weight: 700;
+    width: 100%; padding: 15px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.11);
+    color: #fff; font-size: 15px; font-weight: 700;
     cursor: pointer; margin-top: 10px;
-    box-shadow: 0 8px 28px rgba(232,168,184,0.35);
+    font-family: inherit;
   }
-  .primary-btn:active { transform: scale(0.97); }
+  .primary-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.16); }
 
   .record-item {
     display: flex; justify-content: space-between; align-items: center;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: rgba(255,255,255,0.035);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 14px; padding: 12px 14px; margin-bottom: 8px;
   }
   .record-item .rec-left { flex: 1; min-width: 0; }
   .record-item .rec-title { font-size: 13.5px; color: #fff; font-weight: 600; margin-bottom: 3px; }
   .record-item .rec-meta { font-size: 11px; color: #888; }
-  .record-item .rec-amount { font-size: 15px; font-weight: 700; margin-right: 10px; }
-  .record-item .rec-amount.income { color: #6fbf8e; }
-  .record-item .rec-amount.expense { color: #e8a8b8; }
+  .record-item .rec-amount { font-size: 15px; font-weight: 700; margin-right: 10px; white-space: nowrap; }
+  .record-item .rec-amount.income { color: #7ad19f; }
+  .record-item .rec-amount.expense { color: #ff8b95; }
   .record-item .rec-del {
     background: none; border: none; color: #666;
     font-size: 16px; cursor: pointer; padding: 4px 8px;
@@ -206,13 +220,14 @@
   .empty-state { text-align: center; padding: 40px 20px; color: #666; font-size: 13px; }
 
   .bill-btn {
-    width: 100%; padding: 14px; border-radius: 999px;
-    border: 1px solid rgba(232,168,184,0.28);
-    background: rgba(232,168,184,0.14);
-    color: #e8a8b8; font-size: 14px; font-weight: 700;
+    width: 100%; padding: 15px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.22);
+    background: rgba(255,255,255,0.075);
+    color: #fff; font-size: 14px; font-weight: 700;
     cursor: pointer; margin-bottom: 16px;
+    font-family: inherit;
   }
-  .bill-btn:active { transform: scale(0.97); }
+  .bill-btn:active { transform: scale(0.97); background: rgba(255,255,255,0.13); }
 
   .modal {
     position: fixed; inset: 0;
@@ -223,39 +238,90 @@
   }
   .modal.show { display: flex; }
   .modal-content {
-    background: #1a1a1e; width: 100%; max-width: 400px;
+    background: #0d0d0f; width: 100%; max-width: 420px;
     border-radius: 22px; padding: 22px;
-    border: 1px solid rgba(255,255,255,0.1);
-    max-height: 85vh; overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.12);
+    max-height: 88vh; overflow-y: auto;
   }
+
+  /* 账单弹窗内的时间段选择 */
+  .bill-range-row {
+    display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .bill-range-chip {
+    padding: 8px 14px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.045);
+    color: #ccc; font-size: 12px; cursor: pointer;
+    font-family: inherit;
+  }
+  .bill-range-chip.active {
+    background: rgba(255,255,255,0.14); color: #fff;
+    border-color: rgba(255,255,255,0.28); font-weight: 700;
+  }
+  .bill-custom-row {
+    display: none; gap: 8px; margin-bottom: 14px; align-items: center;
+  }
+  .bill-custom-row.show { display: flex; }
+  .bill-custom-row input {
+    flex: 1; padding: 10px 12px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.045);
+    color: #fff; font-size: 13px; font-family: inherit;
+    outline: none; color-scheme: dark;
+  }
+
   .bill-card {
-    background: linear-gradient(135deg, #e8a8b8, #c98094);
-    color: #d8beca; border-radius: 20px; padding: 24px; margin-bottom: 16px;
+    background: rgba(255,255,255,0.045);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #fff; border-radius: 20px; padding: 22px; margin-bottom: 16px;
   }
-  .bill-card .bill-period { font-size: 12px; opacity: 0.7; margin-bottom: 8px; }
-  .bill-card .bill-title { font-size: 22px; font-weight: 900; margin-bottom: 18px; }
+  .bill-card .bill-period { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .bill-card .bill-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.4px; }
+
+  .bill-total-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .bill-total-cell {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.10);
+    border-radius: 14px; padding: 12px 8px; text-align: center;
+  }
+  .bill-total-cell .cur { font-size: 10px; color: #888; margin-bottom: 4px; }
+  .bill-total-cell .amt { font-size: 14px; font-weight: 700; color: #fff; }
+  .bill-total-cell.income .amt { color: #7ad19f; }
+  .bill-total-cell.expense .amt { color: #ff8b95; }
+
   .bill-card .bill-line {
     display: flex; justify-content: space-between; padding: 8px 0;
-    border-bottom: 1px dashed rgba(26,15,20,0.15); font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 14px;
   }
   .bill-card .bill-line:last-child { border-bottom: none; }
   .bill-card .bill-line.total {
-    font-weight: 700; font-size: 16px; margin-top: 6px;
+    font-weight: 700; font-size: 15px; margin-top: 6px;
     padding-top: 12px;
-    border-top: 2px solid rgba(26,15,20,0.2);
+    border-top: 1px solid rgba(255,255,255,0.20);
     border-bottom: none;
   }
   .bill-card .bill-footer {
-    font-size: 11px; opacity: 0.6;
+    font-size: 11px; color: #666;
     text-align: right; margin-top: 16px;
+  }
+  .bill-section-title {
+    font-size: 12px; color: #888; margin-top: 16px; margin-bottom: 6px;
+    letter-spacing: 0.5px;
   }
 
   .modal-btns { display: flex; gap: 10px; }
   .modal-btns button {
-    flex: 1; padding: 12px; border-radius: 999px;
-    border: none; font-size: 14px; font-weight: 700; cursor: pointer;
+    flex: 1; padding: 13px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.16);
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
   }
-  .modal-btns .close-btn { background: rgba(255,255,255,0.1); color: #fff; }
+  .modal-btns .close-btn { background: rgba(255,255,255,0.07); color: #fff; }
+  .modal-btns .close-btn:active { transform: scale(0.97); }
 </style>
 </head>
 <body>
@@ -263,6 +329,7 @@
 <div class="top-bar">
   <button class="back-btn" onclick="goBack()">←</button>
   <div class="title">💱 汇率 + 记账</div>
+  <button class="refresh-btn" onclick="refreshRates()">刷新汇率</button>
 </div>
 
 <div id="content">
@@ -287,6 +354,7 @@
     <button class="tab-btn" onclick="switchTab('book', this)">📒 记账本</button>
   </div>
 
+  <!-- ============ 汇率换算 ============ -->
   <div class="tab-panel active" id="panel-calc">
     <div class="card">
       <div style="font-size:13px; color:#888; margin-bottom:8px;">输入金额</div>
@@ -316,20 +384,21 @@
     </div>
   </div>
 
+  <!-- ============ 记账本 ============ -->
   <div class="tab-panel" id="panel-book">
 
     <div class="summary-card">
       <div class="summary-item">
-        <div class="label">收入</div>
-        <div class="value income" id="sumIncome">€0</div>
+        <div class="label">收入（€）</div>
+        <div class="value income" id="sumIncome">€0.00</div>
       </div>
       <div class="summary-item">
-        <div class="label">支出</div>
-        <div class="value expense" id="sumExpense">€0</div>
+        <div class="label">支出（€）</div>
+        <div class="value expense" id="sumExpense">€0.00</div>
       </div>
       <div class="summary-item">
-        <div class="label">结余</div>
-        <div class="value balance" id="sumBalance">€0</div>
+        <div class="label">结余（€）</div>
+        <div class="value balance" id="sumBalance">€0.00</div>
       </div>
     </div>
 
@@ -348,25 +417,25 @@
       </div>
 
       <div class="field-row">
-        <label>金额（€）</label>
-        <input type="number" id="txAmount" placeholder="0.00" step="0.01">
+        <label>金额</label>
+        <div class="amount-currency-row">
+          <input type="number" id="txAmount" placeholder="0.00" step="0.01">
+          <select id="txCurrency" onchange="onTxCurrencyChange()">
+            <option value="EUR">💶 欧元</option>
+            <option value="CNY">💰 人民币</option>
+            <option value="USD">💵 美元</option>
+          </select>
+        </div>
+        <div id="txPreview" style="font-size:11px;color:#666;margin-top:6px;"></div>
       </div>
 
       <div class="field-row">
         <label>类别</label>
-        <select id="txCategory">
-          <option value="吃饭">🍚 吃饭</option>
-          <option value="房租">🏠 房租</option>
-          <option value="交通">🚌 交通</option>
-          <option value="购物">🛍️ 购物</option>
-          <option value="娱乐">🎉 娱乐</option>
-          <option value="工资">💼 工资</option>
-          <option value="其他">📦 其他</option>
-        </select>
+        <select id="txCategory"></select>
       </div>
 
       <div class="field-row">
-        <label>备注（吃了什么 / 买了什么）</label>
+        <label>备注</label>
         <input type="text" id="txNote" placeholder="比如：午饭吃了海鲜饭">
       </div>
 
@@ -378,7 +447,7 @@
       <button class="primary-btn" onclick="addTransaction()">➕ 添加</button>
     </div>
 
-    <button class="bill-btn" onclick="generateBill()">📊 生成这段时间的账单</button>
+    <button class="bill-btn" onclick="openBill()">📊 生成账单</button>
 
     <div id="recordList"></div>
 
@@ -386,10 +455,17 @@
 
 </div>
 
+<!-- ============ 账单弹窗 ============ -->
 <div class="modal" id="billModal">
   <div class="modal-content">
+    <div class="bill-range-row" id="billRangeRow"></div>
+    <div class="bill-custom-row" id="billCustomRow">
+      <input type="date" id="billStart">
+      <input type="date" id="billEnd">
+      <button class="filter-chip" onclick="applyBillRange()">应用</button>
+    </div>
     <div id="billContainer"></div>
-    <div class="modal-btns">
+    <div class="modal-btns" style="margin-top: 14px;">
       <button class="close-btn" onclick="closeBill()">关闭</button>
     </div>
   </div>
@@ -401,19 +477,67 @@
   let transactions = [];
   let currentType = 'expense';
   let currentRange = { type: 'month', value: '' };
+  let billRange = { type: 'month', value: '' };
 
+  const CATEGORIES = {
+    expense: [
+      { v: '吃饭', t: '🍚 吃饭' },
+      { v: '房租', t: '🏠 房租' },
+      { v: '交通', t: '🚌 交通' },
+      { v: '购物', t: '🛍️ 购物' },
+      { v: '娱乐', t: '🎉 娱乐' },
+      { v: '医疗', t: '💊 医疗' },
+      { v: '学费', t: '📚 学费' },
+      { v: '其他', t: '📦 其他' }
+    ],
+    income: [
+      { v: '工资', t: '💼 工资' },
+      { v: '副业', t: '🧑‍💻 副业' },
+      { v: '交易', t: '📈 交易' },
+      { v: '红包', t: '🧧 红包' },
+      { v: '退款', t: '↩️ 退款' },
+      { v: '奖学金', t: '🎓 奖学金' },
+      { v: '其他', t: '📦 其他' }
+    ]
+  };
+
+  // ============ 汇率 ============
   async function fetchRates() {
     try {
-      const resp = await fetch('https://api.exchangerate.host/latest?base=EUR');
+      const resp = await fetch('/api/rates');
       const data = await resp.json();
-      if (data && data.rates) {
-        rates.EUR_TO_CNY = data.rates.CNY;
-        rates.EUR_TO_USD = data.rates.USD;
-        rates.updatedAt = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      if (data && data.EUR_TO_CNY) {
+        rates.EUR_TO_CNY = parseFloat(data.EUR_TO_CNY);
+        rates.EUR_TO_USD = parseFloat(data.EUR_TO_USD);
+        rates.updatedAt = data.updated_at
+          ? new Date(data.updated_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+          : '已缓存';
       }
-    } catch (e) { rates.updatedAt = '默认汇率'; }
+    } catch (e) {
+      rates.updatedAt = '默认汇率';
+    }
     renderRateBar();
     convert();
+    onTxCurrencyChange();
+  }
+
+  async function refreshRates() {
+    if (navigator.vibrate) navigator.vibrate(12);
+    const btn = document.querySelector('.refresh-btn');
+    btn.textContent = '刷新中…';
+    try {
+      const resp = await fetch('/api/rates/refresh', { method: 'POST' });
+      const data = await resp.json();
+      if (data.success) {
+        rates.EUR_TO_CNY = data.EUR_TO_CNY;
+        rates.EUR_TO_USD = data.EUR_TO_USD;
+        rates.updatedAt = new Date().toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+      }
+    } catch (e) {}
+    renderRateBar();
+    convert();
+    onTxCurrencyChange();
+    btn.textContent = '刷新汇率';
   }
 
   function renderRateBar() {
@@ -422,6 +546,24 @@
     document.getElementById('rateTime').textContent = rates.updatedAt;
   }
 
+  // ============ 币种换算 ============
+  function toEUR(amount, currency) {
+    amount = parseFloat(amount) || 0;
+    if (currency === 'EUR') return amount;
+    if (currency === 'CNY') return amount / rates.EUR_TO_CNY;
+    if (currency === 'USD') return amount / rates.EUR_TO_USD;
+    return amount;
+  }
+
+  function fromEUR(eur) {
+    return {
+      EUR: eur,
+      CNY: eur * rates.EUR_TO_CNY,
+      USD: eur * rates.EUR_TO_USD
+    };
+  }
+
+  // ============ Tab 切换 ============
   function switchTab(tab, el) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + tab).classList.add('active');
@@ -438,44 +580,96 @@
   function convert() {
     const amount = parseFloat(document.getElementById('amountInput').value) || 0;
     const from = document.getElementById('fromCurrency').value;
-    let eur = 0;
-    if (from === 'EUR') eur = amount;
-    else if (from === 'CNY') eur = amount / rates.EUR_TO_CNY;
-    else if (from === 'USD') eur = amount / rates.EUR_TO_USD;
-    document.getElementById('resEur').textContent = '€' + eur.toFixed(2);
-    document.getElementById('resCny').textContent = '¥' + (eur * rates.EUR_TO_CNY).toFixed(2);
-    document.getElementById('resUsd').textContent = '$' + (eur * rates.EUR_TO_USD).toFixed(2);
+    const eur = toEUR(amount, from);
+    const all = fromEUR(eur);
+    document.getElementById('resEur').textContent = '€' + all.EUR.toFixed(2);
+    document.getElementById('resCny').textContent = '¥' + all.CNY.toFixed(2);
+    document.getElementById('resUsd').textContent = '$' + all.USD.toFixed(2);
+  }
+
+  // ============ 类别 ============
+  function renderCategories() {
+    const sel = document.getElementById('txCategory');
+    const list = CATEGORIES[currentType] || CATEGORIES.expense;
+    sel.innerHTML = '';
+    list.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.v;
+      opt.textContent = c.t;
+      sel.appendChild(opt);
+    });
+  }
+
+  function setType(t) {
+    currentType = t;
+    document.getElementById('btnExpense').classList.toggle('active', t === 'expense');
+    document.getElementById('btnIncome').classList.toggle('active', t === 'income');
+    renderCategories();
+  }
+
+  function onTxCurrencyChange() {
+    const amount = parseFloat(document.getElementById('txAmount').value) || 0;
+    const cur = document.getElementById('txCurrency').value;
+    const preview = document.getElementById('txPreview');
+    if (!amount) { preview.textContent = ''; return; }
+    const eur = toEUR(amount, cur);
+    const all = fromEUR(eur);
+    const parts = [];
+    if (cur !== 'EUR') parts.push('€' + all.EUR.toFixed(2));
+    if (cur !== 'CNY') parts.push('¥' + all.CNY.toFixed(2));
+    if (cur !== 'USD') parts.push('$' + all.USD.toFixed(2));
+    preview.textContent = '≈ ' + parts.join(' / ');
+  }
+
+  // ============ 时间段 chip ============
+  function buildMonthChips(container, onSelect, isActive) {
+    container.innerHTML = '';
+    const now = new Date();
+    const list = [];
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      list.push({ ym, label: (d.getMonth() + 1) + '月' });
+    }
+    list.forEach(item => {
+      const chip = document.createElement('div');
+      chip.className = 'filter-chip' + (isActive(item.ym) ? ' active' : '');
+      chip.textContent = item.label;
+      chip.onclick = () => onSelect(item.ym);
+      container.appendChild(chip);
+    });
+    const custom = document.createElement('div');
+    custom.className = 'filter-chip' + (isActive('__custom__') ? ' active' : '');
+    custom.textContent = '📅 自定义';
+    custom.onclick = () => onSelect('__custom__');
+    container.appendChild(custom);
   }
 
   function renderFilterRow() {
     const row = document.getElementById('filterRow');
-    row.innerHTML = '';
-    const now = new Date();
-    for (let i = 0; i < 6; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-      const label = (d.getMonth() + 1) + '月';
-      const chip = document.createElement('div');
-      chip.className = 'filter-chip' + (i === 0 && currentRange.type === 'month' ? ' active' : '');
-      chip.textContent = label;
-      chip.onclick = () => {
-        currentRange = { type: 'month', value: ym };
+    buildMonthChips(
+      row,
+      (val) => {
+        if (val === '__custom__') {
+          document.getElementById('customDateRow').classList.add('show');
+          return;
+        }
+        currentRange = { type: 'month', value: val };
         document.getElementById('customDateRow').classList.remove('show');
         renderFilterRow();
         loadTransactions();
-      };
-      if (i === 0 && !currentRange.value) {
-        currentRange = { type: 'month', value: ym };
+      },
+      (val) => {
+        if (val === '__custom__') return currentRange.type === 'custom';
+        return currentRange.type === 'month' && currentRange.value === val;
       }
-      row.appendChild(chip);
+    );
+    // 默认选中本月
+    if (!currentRange.value) {
+      const now = new Date();
+      currentRange = { type: 'month', value: now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') };
+      renderFilterRow();
     }
-    const custom = document.createElement('div');
-    custom.className = 'filter-chip' + (currentRange.type === 'custom' ? ' active' : '');
-    custom.textContent = '📅 自定义';
-    custom.onclick = () => {
-      document.getElementById('customDateRow').classList.add('show');
-    };
-    row.appendChild(custom);
   }
 
   function applyCustomRange() {
@@ -488,44 +682,49 @@
     loadTransactions();
   }
 
-  function getDateRange() {
-    if (currentRange.type === 'month') {
-      const [y, m] = currentRange.value.split('-');
+  function getDateRange(range) {
+    if (range.type === 'month') {
+      const [y, m] = range.value.split('-');
       const start = y + '-' + m + '-01';
       const lastDay = new Date(parseInt(y), parseInt(m), 0).getDate();
       const end = y + '-' + m + '-' + String(lastDay).padStart(2, '0');
       return { start, end };
-    } else if (currentRange.type === 'custom') {
-      const [start, end] = currentRange.value.split('|');
+    } else if (range.type === 'custom') {
+      const [start, end] = range.value.split('|');
       return { start, end };
     }
     return { start: '', end: '' };
   }
 
+  // ============ 记录 ============
   async function loadTransactions() {
     const list = document.getElementById('recordList');
     list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;font-size:13px;">加载中...</div>';
-    const range = getDateRange();
-
+    const range = getDateRange(currentRange);
     try {
       const resp = await fetch('/api/transactions?owner=' + encodeURIComponent(MY_EMAIL) + '&start=' + range.start + '&end=' + range.end);
       const data = await resp.json();
       transactions = Array.isArray(data) ? data : [];
     } catch(e) { transactions = []; }
-
     renderSummary();
     renderRecords();
   }
 
   function renderSummary() {
-    let income = 0, expense = 0;
+    let incomeEur = 0, expenseEur = 0;
     transactions.forEach(t => {
-      if (t.type === 'income') income += parseFloat(t.amount || 0);
-      else expense += parseFloat(t.amount || 0);
+      const eur = toEUR(t.amount, t.currency || 'EUR');
+      if (t.type === 'income') incomeEur += eur;
+      else expenseEur += eur;
     });
-    document.getElementById('sumIncome').textContent = '€' + income.toFixed(2);
-    document.getElementById('sumExpense').textContent = '€' + expense.toFixed(2);
-    document.getElementById('sumBalance').textContent = '€' + (income - expense).toFixed(2);
+    document.getElementById('sumIncome').textContent = '€' + incomeEur.toFixed(2);
+    document.getElementById('sumExpense').textContent = '€' + expenseEur.toFixed(2);
+    document.getElementById('sumBalance').textContent = '€' + (incomeEur - expenseEur).toFixed(2);
+  }
+
+  function fmtAmount(amount, currency) {
+    const sym = currency === 'EUR' ? '€' : currency === 'CNY' ? '¥' : '$';
+    return sym + parseFloat(amount || 0).toFixed(2);
   }
 
   function renderRecords() {
@@ -540,26 +739,23 @@
       div.className = 'record-item';
       const cls = t.type === 'income' ? 'income' : 'expense';
       const sign = t.type === 'income' ? '+' : '-';
+      const cur = t.currency || 'EUR';
       div.innerHTML = `
         <div class="rec-left">
           <div class="rec-title">${t.category || '其他'} ${t.note ? '· ' + t.note : ''}</div>
           <div class="rec-meta">${t.tx_date || ''}</div>
         </div>
-        <div class="rec-amount ${cls}">${sign}€${parseFloat(t.amount || 0).toFixed(2)}</div>
+        <div class="rec-amount ${cls}">${sign}${fmtAmount(t.amount, cur)}</div>
         <button class="rec-del" onclick="delTransaction(${t.id})">✕</button>
       `;
       list.appendChild(div);
     });
   }
 
-  function setType(t) {
-    currentType = t;
-    document.getElementById('btnExpense').classList.toggle('active', t === 'expense');
-    document.getElementById('btnIncome').classList.toggle('active', t === 'income');
-  }
-
+  // ============ 添加 / 删除 ============
   async function addTransaction() {
     const amount = parseFloat(document.getElementById('txAmount').value);
+    const currency = document.getElementById('txCurrency').value;
     const category = document.getElementById('txCategory').value;
     const note = document.getElementById('txNote').value.trim();
     const txDate = document.getElementById('txDate').value || new Date().toISOString().slice(0, 10);
@@ -576,6 +772,7 @@
           type: currentType,
           category: category,
           amount: amount,
+          currency: currency,
           note: note,
           tx_date: txDate
         })
@@ -586,6 +783,7 @@
 
     document.getElementById('txAmount').value = '';
     document.getElementById('txNote').value = '';
+    document.getElementById('txPreview').textContent = '';
     await loadTransactions();
   }
 
@@ -602,48 +800,117 @@
     await loadTransactions();
   }
 
-  function generateBill() {
-    if (transactions.length === 0) {
-      alert('这段时间没有记录，无法生成账单');
-      return;
-    }
-    if (navigator.vibrate) navigator.vibrate(15);
+  // ============ 账单 ============
+  function openBill() {
+    if (navigator.vibrate) navigator.vibrate(12);
+    // 默认本月
+    const now = new Date();
+    billRange = { type: 'month', value: now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') };
+    renderBillRangeRow();
+    document.getElementById('billModal').classList.add('show');
+    generateBill();
+  }
 
-    let income = 0, expense = 0;
-    const byCategory = {};
-    transactions.forEach(t => {
-      const amt = parseFloat(t.amount || 0);
-      if (t.type === 'income') income += amt;
-      else {
-        expense += amt;
+  function renderBillRangeRow() {
+    const row = document.getElementById('billRangeRow');
+    buildMonthChips(
+      row,
+      (val) => {
+        if (val === '__custom__') {
+          document.getElementById('billCustomRow').classList.add('show');
+          return;
+        }
+        billRange = { type: 'month', value: val };
+        document.getElementById('billCustomRow').classList.remove('show');
+        renderBillRangeRow();
+        generateBill();
+      },
+      (val) => {
+        if (val === '__custom__') return billRange.type === 'custom';
+        return billRange.type === 'month' && billRange.value === val;
+      }
+    );
+  }
+
+  async function applyBillRange() {
+    const start = document.getElementById('billStart').value;
+    const end = document.getElementById('billEnd').value;
+    if (!start || !end) { alert('请选择起止日期'); return; }
+    billRange = { type: 'custom', value: start + '|' + end };
+    document.getElementById('billCustomRow').classList.remove('show');
+    renderBillRangeRow();
+    await generateBill();
+  }
+
+  async function generateBill() {
+    const range = getDateRange(billRange);
+    let list = [];
+    try {
+      const resp = await fetch('/api/transactions?owner=' + encodeURIComponent(MY_EMAIL) + '&start=' + range.start + '&end=' + range.end);
+      const data = await resp.json();
+      list = Array.isArray(data) ? data : [];
+    } catch(e) { list = []; }
+
+    let incomeEur = 0, expenseEur = 0;
+    const expenseByCategory = {};
+    const incomeByCategory = {};
+    list.forEach(t => {
+      const eur = toEUR(t.amount, t.currency || 'EUR');
+      if (t.type === 'income') {
+        incomeEur += eur;
         const cat = t.category || '其他';
-        byCategory[cat] = (byCategory[cat] || 0) + amt;
+        incomeByCategory[cat] = (incomeByCategory[cat] || 0) + eur;
+      } else {
+        expenseEur += eur;
+        const cat = t.category || '其他';
+        expenseByCategory[cat] = (expenseByCategory[cat] || 0) + eur;
       }
     });
-    const balance = income - expense;
+    const balanceEur = incomeEur - expenseEur;
+    const incomeAll = fromEUR(incomeEur);
+    const expenseAll = fromEUR(expenseEur);
+    const balanceAll = fromEUR(balanceEur);
 
-    const range = getDateRange();
     const periodText = range.start + ' 至 ' + range.end;
-    const sortedCats = Object.keys(byCategory).sort((a, b) => byCategory[b] - byCategory[a]);
 
-    let catHtml = '';
-    sortedCats.forEach(cat => {
-      catHtml += '<div class="bill-line"><span>' + cat + '</span><span>€' + byCategory[cat].toFixed(2) + '</span></div>';
-    });
+    const fmtCell = (label, cls, all) => `
+      <div class="bill-total-cell ${cls}">
+        <div class="cur">${label}</div>
+        <div class="amt">€${all.EUR.toFixed(2)}</div>
+        <div class="amt" style="font-size:11px;color:#888;margin-top:2px;">¥${all.CNY.toFixed(2)}</div>
+        <div class="amt" style="font-size:11px;color:#888;">$${all.USD.toFixed(2)}</div>
+      </div>
+    `;
+
+    const renderCatLines = (obj) => {
+      const keys = Object.keys(obj).sort((a, b) => obj[b] - obj[a]);
+      if (keys.length === 0) return '<div class="bill-line"><span>—</span><span>—</span></div>';
+      return keys.map(k => '<div class="bill-line"><span>' + k + '</span><span>€' + obj[k].toFixed(2) + '</span></div>').join('');
+    };
 
     const html = '<div class="bill-card">' +
       '<div class="bill-period">' + periodText + '</div>' +
       '<div class="bill-title">📊 账单</div>' +
-      '<div class="bill-line"><span>收入</span><span>€' + income.toFixed(2) + '</span></div>' +
-      '<div class="bill-line"><span>支出</span><span>€' + expense.toFixed(2) + '</span></div>' +
-      '<div class="bill-line total"><span>结余</span><span>€' + balance.toFixed(2) + '</span></div>' +
-      '<div style="margin-top:16px;font-size:13px;opacity:0.8;">支出明细</div>' +
-      (catHtml || '<div class="bill-line"><span>暂无支出</span><span>—</span></div>') +
-      '<div class="bill-footer">来自「独家记账」</div>' +
+
+      '<div class="bill-section-title">总收入</div>' +
+      '<div class="bill-total-grid">' + fmtCell('收入', 'income', incomeAll) + '</div>' +
+
+      '<div class="bill-section-title">总支出</div>' +
+      '<div class="bill-total-grid">' + fmtCell('支出', 'expense', expenseAll) + '</div>' +
+
+      '<div class="bill-section-title">结余（收入 − 支出）</div>' +
+      '<div class="bill-total-grid">' + fmtCell('结余', '', balanceAll) + '</div>' +
+
+      '<div class="bill-section-title">收入明细</div>' +
+      renderCatLines(incomeByCategory) +
+
+      '<div class="bill-section-title">支出明细</div>' +
+      renderCatLines(expenseByCategory) +
+
+      '<div class="bill-footer">来自「独家记账」· 共 ' + list.length + ' 笔</div>' +
     '</div>';
 
     document.getElementById('billContainer').innerHTML = html;
-    document.getElementById('billModal').classList.add('show');
   }
 
   function closeBill() {
@@ -656,9 +923,13 @@
     else location.href = '/?tab=tools';
   }
 
+  // ============ 初始化 ============
+  document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
+  renderCategories();
   fetchRates();
   renderFilterRow();
   loadTransactions();
+  document.getElementById('txAmount').addEventListener('input', onTxCurrencyChange);
 </script>
 </body>
 </html>

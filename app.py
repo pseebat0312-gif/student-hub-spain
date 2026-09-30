@@ -739,7 +739,128 @@ def api_transactions_delete():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================================
+#                        汇率
+# ==========================================================
+@app.route("/api/rates")
+def api_rates():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    # 优先从缓存表读，没有就返回默认
+    try:
+        result = supabase.table("rates_cache").select("*").order("updated_at", desc=True).limit(1).execute()
+        if result.data:
+            row = result.data[0]
+            return jsonify({
+                "EUR_TO_CNY": row.get("eur_to_cny", 7.85),
+                "EUR_TO_USD": row.get("eur_to_usd", 1.08),
+                "updated_at": row.get("updated_at", ""),
+            })
+    except Exception as e:
+        print("读汇率缓存失败:", e)
+    return jsonify({"EUR_TO_CNY": 7.85, "EUR_TO_USD": 1.08, "updated_at": "默认汇率"})
 
+
+# ==========================================================
+#                        记账
+# ==========================================================
+@app.route("/api/transactions")
+def api_transactions():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    start = request.args.get("start", "").strip()
+    end = request.args.get("end", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        q = supabase.table("transactions").select("*").eq("user_email", owner)
+        if start:
+            q = q.gte("tx_date", start)
+        if end:
+            q = q.lte("tx_date", end)
+        result = q.order("tx_date", desc=True).order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/transactions/add", methods=["POST"])
+def api_transactions_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip() or "anonymous"
+    ttype = data.get("type", "expense")
+    category = data.get("category", "").strip() or "其他"
+    amount = data.get("amount", 0)
+    currency = data.get("currency", "EUR").strip().upper()
+    note = data.get("note", "").strip()
+    tx_date = data.get("tx_date", "")
+    if not amount or float(amount) <= 0:
+        return jsonify({"error": "金额无效"}), 400
+    if currency not in ("EUR", "CNY", "USD"):
+        return jsonify({"error": "币种无效"}), 400
+    try:
+        supabase.table("transactions").insert({
+            "user_email": email,
+            "type": ttype,
+            "category": category,
+            "amount": float(amount),
+            "currency": currency,
+            "note": note,
+            "tx_date": tx_date,
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/transactions/delete", methods=["POST"])
+def api_transactions_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    tx_id = data.get("id")
+    if not tx_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        supabase.table("transactions").delete().eq("id", tx_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#                 汇率定时抓取（可选，手动调用）
+# ==========================================================
+@app.route("/api/rates/refresh", methods=["POST"])
+def api_rates_refresh():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    import urllib.request
+    try:
+        # 用 frankfurter.app，免费、无需 key
+        req = urllib.request.Request(
+            "https://api.frankfurter.app/latest?from=EUR&to=CNY,USD",
+            headers={"User-Agent": "trans-spain-tools"},
+        )
+        with urllib.request.urlopen(req, timeout=8) as r:
+            import json as _json
+            payload = _json.loads(r.read().decode("utf-8"))
+        cny = payload["rates"]["CNY"]
+        usd = payload["rates"]["USD"]
+        from datetime import datetime as _dt
+        supabase.table("rates_cache").insert({
+            "eur_to_cny": cny,
+            "eur_to_usd": usd,
+            "updated_at": _dt.utcnow().isoformat(),
+        }).execute()
+        return jsonify({"success": True, "EUR_TO_CNY": cny, "EUR_TO_USD": usd})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    
 
 
 if __name__ == "__main__":
