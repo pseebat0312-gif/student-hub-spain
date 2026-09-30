@@ -194,7 +194,7 @@
     outline: none;
     font-family: inherit;
   }
-  
+
   .add-form input:focus, .add-form select:focus { border-color: rgba(255,255,255,0.24); }
   .add-form select option { background: #1a1a1e; }
   .add-form input[type="date"] { color-scheme: dark; }
@@ -578,13 +578,143 @@
   }
 
   // ============ Tab 切换 ============
-  function switchTab(tab, el) {
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + tab).classList.add('active');
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    if (tab === 'book') loadTransactions();
+function switchTab(tab, el) {
+  // 点"记账本"时检查登录
+  if (tab === 'book' && !localStorage.getItem('access_token')) {
+    if (navigator.vibrate) navigator.vibrate(12);
+    showLoginNeeded();
+    return;  // 不切换 tab
   }
+
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  if (tab === 'book') loadTransactions();
+}
+
+// 未登录时弹出的提示（覆盖整个页面）
+function showLoginNeeded() {
+  // 防止重复插入
+  if (document.getElementById('__gateCard')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = '__gateCard';
+  overlay.style.cssText = `
+    position: fixed; inset: 0;
+    background: rgba(10,8,30,0.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 40px 24px; text-align: center;
+    z-index: 9999;
+    animation: __gateFadeIn 0.3s ease;
+  `;
+  overlay.innerHTML = `
+    <style>
+      @keyframes __gateFadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes __gatePulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.06); opacity: 0.85; }
+      }
+      #__gateInner {
+        width: 100%; max-width: 340px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 26px;
+        padding: 32px 24px 26px;
+        text-align: center;
+      }
+      #__gateInner .lock {
+        font-size: 64px;
+        line-height: 1;
+        margin-bottom: 18px;
+        animation: __gatePulse 2.4s ease-in-out infinite;
+        display: inline-block;
+      }
+      #__gateInner .t {
+        font-size: 21px; font-weight: 800; color: #fff;
+        margin-bottom: 10px; letter-spacing: -0.4px;
+      }
+      #__gateInner .s {
+        font-size: 13.5px; color: rgba(255,255,255,0.55);
+        line-height: 1.7; margin-bottom: 24px;
+      }
+      #__gateInner .hint {
+        background: rgba(160,216,179,0.10);
+        border: 1px solid rgba(160,216,179,0.28);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-bottom: 20px;
+        font-size: 13px; color: #a0d8b3;
+        line-height: 1.6; text-align: left;
+      }
+      #__gateInner .hint b {
+        display: block; font-size: 14px;
+        margin-bottom: 6px; color: #b8e6c7;
+      }
+      #__gateInner .hint ol {
+        margin: 0; padding-left: 18px;
+        color: rgba(255,255,255,0.75);
+      }
+      #__gateInner .hint ol li { margin-bottom: 3px; }
+      #__gateInner .btns {
+        display: flex; flex-direction: column; gap: 10px;
+      }
+      #__gateInner button {
+        width: 100%; padding: 15px 24px;
+        border-radius: 999px;
+        font-size: 15px; font-weight: 700;
+        cursor: pointer; font-family: inherit;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+      }
+      #__gateInner button:active { transform: scale(0.95); }
+      #__gateInner .go-login {
+        border: 1px solid rgba(160,216,179,0.35);
+        background: rgba(160,216,179,0.15);
+        color: #a0d8b3;
+      }
+      #__gateInner .go-home {
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(255,255,255,0.04);
+        color: #ccc;
+      }
+    </style>
+
+    <div id="__gateInner">
+      <div class="lock">🔒</div>
+      <div class="t">记账需要登录</div>
+      <div class="s">记账功能需要登录后才能使用<br>登录后你的记账会云端同步</div>
+
+      <div class="hint">
+        <b>💡 登录方式</b>
+        <ol>
+          <li>点下面"去登录"进登录页</li>
+          <li>或用主页右上角"登录 →"</li>
+          <li>登录后回到这里再点记账</li>
+        </ol>
+      </div>
+
+      <div class="btns">
+        <button class="go-login" id="__goLoginBtn">去登录</button>
+        <button class="go-home" id="__cancelBtn">先看看汇率</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  document.getElementById('__goLoginBtn').onclick = () => {
+    if (navigator.vibrate) navigator.vibrate(12);
+    const back = encodeURIComponent('/currency');
+    location.replace('/login?back=' + back);
+  };
+  document.getElementById('__cancelBtn').onclick = () => {
+    if (navigator.vibrate) navigator.vibrate(8);
+    overlay.remove();
+  };
+}
+
 
   function setAmount(v) {
     document.getElementById('amountInput').value = v;
