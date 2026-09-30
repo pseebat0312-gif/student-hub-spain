@@ -679,5 +679,68 @@ def api_my_replies():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ===== 记账：读取（按用户 + 时间段） =====
+@app.route("/api/transactions")
+def api_transactions():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    start = request.args.get("start", "").strip()
+    end = request.args.get("end", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        query = supabase.table("transactions").select("*").eq("user_email", owner)
+        if start:
+            query = query.gte("tx_date", start)
+        if end:
+            query = query.lte("tx_date", end)
+        result = query.order("tx_date", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 记账：添加 =====
+@app.route("/api/transactions/add", methods=["POST"])
+def api_transactions_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少用户"}), 400
+    try:
+        supabase.table("transactions").insert({
+            "user_email": email,
+            "type": data.get("type", "expense"),
+            "category": data.get("category", "其他"),
+            "amount": float(data.get("amount", 0)),
+            "note": data.get("note", ""),
+            "tx_date": data.get("tx_date", "")
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ===== 记账：删除 =====
+@app.route("/api/transactions/delete", methods=["POST"])
+def api_transactions_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    tx_id = data.get("id")
+    if not tx_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        supabase.table("transactions").delete().eq("id", tx_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
