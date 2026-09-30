@@ -133,15 +133,46 @@
   .member-box .label { font-size: 12px; color: #888; margin-bottom: 6px; }
   .member-box .value { font-size: 18px; font-weight: bold; color: #a0d8b3; }
 
-  .upgrade-btn {
-    width: 100%; padding: 14px; border-radius: 14px;
-    border: 1px solid rgba(160, 216, 179, 0.3);
-    background: rgba(160, 216, 179, 0.1);
-    color: #a0d8b3; font-size: 15px; font-weight: bold;
-    cursor: pointer; transition: 0.1s;
-    margin-top: 14px;
+  /* ===== VIP 小卡片（和 member-box 同风格，横向布局） ===== */
+  .vip-mini-card {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(232,168,184,0.18), rgba(201,128,148,0.12));
+    border: 1px solid rgba(232,168,184,0.35);
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
   }
-  .upgrade-btn:active { transform: scale(0.97); }
+  .vip-mini-card:active {
+    transform: scale(0.97);
+    background: linear-gradient(135deg, rgba(232,168,184,0.28), rgba(201,128,148,0.18));
+  }
+  .vip-mini-card .vip-icon {
+    font-size: 26px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .vip-mini-card .vip-text { flex: 1; text-align: left; }
+  .vip-mini-card .vip-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e8a8b8;
+    margin-bottom: 3px;
+    letter-spacing: -0.2px;
+  }
+  .vip-mini-card .vip-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.4;
+  }
+  .vip-mini-card .vip-arrow {
+    font-size: 16px;
+    color: rgba(232,168,184,0.7);
+    flex-shrink: 0;
+  }
 
   .tip-box { font-size: 12px; color: #888; line-height: 1.6; margin-top: 10px; }
 </style>
@@ -193,10 +224,16 @@
         <div class="value">0 / 3</div>
       </div>
     </div>
-    <div class="card" onclick="location.href='/vip'">
-  <h3>👑 VIP 会员</h3>
-  <p>解锁全部高级功能，首月 €1。</p >
-</div>
+
+    <div class="vip-mini-card" onclick="location.href='/vip'">
+      <div class="vip-icon">👑</div>
+      <div class="vip-text">
+        <div class="vip-title">VIP 会员</div>
+        <div class="vip-sub">解锁全部高级功能，首月 €1</div>
+      </div>
+      <div class="vip-arrow">→</div>
+    </div>
+
     <div class="tip-box">升级到会员，解锁无限次 AI 分析和历史记录保存功能。</div>
   </div>
 
@@ -366,12 +403,6 @@
       if (data.error) { alert('保存失败：' + data.error); return; }
       alert('✅ 资料已保存');
     } catch (e) { alert('网络错误'); }
-  }
-
-  // ===== 升级会员 =====
-  function upgradeMember() {
-    if (navigator.vibrate) navigator.vibrate(10);
-    alert('付费功能正在开发中，敬请期待。');
   }
 
   loadProfile();
