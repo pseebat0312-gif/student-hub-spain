@@ -879,7 +879,24 @@ def api_community_reply():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-
+@app.route("/api/community/delete", methods=["POST"])
+def api_community_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    post_id = data.get("id")
+    email = data.get("email", "").strip()
+    if not post_id or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 只能删自己的
+        supabase.table("community_posts").delete().eq("id", post_id).eq("user_email", email).execute()
+        # 顺便删掉这个帖子下的所有回复
+        supabase.table("community_replies").delete().eq("post_id", post_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 # ==========================================================
 #                        用户资料
 # ==========================================================

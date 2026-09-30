@@ -103,6 +103,11 @@
     font-size: 12px; cursor: pointer; transition: 0.15s;
   }
   .post-footer button:active { transform: scale(0.95); }
+  .post-footer .del-btn {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border: 1px solid rgba(255, 107, 107, 0.3) !important;
+  }
 
   .detail-modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.8);
@@ -246,8 +251,10 @@
       arr.sort((a, b) => (b.replies_count || 0) - (a.replies_count || 0));
     }
     list.innerHTML = '';
+    const myEmail = localStorage.getItem('user_email');
     arr.forEach(p => {
       const info = infos[p.user_email] || { nickname: (p.user_email || '').split('@')[0], emoji: '🐱', url: '' };
+      const isMine = myEmail && p.user_email === myEmail;
       const div = document.createElement('div');
       div.className = 'post-card';
       const date = (p.created_at || '').slice(0, 10);
@@ -263,7 +270,10 @@
         <div class="post-content-preview">${escapeHtml((p.content || '').slice(0, 80))}...</div>
         <div class="post-footer">
           <span>💬 ${p.replies_count || 0} 条回复</span>
-          <button onclick="openPostById(${p.id})">查看详情</button>
+          <div style="display:flex;gap:6px;">
+            <button onclick="openPostById(${p.id})">查看详情</button>
+            ${isMine ? `<button class="del-btn" onclick="deletePost(${p.id})">删除</button>` : ''}
+          </div>
         </div>
       `;
       list.appendChild(div);
@@ -360,6 +370,23 @@
     } catch (e) { alert('网络错误'); return; }
     input.value = '';
     await loadReplies(currentPostId);
+    await loadPosts();
+  }
+
+  async function deletePost(id) {
+    if (!confirm('确定删除这篇帖子吗？所有回复也会被删除。')) return;
+    const email = localStorage.getItem('user_email');
+    if (!email) return;
+    if (navigator.vibrate) navigator.vibrate(15);
+    try {
+      const resp = await fetch('/api/community/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, email })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('删除失败：' + data.error); return; }
+    } catch (e) { alert('网络错误'); return; }
     await loadPosts();
   }
 
