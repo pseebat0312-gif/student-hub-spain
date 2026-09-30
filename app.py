@@ -170,10 +170,14 @@ def api_update_password():
     if not token or not password:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        supabase.auth.update_user({"password": password}, jwt=token)
+        # 用 token 设置当前会话
+        supabase.auth.set_session(token, token)
+        # 再更新密码
+        supabase.auth.update_user({"password": password})
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+    
 
 @app.route("/api/messages")
 def api_messages():

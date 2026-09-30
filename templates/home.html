@@ -366,5 +366,223 @@ window.history.replaceState({}, '', '/');
 }
 });
 </script>
+<!-- ============ PWA 添加到桌面引导（iOS + 安卓） ============ -->
+<div id="pwaGuide" style="
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 99999;
+  justify-content: flex-end;
+  align-items: flex-end;
+  animation: pwaFadeIn 0.35s ease;
+">
+  <div style="
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: #1c1c1e;
+    border-radius: 28px 28px 0 0;
+    padding: 26px 22px 34px;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    animation: pwaSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+  ">
+    <button onclick="closePwaGuide()" style="
+      position: absolute;
+      top: 18px; right: 18px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    ">✕</button>
+
+    <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px;">
+      📱 添加到手机桌面
+    </div>
+    <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; margin-bottom: 22px;">
+      添加到桌面后，就能像 App 一样一键打开，全屏无浏览器边框，还支持离线访问。
+    </div>
+
+    <div style="
+      background: rgba(160,216,179,0.08);
+      border: 1px solid rgba(160,216,179,0.22);
+      border-radius: 16px;
+      padding: 14px 16px;
+      margin-bottom: 22px;
+    ">
+      <div style="font-size: 13px; font-weight: 700; color: #a0d8b3; margin-bottom: 8px;">
+        ✨ 添加到桌面的好处
+      </div>
+      <div style="font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.9;">
+        • 一键打开，不用每次输网址<br>
+        • 全屏显示，没有浏览器地址栏<br>
+        • 有独立图标，和 App 一样<br>
+        • 网络不好也能打开
+      </div>
+    </div>
+
+    <!-- ============ iOS Safari 步骤 ============ -->
+    <div id="pwaStepsIOS" style="display: none;">
+      <div style="display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1</div>
+        <div style="flex: 1; padding-top: 4px;">
+          <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">点击底部的分享按钮</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6;">
+            在 Safari 底部中间，一个方框 + 向上箭头的图标 <span style="display:inline-block; padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 6px;">⬆️</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">2</div>
+        <div style="flex: 1; padding-top: 4px;">
+          <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">选择「添加到主屏幕」</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6;">
+            在弹出菜单里往下滑，找到一个带 <span style="display:inline-block; padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 6px;">➕</span> 的选项，点它
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 26px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">3</div>
+        <div style="flex: 1; padding-top: 4px;">
+          <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">点右上角「添加」</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6;">
+            桌面就会出现一个图标，点它就能像 App 一样打开
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 安卓 Chrome 步骤 ============ -->
+    <div id="pwaStepsAndroid" style="display: none;">
+      <div style="display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1</div>
+        <div style="flex: 1; padding-top: 4px;">
+          <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">点击浏览器右上角的菜单</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6;">
+            就是 Chrome 右上角那三个点 <span style="display:inline-block; padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 6px;">⋮</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">2</div>
+        <div style="flex: 1; padding-top: 4px;">
+          <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">选择「添加到主屏幕」或「安装应用」</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6;">
+            在菜单里找到一个带 <span style="display:inline-block; padding: 2px 8px; background: rgba(255,255,255,0.1); border-radius: 6px;">➕</span> 的选项，点它
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 26px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">3</div>
+        <div style="flex: 1; padding-top: 4px;">
+          <div style="font-size: 15px; font-weight: 700; margin-bottom: 4px;">点「添加」或「安装」</div>
+          <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6;">
+            桌面就会出现一个图标，点它就能像 App 一样打开
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="closePwaGuide()" style="
+      width: 100%;
+      padding: 17px;
+      border-radius: 999px;
+      border: none;
+      background: #fff;
+      color: #000;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: -0.2px;
+      margin-bottom: 12px;
+    ">👍 我知道了，去添加</button>
+
+    <button onclick="closePwaGuide()" style="
+      width: 100%;
+      padding: 12px;
+      border-radius: 999px;
+      border: none;
+      background: transparent;
+      color: rgba(255,255,255,0.45);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    ">以后再说，继续用网页版</button>
+  </div>
+</div>
+
+<style>
+  @keyframes pwaFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes pwaSlideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+</style>
+
+<script>
+  (function showPwaGuide() {
+    // 已点过"以后再说"或"我知道了"，7 天内不再显示
+    const dismissed = localStorage.getItem('pwa_dismissed_at');
+    if (dismissed) {
+      const days = (Date.now() - parseInt(dismissed)) / (1000 * 60 * 60 * 24);
+      if (days < 7) return;
+    }
+
+    // 已经添加到桌面（standalone 模式）就不显示
+    if (window.matchMedia('(display-mode: standalone)').matches) return;
+    if (window.navigator.standalone === true) return;
+
+    const ua = navigator.userAgent;
+    const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isAndroid = /Android/i.test(ua);
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    const isChromeAndroid = isAndroid && /Chrome/i.test(ua) && !/EdgA|OPR/.test(ua);
+
+    let platform = null;
+    if (isIOS && isSafari) platform = 'ios';
+    else if (isChromeAndroid) platform = 'android';
+
+    // 只对 iOS Safari 和 安卓 Chrome 显示
+    if (!platform) return;
+
+    // 显示对应步骤
+    if (platform === 'ios') {
+      document.getElementById('pwaStepsIOS').style.display = 'block';
+    } else {
+      document.getElementById('pwaStepsAndroid').style.display = 'block';
+    }
+
+    // 延迟 1.5 秒显示，避免页面加载时打扰
+    setTimeout(() => {
+      const guide = document.getElementById('pwaGuide');
+      if (guide) guide.style.display = 'flex';
+    }, 1500);
+  })();
+
+  function closePwaGuide() {
+    const guide = document.getElementById('pwaGuide');
+    if (guide) {
+      guide.style.animation = 'pwaFadeIn 0.25s ease reverse';
+      setTimeout(() => guide.style.display = 'none', 250);
+    }
+    if (navigator.vibrate) navigator.vibrate(10);
+    localStorage.setItem('pwa_dismissed_at', Date.now().toString());
+  }
+</script>
 </body>
 </html>
