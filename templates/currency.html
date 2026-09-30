@@ -1083,18 +1083,16 @@ function showLoginNeeded() {
       return keys.map(k => '<div class="bill-line"><span>' + k + '</span><span>€' + obj[k].toFixed(2) + '</span></div>').join('');
     };
 
-    const html = '<div class="bill-card">' +
+        const html = '<div class="bill-card">' +
       '<div class="bill-period">' + periodText + '</div>' +
       '<div class="bill-title">📊 账单</div>' +
 
-      '<div class="bill-section-title">总收入</div>' +
-      '<div class="bill-total-grid">' + fmtCell('收入', 'income', incomeAll) + '</div>' +
-
-      '<div class="bill-section-title">总支出</div>' +
-      '<div class="bill-total-grid">' + fmtCell('支出', 'expense', expenseAll) + '</div>' +
-
-      '<div class="bill-section-title">结余（收入 − 支出）</div>' +
-      '<div class="bill-total-grid">' + fmtCell('结余', '', balanceAll) + '</div>' +
+      '<div class="bill-section-title">总览</div>' +
+      '<div class="bill-total-grid">' +
+        fmtCell('收入', 'income', incomeAll) +
+        fmtCell('支出', 'expense', expenseAll) +
+        fmtCell('结余', '', balanceAll) +
+      '</div>' +
 
       '<div class="bill-section-title">收入明细</div>' +
       renderCatLines(incomeByCategory) +
@@ -1104,7 +1102,6 @@ function showLoginNeeded() {
 
       '<div class="bill-footer">来自「独家记账」· 共 ' + list.length + ' 笔</div>' +
     '</div>';
-
     document.getElementById('billContainer').innerHTML = html;
   }
 
