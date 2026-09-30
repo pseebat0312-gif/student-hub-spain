@@ -778,7 +778,6 @@ def api_market_delete():
     if not item_id or not email:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 只能删自己的
         supabase.table("market_items").delete().eq("id", item_id).eq("user_email", email).execute()
         return jsonify({"success": True})
     except Exception as e:
@@ -868,11 +867,9 @@ def api_community_reply():
             "user_email": email,
             "content": content,
         }).execute()
-        # 回复数 +1
         cur = supabase.table("community_posts").select("replies_count").eq("id", pid).execute()
         c = (cur.data[0]["replies_count"] if cur.data else 0) or 0
         supabase.table("community_posts").update({"replies_count": c + 1}).eq("id", pid).execute()
-        # 通知楼主
         post = supabase.table("community_posts").select("user_email, title").eq("id", pid).execute()
         if post.data:
             owner = post.data[0]["user_email"]
@@ -894,7 +891,7 @@ def api_profile_get():
     if not email:
         return jsonify({"error": "缺少 email"}), 400
     try:
-        result = supabase.table("user_profiles").select("*").eq("user_email", email).execute()
+        result = supabase.table("user_profiles").select("*").eq("email", email).execute()
         return jsonify(result.data[0] if result.data else {})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -908,22 +905,64 @@ def api_profile_save():
     email = data.get("email", "").strip()
     if not email:
         return jsonify({"error": "缺少 email"}), 400
+    nickname = data.get("nickname", "")
+    avatar_url = data.get("avatar_url", "")
+    avatar_emoji = data.get("avatar_emoji", "")
     payload = {
-        "user_email": email,
-        "nickname": data.get("nickname", ""),
-        "avatar": data.get("avatar", ""),
+        "email": email,
+        "nickname": nickname,
+        "avatar_url": avatar_url,
+        "avatar_emoji": avatar_emoji,
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     try:
-        exist = supabase.table("user_profiles").select("id").eq("user_email", email).execute()
+        exist = supabase.table("user_profiles").select("email").eq("email", email).execute()
         if exist.data:
-            supabase.table("user_profiles").update(payload).eq("user_email", email).execute()
+            supabase.table("user_profiles").update(payload).eq("email", email).execute()
         else:
             supabase.table("user_profiles").insert(payload).execute()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
+
+from werkzeug.utils import secure_filename
+import uuid
+
+
+@app.route("/api/upload", methods=["POST"])
+def api_upload():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    bucket = request.form.get("bucket", "avatars")
+    if bucket not in ("avatars", "market"):
+        return jsonify({"error": "bucket 不合法"}), 400
+    if "file" not in request.files:
+        return jsonify({"error": "没有文件"}), 400
+    f = request.files["file"]
+    if not f.filename:
+        return jsonify({"error": "文件名为空"}), 400
+    ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else "jpg"
+    if ext not in ("jpg", "jpeg", "png", "gif", "webp", "heic"):
+        return jsonify({"error": "文件类型不支持"}), 400
+    # 限 10MB
+    f.seek(0, 2)
+    size = f.tell()
+    f.seek(0)
+    if size > 10 * 1024 * 1024:
+        return jsonify({"error": "文件太大，最多 10MB"}), 400
+    name = f"{uuid.uuid4().hex}.{ext}"
+    try:
+        content = f.read()
+        supabase.storage.from_(bucket).upload(
+            name, content, {"content-type": f.mimetype or "image/jpeg"}
+        )
+        url = supabase.storage.from_(bucket).get_public_url(name)
+        return jsonify({"success": True, "url": url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # ==========================================================
 #                        汇率
 # ==========================================================

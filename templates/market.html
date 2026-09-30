@@ -33,7 +33,6 @@
 
   #content { padding: 10px 20px 40px; }
 
-  /* 顶部提示 */
   .notice {
     font-size: 12px; color: #888;
     background: rgba(255,255,255,0.04);
@@ -43,7 +42,6 @@
     line-height: 1.6;
   }
 
-  /* 发布按钮 */
   .publish-btn {
     width: 100%;
     padding: 16px;
@@ -56,7 +54,6 @@
   }
   .publish-btn:active { transform: scale(0.97); }
 
-  /* 发布表单 */
   .form-card {
     display: none;
     background: rgba(255,255,255,0.05);
@@ -89,7 +86,49 @@
   .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
   .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
 
-  /* 排序栏 */
+  /* 图片上传区 */
+  .upload-box {
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px dashed rgba(160, 216, 179, 0.3);
+    background: rgba(160, 216, 179, 0.05);
+    text-align: center;
+    font-size: 13px; color: #a0d8b3;
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: 0.15s;
+  }
+  .upload-box:active { transform: scale(0.98); }
+  .upload-preview {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .upload-preview::-webkit-scrollbar { display: none; }
+  .upload-thumb {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .upload-thumb img {
+    width: 70px; height: 70px;
+    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+  }
+  .upload-thumb .rm {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #ff4444;
+    color: #fff;
+    font-size: 13px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+  }
+
   .sort-bar {
     display: flex; gap: 8px;
     overflow-x: auto;
@@ -109,7 +148,6 @@
   .sort-btn.active { background: rgba(160, 216, 179, 0.15); color: #a0d8b3; border-color: #a0d8b3; }
   .sort-btn:active { transform: scale(0.95); }
 
-  /* 商品卡片 */
   .item-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -126,13 +164,30 @@
   .item-title { font-size: 16px; font-weight: bold; color: #fff; flex: 1; }
   .item-price { font-size: 15px; color: #a0d8b3; font-weight: bold; margin-left: 8px; }
   .item-desc { font-size: 13px; color: #bbb; line-height: 1.6; margin-bottom: 10px; }
-  .item-image {
-    width: 100%; border-radius: 10px; margin-bottom: 10px;
-    max-height: 180px; object-fit: cover;
+
+  .item-images {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
   }
+  .item-images::-webkit-scrollbar { display: none; }
+  .item-images img {
+    flex-shrink: 0;
+    width: 120px; height: 120px;
+    border-radius: 10px;
+    object-fit: cover;
+    cursor: pointer;
+  }
+
   .item-meta {
     display: flex; justify-content: space-between; align-items: center;
     font-size: 12px; color: #888;
+  }
+  .item-user {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #888;
+    margin-bottom: 8px;
   }
   .item-actions { display: flex; gap: 8px; margin-top: 12px; }
   .item-actions button {
@@ -146,13 +201,11 @@
   .item-actions .primary { background: rgba(160, 216, 179, 0.15); color: #a0d8b3; border-color: #a0d8b3; }
   .item-actions .danger { color: #ff6b6b; }
 
-  /* 空状态 */
   .empty-state {
     text-align: center; padding: 60px 20px;
     color: #666; font-size: 14px;
   }
 
-  /* 详情弹窗 */
   .detail-modal {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.8);
@@ -165,7 +218,7 @@
     width: 100%; max-width: 500px;
     border-radius: 25px 25px 0 0;
     padding: 24px 20px 35px;
-    max-height: 80vh; overflow-y: auto;
+    max-height: 85vh; overflow-y: auto;
     animation: slideUp 0.3s ease;
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -175,6 +228,12 @@
     width: 100%; padding: 14px; border-radius: 14px;
     border: none; background: rgba(255,255,255,0.08);
     color: #fff; font-size: 15px; cursor: pointer; margin-top: 16px;
+  }
+
+  .detail-user {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 14px;
+    font-size: 13px; color: #888;
   }
 </style>
 </head>
@@ -191,16 +250,20 @@
     💡 此平台仅作为沟通媒介，不涉及交易。请通过买家提供的联系方式进行后续交易。
   </div>
 
-  <!-- 发布按钮 -->
   <button class="publish-btn" onclick="togglePublish()">➕ 发布我要卖的东西</button>
 
-  <!-- 发布表单 -->
   <div class="form-card" id="publishForm">
     <input type="text" id="itemTitle" placeholder="物品名称 *">
     <textarea id="itemDesc" placeholder="物品描述"></textarea>
     <input type="text" id="itemPrice" placeholder="价格（欧元）">
     <input type="text" id="itemContact" placeholder="联系方式（微信 / WhatsApp）*">
-    <input type="text" id="itemImage" placeholder="图片链接（可选，建议用图床链接）">
+
+    <div class="upload-box" onclick="document.getElementById('itemImages').click()">
+      📷 点击上传图片（可多选，每张最大 10MB）
+    </div>
+    <input type="file" id="itemImages" accept="image/*" multiple style="display:none" onchange="onImagesSelected(event)">
+    <div class="upload-preview" id="uploadPreview"></div>
+
     <select id="itemCategory">
       <option value="">📂 选择分类</option>
       <option value="家具">🛋️ 家具</option>
@@ -216,22 +279,21 @@
     </div>
   </div>
 
-  <!-- 排序栏 -->
   <div class="sort-bar">
     <button class="sort-btn active" data-sort="new" onclick="sortBy('new', this)">最新发布</button>
     <button class="sort-btn" data-sort="price" onclick="sortBy('price', this)">价格最低</button>
     <button class="sort-btn" data-sort="views" onclick="sortBy('views', this)">最多浏览</button>
   </div>
 
-  <!-- 商品列表（从数据库加载） -->
   <div id="itemList"></div>
 
 </div>
 
-<!-- 详情弹窗 -->
 <div class="detail-modal" id="detailModal">
   <div class="detail-content">
     <h3 id="detailTitle">商品标题</h3>
+    <div class="detail-user" id="detailUser"></div>
+    <div id="detailImages"></div>
     <p id="detailDesc">商品描述</p>
     <p id="detailPrice" style="color:#a0d8b3; font-weight:bold;"></p>
     <p id="detailContact" style="color:#fff;"></p>
@@ -240,7 +302,6 @@
 </div>
 
 <script>
-  // ===== 智能返回 =====
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (window.history.length > 1) {
@@ -250,21 +311,68 @@
     }
   }
 
-  // ===== 展开/折叠发布表单 =====
   function togglePublish() {
     if (navigator.vibrate) navigator.vibrate(10);
     document.getElementById('publishForm').classList.toggle('show');
   }
 
-  // ===== HTML 转义 =====
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  // ===== 商品数据 =====
   let allItems = [];
   let currentSort = 'new';
+  let uploadedImages = [];
 
+  // ===== 图片上传 =====
+  async function onImagesSelected(event) {
+    const files = Array.from(event.target.files || []);
+    for (const f of files) {
+      if (!f.type.startsWith('image/')) continue;
+      if (f.size > 10 * 1024 * 1024) {
+        alert(f.name + ' 超过 10MB，已跳过');
+        continue;
+      }
+      const fd = new FormData();
+      fd.append('file', f);
+      fd.append('bucket', 'market');
+      try {
+        const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (data.url) {
+          uploadedImages.push(data.url);
+          renderUploadPreview();
+        } else if (data.error) {
+          alert('上传失败：' + data.error);
+        }
+      } catch (e) {
+        alert('网络错误');
+      }
+    }
+    event.target.value = '';
+  }
+
+  function renderUploadPreview() {
+    const box = document.getElementById('uploadPreview');
+    box.innerHTML = '';
+    uploadedImages.forEach((u, i) => {
+      const div = document.createElement('div');
+      div.className = 'upload-thumb';
+      div.innerHTML = `
+        <img src="${u}" alt="">
+        <span class="rm" onclick="removeUpload(${i})">×</span>
+      `;
+      box.appendChild(div);
+    });
+  }
+
+  function removeUpload(i) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    uploadedImages.splice(i, 1);
+    renderUploadPreview();
+  }
+
+  // ===== 商品数据 =====
   async function loadItems() {
     const list = document.getElementById('itemList');
     list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;font-size:13px;">加载中...</div>';
@@ -272,15 +380,17 @@
       const resp = await fetch('/api/market');
       allItems = await resp.json();
     } catch (e) { allItems = []; }
-    renderItems();
+    await renderItems();
   }
 
-  function renderItems() {
+  async function renderItems() {
     const list = document.getElementById('itemList');
     if (!Array.isArray(allItems) || !allItems.length) {
       list.innerHTML = '<div class="empty-state">还没有人发布物品</div>';
       return;
     }
+    const infos = await getManyUserInfo(allItems.map(it => it.user_email));
+
     let items = allItems.slice();
     if (currentSort === 'price') {
       items.sort((a, b) => (parseFloat(a.price) || 0) - (parseFloat(b.price) || 0));
@@ -290,16 +400,26 @@
     list.innerHTML = '';
     const myEmail = localStorage.getItem('user_email');
     items.forEach(it => {
+      const info = infos[it.user_email] || { nickname: (it.user_email || '').split('@')[0], emoji: '🐱', url: '' };
+      const isMine = myEmail && it.user_email === myEmail;
+      const urls = (it.image_url || '').split(',').filter(Boolean);
+      const imgsHtml = urls.length
+        ? `<div class="item-images">${urls.map(u => `<img src="${escapeHtml(u)}" onclick="showImage('${escapeHtml(u)}')" alt="">`).join('')}</div>`
+        : '';
+
       const div = document.createElement('div');
       div.className = 'item-card';
-      const isMine = myEmail && it.user_email === myEmail;
       div.innerHTML = `
         <div class="item-head">
           <div class="item-title">${escapeHtml(it.title)}</div>
           <div class="item-price">${it.price ? '€' + escapeHtml(it.price) : ''}</div>
         </div>
-        ${it.image_url ? `<img class="item-image" src="${escapeHtml(it.image_url)}" alt="">` : ''}
+        ${imgsHtml}
         <div class="item-desc">${escapeHtml(it.description || '')}</div>
+        <div class="item-user">
+          ${avatarHtml(info, 20)}
+          <span>${escapeHtml(nicknameOf(info, it.user_email))}</span>
+        </div>
         <div class="item-meta">
           <span>👀 ${it.views || 0} 次浏览</span>
           <span>${it.category ? '📂 ' + escapeHtml(it.category) : ''}</span>
@@ -333,7 +453,7 @@
           description: document.getElementById('itemDesc').value.trim(),
           price: document.getElementById('itemPrice').value.trim(),
           contact,
-          image_url: document.getElementById('itemImage').value.trim(),
+          image_url: uploadedImages.join(','),
           category: document.getElementById('itemCategory').value
         })
       });
@@ -344,8 +464,9 @@
     document.getElementById('itemDesc').value = '';
     document.getElementById('itemPrice').value = '';
     document.getElementById('itemContact').value = '';
-    document.getElementById('itemImage').value = '';
     document.getElementById('itemCategory').value = '';
+    uploadedImages = [];
+    renderUploadPreview();
     togglePublish();
     await loadItems();
   }
@@ -369,10 +490,22 @@
     if (navigator.vibrate) navigator.vibrate(10);
     const it = allItems.find(x => x.id === id);
     if (!it) return;
+    const info = await getUserInfo(it.user_email);
+
     document.getElementById('detailTitle').textContent = it.title;
+    document.getElementById('detailUser').innerHTML = `${avatarHtml(info, 24)} <span>${escapeHtml(nicknameOf(info, it.user_email))}</span>`;
     document.getElementById('detailDesc').textContent = it.description || '';
     document.getElementById('detailPrice').textContent = it.price ? '💶 €' + it.price : '';
     document.getElementById('detailContact').textContent = '📞 ' + (it.contact || '');
+
+    const urls = (it.image_url || '').split(',').filter(Boolean);
+    const imgBox = document.getElementById('detailImages');
+    if (urls.length) {
+      imgBox.innerHTML = `<div class="item-images" style="margin-bottom:12px;">${urls.map(u => `<img src="${escapeHtml(u)}" onclick="showImage('${escapeHtml(u)}')" alt="">`).join('')}</div>`;
+    } else {
+      imgBox.innerHTML = '';
+    }
+
     document.getElementById('detailModal').classList.add('show');
     try {
       await fetch('/api/market/view', {
@@ -381,6 +514,10 @@
         body: JSON.stringify({ id })
       });
     } catch (e) {}
+  }
+
+  function showImage(url) {
+    window.open(url, '_blank');
   }
 
   function closeDetail() {
@@ -395,9 +532,9 @@
     renderItems();
   }
 
-  // 页面加载时拉数据
   loadItems();
 </script>
 <script src="/static/js/auth-gate.js"></script>
+<script src="/static/js/user-info.js"></script>
 </body>
 </html>

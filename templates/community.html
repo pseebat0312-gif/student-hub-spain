@@ -29,7 +29,6 @@
 
   #content { padding: 10px 20px 40px; }
 
-  /* 发布按钮 */
   .publish-btn {
     width: 100%; padding: 16px; border-radius: 16px;
     border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
@@ -38,7 +37,6 @@
   }
   .publish-btn:active { transform: scale(0.97); }
 
-  /* 发布表单 */
   .form-card {
     display: none; background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -66,7 +64,6 @@
   .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
   .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
 
-  /* 排序栏 */
   .sort-bar { display: flex; gap: 8px; margin-bottom: 16px; }
   .sort-btn {
     flex: 1; padding: 10px; border-radius: 12px;
@@ -77,7 +74,6 @@
   .sort-btn.active { background: rgba(160, 216, 179, 0.15); color: #a0d8b3; border-color: #a0d8b3; }
   .sort-btn:active { transform: scale(0.96); }
 
-  /* 帖子卡片 */
   .post-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -92,7 +88,7 @@
     white-space: nowrap;
   }
   .post-title { font-size: 15px; font-weight: bold; color: #fff; flex: 1; line-height: 1.4; }
-  .post-meta { font-size: 12px; color: #888; margin-bottom: 8px; }
+  .post-meta { font-size: 12px; color: #888; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
   .post-content-preview {
     font-size: 13px; color: #bbb; line-height: 1.6; margin-bottom: 10px;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -108,7 +104,6 @@
   }
   .post-footer button:active { transform: scale(0.95); }
 
-  /* 详情弹窗 */
   .detail-modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.8);
     display: none; justify-content: center; align-items: flex-end; z-index: 100;
@@ -122,10 +117,9 @@
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .detail-content .post-detail-title { font-size: 18px; font-weight: bold; color: #a0d8b3; margin-bottom: 6px; }
-  .detail-content .post-detail-meta { font-size: 12px; color: #888; margin-bottom: 14px; }
+  .detail-content .post-detail-meta { font-size: 12px; color: #888; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
   .detail-content .post-detail-body { font-size: 14px; color: #ddd; line-height: 1.7; margin-bottom: 20px; white-space: pre-wrap; }
 
-  /* 回复列表 */
   .reply-item {
     padding: 10px 12px; background: rgba(255,255,255,0.04);
     border-radius: 10px; margin-bottom: 8px; font-size: 13px; color: #ccc;
@@ -163,7 +157,6 @@
 
   <button class="publish-btn" onclick="togglePublish()">➕ 发布新帖子</button>
 
-  <!-- 发帖表单 -->
   <div class="form-card" id="publishForm">
     <input type="text" id="postTitle" placeholder="标题 *">
     <textarea id="postContent" placeholder="内容 *"></textarea>
@@ -180,18 +173,15 @@
     </div>
   </div>
 
-  <!-- 排序 -->
   <div class="sort-bar">
     <button class="sort-btn active" data-sort="new" onclick="sortBy('new', this)">最新发布</button>
     <button class="sort-btn" data-sort="hot" onclick="sortBy('hot', this)">最多回复</button>
   </div>
 
-  <!-- 帖子列表（从数据库加载） -->
   <div id="postList"></div>
 
 </div>
 
-<!-- 帖子详情弹窗 -->
 <div class="detail-modal" id="detailModal">
   <div class="detail-content">
     <div class="post-detail-title" id="dTitle">标题</div>
@@ -210,7 +200,6 @@
 </div>
 
 <script>
-  // ===== 智能返回 =====
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (window.history.length > 1) {
@@ -220,21 +209,19 @@
     }
   }
 
-  // ===== 发布表单 =====
   function togglePublish() {
     if (navigator.vibrate) navigator.vibrate(10);
     document.getElementById('publishForm').classList.toggle('show');
   }
 
-  // ===== HTML 转义 =====
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   }
 
-  // ===== 帖子数据 =====
   let allPosts = [];
   let currentSort = 'new';
   let currentPostId = null;
+  let currentPostMeta = null;
 
   async function loadPosts() {
     const list = document.getElementById('postList');
@@ -243,31 +230,36 @@
       const resp = await fetch('/api/community/posts');
       allPosts = await resp.json();
     } catch (e) { allPosts = []; }
-    renderPosts();
+    await renderPosts();
   }
 
-  function renderPosts() {
+  async function renderPosts() {
     const list = document.getElementById('postList');
     if (!Array.isArray(allPosts) || !allPosts.length) {
       list.innerHTML = '<div style="text-align:center;color:#666;padding:40px 20px;font-size:14px;">还没有帖子，来发第一帖吧</div>';
       return;
     }
+    const infos = await getManyUserInfo(allPosts.map(p => p.user_email));
+
     let arr = allPosts.slice();
     if (currentSort === 'hot') {
       arr.sort((a, b) => (b.replies_count || 0) - (a.replies_count || 0));
     }
     list.innerHTML = '';
     arr.forEach(p => {
+      const info = infos[p.user_email] || { nickname: (p.user_email || '').split('@')[0], emoji: '🐱', url: '' };
       const div = document.createElement('div');
       div.className = 'post-card';
       const date = (p.created_at || '').slice(0, 10);
-      const emailPrefix = (p.user_email || '').split('@')[0];
       div.innerHTML = `
         <div class="post-head">
           <div class="post-title">${escapeHtml(p.title)}</div>
           <div class="post-tag">${escapeHtml(p.category || '其他')}</div>
         </div>
-        <div class="post-meta">发布者：${escapeHtml(emailPrefix)} · ${date}</div>
+        <div class="post-meta">
+          ${avatarHtml(info, 20)}
+          <span>${escapeHtml(nicknameOf(info, p.user_email))} · ${date}</span>
+        </div>
         <div class="post-content-preview">${escapeHtml((p.content || '').slice(0, 80))}...</div>
         <div class="post-footer">
           <span>💬 ${p.replies_count || 0} 条回复</span>
@@ -314,9 +306,14 @@
     const p = allPosts.find(x => x.id === id);
     if (!p) return;
     currentPostId = id;
+    currentPostMeta = { category: p.category, email: p.user_email, created_at: p.created_at };
+
     document.getElementById('dTitle').textContent = p.title;
-    document.getElementById('dMeta').textContent = `[${p.category || '其他'}] ${p.user_email}`;
+    const info = await getUserInfo(p.user_email);
+    const date = (p.created_at || '').slice(0, 10);
+    document.getElementById('dMeta').innerHTML = `[${escapeHtml(p.category || '其他')}] ${avatarHtml(info, 20)} ${escapeHtml(nicknameOf(info, p.user_email))} · ${date}`;
     document.getElementById('dBody').textContent = p.content;
+
     await loadReplies(id);
     document.getElementById('detailModal').classList.add('show');
   }
@@ -332,11 +329,12 @@
         list.innerHTML = '<div style="color:#666; font-size:13px; margin-bottom:10px;">还没有回复，来抢沙发吧！</div>';
         return;
       }
+      const infos = await getManyUserInfo(replies.map(r => r.user_email));
       replies.forEach(r => {
+        const info = infos[r.user_email] || { nickname: (r.user_email || '').split('@')[0], emoji: '🐱', url: '' };
         const div = document.createElement('div');
         div.className = 'reply-item';
-        const prefix = (r.user_email || '').split('@')[0] || '匿名';
-        div.innerHTML = `<span class="reply-user">${escapeHtml(prefix)}：</span>${escapeHtml(r.content)}`;
+        div.innerHTML = `${avatarHtml(info, 20)} <span class="reply-user">${escapeHtml(nicknameOf(info, r.user_email))}：</span>${escapeHtml(r.content)}`;
         list.appendChild(div);
       });
     } catch (e) {
@@ -369,9 +367,9 @@
     document.getElementById('detailModal').classList.remove('show');
   }
 
-  // 页面加载时拉帖子
   loadPosts();
 </script>
 <script src="/static/js/auth-gate.js"></script>
+<script src="/static/js/user-info.js"></script>
 </body>
 </html>
