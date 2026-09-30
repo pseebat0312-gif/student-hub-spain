@@ -1,57 +1,130 @@
-// 未登录拦截：显示遮罩，用户点按钮才跳登录
+// 未登录拦截：显示锁屏，提示用户回主页登录
 (function () {
   const token = localStorage.getItem('access_token');
   if (token) return;
 
-  // 从 <title> 或页面里判断显示什么提示
   const pageTitle = document.title.split('·')[0].trim() || '此功能';
 
   const overlay = document.createElement('div');
   overlay.style.cssText = `
     position: fixed; inset: 0;
-    background: rgba(15,12,41,0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: rgba(10,8,30,0.98);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
     padding: 40px 24px; text-align: center;
     z-index: 9999;
+    animation: __gateFadeIn 0.3s ease;
   `;
   overlay.innerHTML = `
-    <div style="font-size: 56px; margin-bottom: 20px;">🔒</div>
-    <div style="font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 10px;">需要登录</div>
-    <div style="font-size: 14px; color: #888; line-height: 1.7; margin-bottom: 32px; max-width: 280px;">
-      ${pageTitle}需要登录后才能使用。<br>请先登录，再回来吧。
+    <style>
+      @keyframes __gateFadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes __gatePulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.06); opacity: 0.85; }
+      }
+      #__gateCard {
+        width: 100%; max-width: 340px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 26px;
+        padding: 32px 24px 26px;
+        text-align: center;
+      }
+      #__gateLock {
+        font-size: 64px;
+        line-height: 1;
+        margin-bottom: 18px;
+        animation: __gatePulse 2.4s ease-in-out infinite;
+        display: inline-block;
+      }
+      #__gateTitle {
+        font-size: 21px;
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 10px;
+        letter-spacing: -0.4px;
+      }
+      #__gateSub {
+        font-size: 13.5px;
+        color: rgba(255,255,255,0.55);
+        line-height: 1.7;
+        margin-bottom: 24px;
+      }
+      #__gateHint {
+        background: rgba(160,216,179,0.10);
+        border: 1px solid rgba(160,216,179,0.28);
+        border-radius: 16px;
+        padding: 14px 16px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: #a0d8b3;
+        line-height: 1.6;
+        text-align: left;
+      }
+      #__gateHint b {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 6px;
+        color: #b8e6c7;
+      }
+      #__gateHint ol {
+        margin: 0;
+        padding-left: 18px;
+        color: rgba(255,255,255,0.75);
+      }
+      #__gateHint ol li {
+        margin-bottom: 3px;
+      }
+      #__goHomeBtn {
+        width: 100%;
+        padding: 16px 24px;
+        border-radius: 999px;
+        border: 1px solid rgba(160,216,179,0.35);
+        background: rgba(160,216,179,0.15);
+        color: #a0d8b3;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+      }
+      #__goHomeBtn:active {
+        transform: scale(0.95);
+        background: rgba(160,216,179,0.25);
+      }
+      #__gateFooter {
+        margin-top: 18px;
+        font-size: 11px;
+        color: rgba(255,255,255,0.30);
+        letter-spacing: 0.3px;
+      }
+    </style>
+
+    <div id="__gateCard">
+      <div id="__gateLock">🔒</div>
+      <div id="__gateTitle">需要登录</div>
+      <div id="__gateSub">${pageTitle}需要登录后才能使用</div>
+
+      <div id="__gateHint">
+        <b>💡 登录方式</b>
+        <ol>
+          <li>点下面的按钮回主页</li>
+          <li>点主页<b style="display:inline;color:#b8e6c7;">右上角</b>"登录 →"</li>
+          <li>登录成功后，再回到这里</li>
+        </ol>
+      </div>
+
+      <button id="__goHomeBtn">🏠 回主页登录</button>
+      <div id="__gateFooter">登录后可直接刷新本页</div>
     </div>
-    <button id="__goLoginBtn" style="
-      width: 100%; max-width: 280px;
-      padding: 16px 24px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(160,216,179,0.15); color: #a0d8b3;
-      font-size: 16px; font-weight: 700;
-      cursor: pointer; margin-bottom: 12px;
-      font-family: inherit;
-    ">去登录</button>
-    <button id="__goHomeBtn" style="
-      width: 100%; max-width: 280px;
-      padding: 16px 24px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: transparent; color: #ccc;
-      font-size: 15px; font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    ">回主页</button>
   `;
   document.body.appendChild(overlay);
 
-  document.getElementById('__goLoginBtn').onclick = () => {
-    if (navigator.vibrate) navigator.vibrate(10);
-    const back = encodeURIComponent(window.location.pathname + window.location.search);
-    // 用 replace：不在历史里留被拦页
-    location.replace('/login?back=' + back);
-  };
   document.getElementById('__goHomeBtn').onclick = () => {
-    if (navigator.vibrate) navigator.vibrate(10);
-    location.href = '/';
+    if (navigator.vibrate) navigator.vibrate(12);
+    // 直接替换历史，回主页
+    location.replace('/');
   };
 })();
