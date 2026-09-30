@@ -312,17 +312,41 @@
   .bill-card .bill-period { font-size: 12px; color: #888; margin-bottom: 8px; }
   .bill-card .bill-title { font-size: 20px; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.4px; }
 
-  .bill-total-grid {
-    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;
+    .bill-total-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
     margin-bottom: 14px;
+    width: 100%;
+    box-sizing: border-box;
   }
   .bill-total-cell {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.10);
-    border-radius: 14px; padding: 12px 8px; text-align: center;
+    border-radius: 14px;
+    padding: 12px 6px;
+    text-align: center;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
   }
-  .bill-total-cell .cur { font-size: 10px; color: #888; margin-bottom: 4px; }
-  .bill-total-cell .amt { font-size: 14px; font-weight: 700; color: #fff; }
+  .bill-total-cell .cur {
+    font-size: 10px;
+    color: #888;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bill-total-cell .amt {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.3px;
+  }
   .bill-total-cell.income .amt { color: #7ad19f; }
   .bill-total-cell.expense .amt { color: #ff8b95; }
 
