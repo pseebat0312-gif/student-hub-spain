@@ -184,6 +184,7 @@
   .add-form input, .add-form select {
     width: 100%;
     max-width: 100%;
+    min-width: 0;
     box-sizing: border-box;
     padding: 12px 14px;
     border-radius: 14px;
@@ -197,7 +198,25 @@
 
   .add-form input:focus, .add-form select:focus { border-color: rgba(255,255,255,0.24); }
   .add-form select option { background: #1a1a1e; }
-  .add-form input[type="date"] { color-scheme: dark; }
+  .add-form input[type="date"] {
+    color-scheme: dark;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* ===== 修复：日期框在手机上溢出 ===== */
+  .add-form .field-row,
+  .add-form .field-row * {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .add-form input[type="date"]::-webkit-calendar-picker-indicator {
+    margin-left: 0;
+  }
+  .add-form input[type="date"]::-webkit-datetime-edit {
+    overflow: hidden;
+    white-space: nowrap;
+  }
 
   .amount-currency-row { display: flex; gap: 10px; }
   .amount-currency-row input { flex: 1; min-width: 0; }
@@ -769,19 +788,27 @@ function showLoginNeeded() {
   function buildMonthChips(container, onSelect, isActive) {
     container.innerHTML = '';
     const now = new Date();
-    const list = [];
-    for (let i = 0; i < 6; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const ym = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-      list.push({ ym, label: (d.getMonth() + 1) + '月' });
-    }
-    list.forEach(item => {
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth(); // 0-11
+
+    // 显示当前年份的 1~12 月，未来的月份灰掉不可点
+    for (let m = 0; m < 12; m++) {
+      const ym = currentYear + '-' + String(m + 1).padStart(2, '0');
+      const isFuture = m > currentMonth;
+
       const chip = document.createElement('div');
-      chip.className = 'filter-chip' + (isActive(item.ym) ? ' active' : '');
-      chip.textContent = item.label;
-      chip.onclick = () => onSelect(item.ym);
+      chip.className = 'filter-chip' + (isActive(ym) ? ' active' : '');
+      chip.textContent = (m + 1) + '月';
+
+      if (isFuture) {
+        chip.style.opacity = '0.30';
+        chip.style.cursor = 'not-allowed';
+      } else {
+        chip.onclick = () => onSelect(ym);
+      }
       container.appendChild(chip);
-    });
+    }
+
     const custom = document.createElement('div');
     custom.className = 'filter-chip' + (isActive('__custom__') ? ' active' : '');
     custom.textContent = '📅 自定义';
