@@ -322,7 +322,12 @@ def api_google_login():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     try:
-        resp = supabase.auth.sign_in_with_oauth({"provider": "google", "options": {"redirect_to": "https://student-hub-spain.onrender.com/login"}})
+        data = request.get_json() or {}
+        back = data.get("back", "/") or "/"
+        if not back.startswith("/"):
+            back = "/"
+        redirect = "https://student-hub-spain.onrender.com/login?back=" + back
+        resp = supabase.auth.sign_in_with_oauth({"provider": "google", "options": {"redirect_to": redirect}})
         return jsonify({"url": resp.url})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
@@ -800,8 +805,6 @@ def api_rates_refresh():
         return jsonify({"success": True, "EUR_TO_CNY": cny, "EUR_TO_USD": usd})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    
 
 
 if __name__ == "__main__":

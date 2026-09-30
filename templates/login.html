@@ -86,6 +86,12 @@
 <script>
   let isLoginMode = true;
 
+  // 登录成功后跳回原来的页面
+  function goAfterLogin() {
+    const back = new URLSearchParams(window.location.search).get('back') || '/';
+    window.location.href = back;
+  }
+
   function toggleMode() {
     isLoginMode = !isLoginMode;
     document.getElementById('cardTitle').textContent = isLoginMode ? '欢迎回来' : '创建账号';
@@ -128,7 +134,7 @@
       if (isLoginMode) {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user_email', data.email);
-        window.location.href = '/';
+        goAfterLogin();
       } else {
         // 注册成功后立刻登录
         const loginResp = await fetch('/api/login', {
@@ -140,7 +146,7 @@
         if (loginData.access_token) {
           localStorage.setItem('access_token', loginData.access_token);
           localStorage.setItem('user_email', loginData.email);
-          window.location.href = '/';
+          goAfterLogin();
         } else {
           errorMsg.textContent = '注册成功，请返回登录';
           toggleMode();
@@ -153,8 +159,13 @@
 
   async function handleGoogle() {
     if (navigator.vibrate) navigator.vibrate(10);
+    const back = new URLSearchParams(window.location.search).get('back') || '/';
     try {
-      const resp = await fetch('/api/google_login', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const resp = await fetch('/api/google_login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ back: back })
+      });
       const data = await resp.json();
       if (data.url) window.location.href = data.url;
       else alert('Google 登录失败：' + (data.error || '未知错误'));
@@ -162,6 +173,7 @@
       alert('网络错误，请稍后重试');
     }
   }
+
   // ===== 处理 Google 回调 =====
   (async function handleOAuthCallback() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -169,7 +181,6 @@
 
     if (!code) return;  // 没有 code，说明不是 Google 回调
 
-    // 有 code，去后端换 token
     try {
       const resp = await fetch('/api/exchange_code', {
         method: 'POST',
@@ -181,7 +192,7 @@
       if (data.access_token) {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('user_email', data.email || '');
-        window.location.href = '/';
+        goAfterLogin();
       } else {
         alert('Google 登录失败：' + (data.error || '未知错误'));
       }

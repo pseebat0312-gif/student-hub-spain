@@ -6,6 +6,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>西班牙留学生工具站</title>
+<style>
+/* 首页专属：登录横幅（style.css 里没有，只影响首页） */
+.login-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+  box-sizing: border-box;
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+}
+.login-banner:active {
+  transform: scale(0.97);
+  background: rgba(255, 255, 255, 0.11);
+}
+.login-banner .lb-icon {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.login-banner .lb-text { flex: 1; text-align: left; }
+.login-banner .lb-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.3px;
+  margin-bottom: 3px;
+}
+.login-banner .lb-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+.login-banner .lb-arrow {
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+}
+</style>
 </head>
 <body>
 
@@ -17,6 +63,17 @@
 <div id="mainContent">
 
 <div class="tab-page active" id="tab-home">
+
+<!-- ============ 登录横幅（未登录显示，登录后自动隐藏） ============ -->
+<div class="login-banner" id="loginBanner" onclick="goLogin()" style="display:none;">
+  <div class="lb-icon">🔐</div>
+  <div class="lb-text">
+    <div class="lb-title">登录解锁全部功能</div>
+    <div class="lb-sub">留言板 · 树洞 · 菜单 · 记账 · 急救卡</div>
+  </div>
+  <div class="lb-arrow">→</div>
+</div>
+
 <div class="card" onclick="switchTab('tools')">
 <h3>👋 欢迎回来</h3>
 <p>这里是你的西班牙留学生一站式工具箱。点击底部标签，或者点这里进入工具箱。</p>
@@ -56,8 +113,8 @@
 <h3>🛠️ 管理后台</h3>
 <p>仅管理员可见。</p>
 </div>
-<div class="card" onclick="logout()" style="border-color: rgba(232,168,184,0.3); background: rgba(232,168,184,0.06);">
-<h3 style="color:#e8a8b8;">🚪 退出登录</h3>
+<div class="card" onclick="logout()">
+<h3 style="color:rgba(255,255,255,0.85);">🚪 退出登录</h3>
 <p>点了就会退出当前账号</p>
 </div>
 </div>
@@ -134,6 +191,11 @@ loadNotifications();
 }
 }
 
+function goLogin() {
+if (navigator.vibrate) navigator.vibrate(10);
+location.href = '/login';
+}
+
 function logout() {
 if (navigator.vibrate) navigator.vibrate(15);
 if (!confirm('确定要退出登录吗？')) return;
@@ -149,6 +211,7 @@ const userOnly = document.getElementById('userOnlyCards');
 const adminCard = document.getElementById('adminCard');
 const topDisplay = document.getElementById('userDisplay');
 const statusCard = document.getElementById('userStatusCard');
+const banner = document.getElementById('loginBanner');
 
 if (token && email) {
 document.getElementById('userCardTitle').textContent = '✅ ' + email;
@@ -157,6 +220,7 @@ userOnly.style.display = 'block';
 adminCard.style.display = (email === ADMIN_EMAIL) ? 'block' : 'none';
 topDisplay.textContent = email.split('@')[0];
 topDisplay.onclick = logout;
+if (banner) banner.style.display = 'none';
 } else {
 document.getElementById('userCardTitle').textContent = '🔑 点击登录';
 document.getElementById('userCardDesc').textContent = '登录后可使用个人中心、留言、社区等功能';
@@ -164,6 +228,7 @@ userOnly.style.display = 'none';
 adminCard.style.display = 'none';
 topDisplay.textContent = '登录 →';
 topDisplay.onclick = () => location.href = '/login';
+if (banner) banner.style.display = 'flex';
 }
 
 statusCard.addEventListener('click', function() {
@@ -225,17 +290,17 @@ const email = localStorage.getItem('user_email');
 const token = localStorage.getItem('access_token');
 
 if (!token || !email) {
-list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:40px 20px;font-size:14px;">登录后查看消息</div>';
+list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">登录后查看消息</div>';
 return;
 }
 
-list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:13px;">加载中...</div>';
+list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载中...</div>';
 
 try {
 const resp = await fetch('/api/notifications?owner=' + encodeURIComponent(email));
 const data = await resp.json();
 if (!Array.isArray(data) || data.length === 0) {
-list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:40px 20px;font-size:14px;">还没有消息</div>';
+list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">还没有消息</div>';
 return;
 }
 
@@ -258,7 +323,6 @@ if (n.link) location.href = n.link;
 list.appendChild(div);
 });
 
-// 标记为已读
 if (unreadIds.length > 0) {
 fetch('/api/notifications/read', {
 method: 'POST',
@@ -268,7 +332,7 @@ body: JSON.stringify({ ids: unreadIds })
 document.getElementById('navBadge').classList.remove('show');
 }
 } catch(e) {
-list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:13px;">加载失败</div>';
+list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载失败</div>';
 }
 }
 
@@ -287,7 +351,6 @@ setInterval(updateClock, 1000);
 renderApps();
 refreshLoginUI();
 
-// 每隔 30 秒检查一次未读数
 setTimeout(loadNotifCount, 1000);
 setInterval(loadNotifCount, 30000);
 

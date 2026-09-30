@@ -314,6 +314,17 @@
   function closePost() {
     document.getElementById('detailModal').classList.remove('show');
   }
+
+</script>
+<script>
+// 未登录自动跳登录
+(function () {
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    const back = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.replace('/login?back=' + back);
+  }
+})();
 </script>
 </body>
 </html>
