@@ -1,8 +1,9 @@
 import os
-from flask import Flask, render_template, request, jsonify
-from datetime import datetime
-import pytz
+import json
+from datetime import datetime, date
 import calendar
+from flask import Flask, render_template, request, jsonify
+import pytz
 from supabase import create_client
 
 app = Flask(__name__)
@@ -228,3 +229,455 @@ def api_admin_messages():
         return jsonify(result.data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route("/api/admin/messages/update", methods=["POST"])
+def api_admin_messages_update():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    msg_id = data.get("id")
+    updates = data.get("updates", {})
+    if not token or not msg_id:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email != ADMIN_EMAIL:
+            return jsonify({"error": "无权限"}), 403
+        supabase.table("messages").update(updates).eq("id", msg_id).execute()
+        try:
+            msg = supabase.table("messages").select("user_email, content").eq("id", msg_id).execute()
+            if msg.data:
+                owner = msg.data[0]["user_email"]
+                if "reply" in updates and updates["reply"]:
+                    notify(owner, "message_reply", "作者回复了你的留言：" + str(updates["reply"])[:30], "/message")
+                elif updates.get("is_public"):
+                    notify(owner, "message_public", "你的留言被公开了", "/message")
+        except Exception as ne:
+            print("通知留言失败:", ne)
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/admin/messages/delete", methods=["POST"])
+def api_admin_messages_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    msg_id = data.get("id")
+    if not token or not msg_id:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email != ADMIN_EMAIL:
+            return jsonify({"error": "无权限"}), 403
+        supabase.table("messages").delete().eq("id", msg_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/register", methods=["POST"])
+def api_register():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    if not email or not password:
+        return jsonify({"error": "邮箱和密码不能为空"}), 400
+    try:
+        resp = supabase.auth.sign_up({"email": email, "password": password})
+        return jsonify({"success": True, "email": resp.user.email})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    password = data.get("password", "")
+    try:
+        resp = supabase.auth.sign_in_with_password({"email": email, "password": password})
+        return jsonify({"success": True, "access_token": resp.session.access_token, "email": resp.user.email})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/api/me", methods=["POST"])
+def api_me():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    token = data.get("token", "")
+    try:
+        resp = supabase.auth.get_user(token)
+        return jsonify({"email": resp.user.email})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 401
+
+@app.route("/api/google_login", methods=["POST"])
+def api_google_login():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        resp = supabase.auth.sign_in_with_oauth({"provider": "google", "options": {"redirect_to": "https://student-hub-spain.onrender.com/login"}})
+        return jsonify({"url": resp.url})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/api/exchange_code", methods=["POST"])
+def api_exchange_code():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    code = data.get("code", "")
+    if not code:
+        return jsonify({"error": "缺少 code"}), 400
+    try:
+        resp = supabase.auth.exchange_code_for_session({"auth_code": code})
+        print("换码成功:", resp.user.email)
+        return jsonify({"access_token": resp.session.access_token, "email": resp.user.email})
+    except Exception as e:
+        print("换码失败:", str(e))
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/api/check_admin", methods=["POST"])
+def api_check_admin():
+    data = request.get_json()
+    token = data.get("token", "")
+    if not token or not supabase:
+        return jsonify({"is_admin": False}), 401
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email == ADMIN_EMAIL:
+            return jsonify({"is_admin": True, "email": resp.user.email})
+        else:
+            return jsonify({"is_admin": False}), 403
+    except Exception as e:
+        return jsonify({"is_admin": False, "error": str(e)}), 401
+
+@app.route("/api/admin/login_logs", methods=["POST"])
+def api_admin_login_logs():
+    data = request.get_json()
+    token = data.get("token", "")
+    if not token or not supabase:
+        return jsonify({"error": "未授权"}), 401
+    try:
+        resp = supabase.auth.get_user(token)
+        if resp.user.email != ADMIN_EMAIL:
+            return jsonify({"error": "无权限"}), 403
+        logs = supabase.table("login_logs").select("*").order("login_time", desc=True).limit(100).execute()
+        return jsonify(logs.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/dishes")
+def api_dishes():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    try:
+        if owner:
+            result = supabase.table("dishes").select("*").eq("user_email", owner).order("created_at", desc=True).execute()
+        else:
+            result = supabase.table("dishes").select("*").order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/dishes/add", methods=["POST"])
+def api_dishes_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    name = data.get("name", "").strip()
+    note = data.get("note", "").strip()
+    category = data.get("category", "").strip()
+    image_url = data.get("image_url", "").strip()
+    if not name:
+        return jsonify({"error": "菜名不能为空"}), 400
+    try:
+        supabase.table("dishes").insert({"user_email": email, "name": name, "note": note, "category": category, "image_url": image_url}).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/dishes/delete", methods=["POST"])
+def api_dishes_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    dish_id = data.get("id")
+    if not dish_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        supabase.table("dishes").delete().eq("id", dish_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/orders")
+def api_orders():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    try:
+        if owner:
+            result = supabase.table("orders").select("*").eq("user_email", owner).order("created_at", desc=True).limit(50).execute()
+        else:
+            result = supabase.table("orders").select("*").order("created_at", desc=True).limit(50).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/orders/add", methods=["POST"])
+def api_orders_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    dish_names = data.get("dishes", [])
+    if not dish_names:
+        return jsonify({"error": "购物车为空"}), 400
+    try:
+        supabase.table("orders").insert({"user_email": email, "dishes": json.dumps(dish_names, ensure_ascii=False)}).execute()
+        notify(email, "menu_order", "有人点单了！共 " + str(len(dish_names)) + " 道菜", "/menu")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/countdowns")
+def api_countdowns():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    try:
+        if owner:
+            result = supabase.table("countdowns").select("*").eq("user_email", owner).order("event_date", desc=False).execute()
+        else:
+            result = supabase.table("countdowns").select("*").order("event_date", desc=False).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/countdowns/add", methods=["POST"])
+def api_countdowns_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    name = data.get("event_name", "").strip()
+    date = data.get("event_date", "").strip()
+    if not name or not date:
+        return jsonify({"error": "名称和日期不能为空"}), 400
+    try:
+        supabase.table("countdowns").insert({"user_email": email, "event_name": name, "event_date": date}).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/countdowns/delete", methods=["POST"])
+def api_countdowns_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("id")
+    if not item_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        supabase.table("countdowns").delete().eq("id", item_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/emergency")
+def api_emergency_get():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = supabase.table("emergency_cards").select("*").eq("user_email", owner).execute()
+        return jsonify(result.data[0] if result.data else {})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/emergency/save", methods=["POST"])
+def api_emergency_save():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少用户"}), 400
+    payload = {"user_email": email, "full_name": data.get("full_name", ""), "phone": data.get("phone", ""), "passport": data.get("passport", ""), "nie": data.get("nie", ""), "emergency_contact_name": data.get("emergency_contact_name", ""), "emergency_contact_phone": data.get("emergency_contact_phone", ""), "notes": data.get("notes", ""), "face_id_protected": bool(data.get("face_id_protected", False))}
+    try:
+        exist = supabase.table("emergency_cards").select("id").eq("user_email", email).execute()
+        if exist.data:
+            supabase.table("emergency_cards").update(payload).eq("user_email", email).execute()
+        else:
+            supabase.table("emergency_cards").insert(payload).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/emergency/delete", methods=["POST"])
+def api_emergency_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少用户"}), 400
+    try:
+        supabase.table("emergency_cards").delete().eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/letters")
+def api_letters():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = supabase.table("homesick_letters").select("*").eq("user_email", owner).order("created_at", desc=True).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/letters/add", methods=["POST"])
+def api_letters_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    recipient = data.get("recipient", "").strip()
+    content = data.get("content", "").strip()
+    deliver_at = data.get("deliver_at") or None
+    if not email or not content:
+        return jsonify({"error": "缺少内容"}), 400
+    try:
+        supabase.table("homesick_letters").insert({"user_email": email, "recipient": recipient, "content": content, "deliver_at": deliver_at}).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/letters/due")
+def api_letters_due():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    today = date.today().isoformat()
+    try:
+        result = supabase.table("homesick_letters").select("*").eq("user_email", owner).eq("is_delivered", False).lte("deliver_at", today).not_.is_("deliver_at", "null").execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/letters/read", methods=["POST"])
+def api_letters_read():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    letter_id = data.get("id")
+    if not letter_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        supabase.table("homesick_letters").update({"is_delivered": True, "read_at": datetime.utcnow().isoformat()}).eq("id", letter_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/treeholes")
+def api_treeholes():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = supabase.table("treeholes").select("*").order("created_at", desc=True).limit(100).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/treeholes/add", methods=["POST"])
+def api_treeholes_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip() or "anonymous"
+    content = data.get("content", "").strip()
+    if not content:
+        return jsonify({"error": "内容不能为空"}), 400
+    try:
+        supabase.table("treeholes").insert({"user_email": email, "content": content}).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/treeholes/replies")
+def api_treeholes_replies():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    tid = request.args.get("id", "").strip()
+    if not tid:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        result = supabase.table("treehole_replies").select("*").eq("treehole_id", tid).order("created_at", desc=False).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/treeholes/reply", methods=["POST"])
+def api_treeholes_reply():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    tid = data.get("treehole_id")
+    email = data.get("email", "").strip() or "anonymous"
+    content = data.get("content", "").strip()
+    if not tid or not content:
+        return jsonify({"error": "缺少内容"}), 400
+    try:
+        supabase.table("treehole_replies").insert({"treehole_id": tid, "user_email": email, "content": content}).execute()
+        tree = supabase.table("treeholes").select("user_email").eq("id", tid).execute()
+        if tree.data:
+            owner = tree.data[0]["user_email"]
+            if owner and owner != email and owner != "anonymous":
+                notify(owner, "treehole_reply", "有人回复了你的树洞：" + content[:30], "/treehole")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/my_replies")
+def api_my_replies():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        my_trees = supabase.table("treeholes").select("id, content").eq("user_email", owner).execute()
+        if not my_trees.data:
+            return jsonify([])
+        tree_ids = [t["id"] for t in my_trees.data]
+        tree_map = {t["id"]: t["content"] for t in my_trees.data}
+        replies = supabase.table("treehole_replies").select("*").in_("treehole_id", tree_ids).order("created_at", desc=True).limit(50).execute()
+        result = []
+        for r in replies.data:
+            if r.get("user_email") == owner:
+                continue
+            result.append({"id": r["id"], "treehole_id": r["treehole_id"], "content": r["content"], "created_at": r["created_at"], "tree_content": tree_map.get(r["treehole_id"], "")})
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
