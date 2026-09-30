@@ -42,7 +42,6 @@ padding-bottom: 160px;
 min-height: 100vh;
 }
 
-/* ============ 顶部栏 ============ */
 #topBar {
 position: fixed; top: 0; left: 0; right: 0;
 padding: 20px 22px;
@@ -81,7 +80,6 @@ from { opacity: 0; transform: translateY(10px); }
 to { opacity: 1; transform: translateY(0); }
 }
 
-/* ============ 卡片 ============ */
 .card {
 position: relative;
 background: var(--glass-bg);
@@ -127,7 +125,6 @@ line-height: 1.55;
 letter-spacing: -0.1px;
 }
 
-/* ============ 胶囊按钮 ============ */
 .big-btn {
 position: relative;
 width: 100%;
@@ -144,8 +141,7 @@ cursor: pointer;
 box-shadow:
 0 8px 28px rgba(232, 168, 184, 0.35),
 inset 0 1px 0 rgba(255, 255, 255, 0.4);
-transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
-box-shadow 0.2s;
+transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 overflow: hidden;
 }
 .big-btn::before {
@@ -156,11 +152,8 @@ height: 50%;
 background: linear-gradient(180deg, rgba(255,255,255,0.25), transparent);
 pointer-events: none;
 }
-.big-btn:active {
-transform: scale(0.96);
-}
+.big-btn:active { transform: scale(0.96); }
 
-/* ============ 时钟卡片 ============ */
 .clock-card {
 position: relative;
 background: var(--glass-bg);
@@ -200,7 +193,7 @@ font-variant-numeric: tabular-nums;
 letter-spacing: -0.5px;
 }
 
-/* ============ 底部液态玻璃胶囊导航栏 ============ */
+/* 底部导航 - 4 个 Tab */
 #navBar {
 position: fixed;
 bottom: 30px;
@@ -226,25 +219,26 @@ min-height: 76px;
 }
 .nav-item {
 color: var(--text-dim);
-font-size: 12px;
+font-size: 11px;
 font-weight: 600;
 display: flex;
 flex-direction: column;
 align-items: center;
 gap: 5px;
 cursor: pointer;
-padding: 10px 18px;
+padding: 10px 14px;
 border-radius: var(--radius-pill);
 transition:
 transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
 background 0.25s,
 color 0.25s;
 flex: 1;
-max-width: 110px;
+max-width: 100px;
 letter-spacing: -0.2px;
+position: relative;
 }
 .nav-item .icon {
-font-size: 26px;
+font-size: 24px;
 line-height: 1;
 transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -257,8 +251,28 @@ box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
 transform: scale(1.12);
 }
 .nav-item:active { transform: scale(0.9); }
+/* 未读红点 */
+.nav-item .nav-badge {
+position: absolute;
+top: 6px;
+right: 50%;
+transform: translateX(24px);
+min-width: 18px;
+height: 18px;
+border-radius: 9px;
+background: #e8a8b8;
+color: #1a0f14;
+font-size: 10px;
+font-weight: 700;
+display: none;
+align-items: center;
+justify-content: center;
+padding: 0 5px;
+box-shadow: 0 2px 8px rgba(232,168,184,0.5);
+}
+.nav-item .nav-badge.show { display: flex; }
 
-/* ============ 手机桌面网格 ============ */
+/* 手机桌面网格 */
 .app-grid {
 display: grid;
 grid-template-columns: repeat(4, 1fr);
@@ -282,7 +296,6 @@ display: flex;
 align-items: center;
 justify-content: center;
 font-size: 30px;
-/* 统一深灰玻璃底 */
 background: linear-gradient(160deg, #2c2c30 0%, #1a1a1e 100%);
 border: 1px solid rgba(255, 255, 255, 0.07);
 box-shadow:
@@ -292,7 +305,6 @@ inset 0 -1px 0 rgba(0, 0, 0, 0.3);
 margin-bottom: 10px;
 overflow: hidden;
 }
-/* 顶部玻璃反光 */
 .app-icon .icon-box::before {
 content: '';
 position: absolute;
@@ -312,8 +324,6 @@ word-break: keep-all;
 letter-spacing: -0.2px;
 }
 
-/* App 图标：统一暗灰底，不再五颜六色
-但保留一点点色调，靠内部渐变区分 */
 .color-green { background: linear-gradient(160deg, #2e3a33 0%, #1a1e1c 100%) !important; }
 .color-blue { background: linear-gradient(160deg, #2e3540 0%, #1a1e24 100%) !important; }
 .color-pink { background: linear-gradient(160deg, #3a2e33 0%, #1e1a1c 100%) !important; }
@@ -322,28 +332,58 @@ letter-spacing: -0.2px;
 .color-red { background: linear-gradient(160deg, #3a2e30 0%, #1e1a1c 100%) !important; }
 .color-gold { background: linear-gradient(160deg, #3a372e 0%, #1e1c1a 100%) !important; }
 .color-dark { background: linear-gradient(160deg, #2c2c30 0%, #1a1a1e 100%) !important; }
+
+/* 消息列表 */
+.notif-item {
+position: relative;
+background: var(--glass-bg);
+border: 1px solid var(--glass-border);
+border-radius: 16px;
+padding: 14px 16px;
+margin-bottom: 10px;
+cursor: pointer;
+transition: transform 0.2s, background 0.2s;
+backdrop-filter: blur(20px);
+-webkit-backdrop-filter: blur(20px);
+}
+.notif-item:active { transform: scale(0.98); background: var(--glass-bg-strong); }
+.notif-item.unread {
+border-color: rgba(232, 168, 184, 0.3);
+background: rgba(232, 168, 184, 0.05);
+}
+.notif-item .notif-type {
+font-size: 11px;
+color: var(--accent);
+margin-bottom: 6px;
+font-weight: 600;
+}
+.notif-item .notif-content {
+font-size: 13.5px;
+color: var(--text);
+line-height: 1.55;
+margin-bottom: 6px;
+}
+.notif-item .notif-time {
+font-size: 11px;
+color: var(--text-dim);
+}
+.notif-item .unread-dot {
+position: absolute;
+top: 14px; right: 16px;
+width: 8px; height: 8px;
+border-radius: 50%;
+background: var(--accent);
+}
 </style>
 </head>
 <body>
 
 <div id="topBar">
 <div class="title">西班牙留学生工具站</div>
-<div style="display:flex; align-items:center; gap:10px;">
-    <div id="bellBtn" style="display:none; position:relative; cursor:pointer; padding:8px; font-size:20px;" onclick="toggleBell()">🔔<span id="bellDot" style="display:none; position:absolute; top:2px; right:2px; min-width:16px; height:16px; border-radius:8px; background:#e8a8b8; color:#1a0f14; font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 4px;"></span></div>
-    <div class="user" id="userDisplay">登录 →</div>
-  </div>
+<div class="user" id="userDisplay">登录 →</div>
 </div>
 
 <div id="mainContent">
-
-  <!-- 消息面板 -->
-<div id="bellPanel" style="display:none; position:fixed; top:70px; right:16px; left:16px; max-width:420px; margin:0 auto; background:rgba(28,28,32,0.95); border:1px solid rgba(255,255,255,0.12); border-radius:20px; padding:16px; z-index:200; backdrop-filter:blur(40px) saturate(200%); -webkit-backdrop-filter:blur(40px) saturate(200%); box-shadow:0 20px 60px rgba(0,0,0,0.6); max-height:70vh; overflow-y:auto;">
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-    <div style="font-size:15px; font-weight:700; color:#fff;">💬 我的消息</div>
-    <button onclick="toggleBell()" style="background:none; border:none; color:#e8a8b8; font-size:14px; cursor:pointer;">关闭</button>
-  </div>
-  <div id="bellList"></div>
-</div>
 
 <div class="tab-page active" id="tab-home">
 <div class="card" onclick="switchTab('tools')">
@@ -369,6 +409,11 @@ letter-spacing: -0.2px;
 <div class="app-grid" id="appGrid"></div>
 </div>
 
+<div class="tab-page" id="tab-messages">
+<h3 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; letter-spacing: -0.3px;">💬 消息</h3>
+<div id="notifList"></div>
+</div>
+
 <div class="tab-page" id="tab-user">
 <div class="card" id="userStatusCard">
 <h3 id="userCardTitle">🔑 点击登录</h3>
@@ -376,10 +421,6 @@ letter-spacing: -0.2px;
 </div>
 
 <div id="userOnlyCards" style="display:none;">
-<div class="card" onclick="location.href='/profile'">
-<h3>👤 个人中心</h3>
-<p>设置昵称、头像，查看会员状态。</p>
-</div>
 <div class="card" id="adminCard" onclick="location.href='/admin'" style="display:none;">
 <h3>🛠️ 管理后台</h3>
 <p>仅管理员可见。</p>
@@ -399,6 +440,10 @@ letter-spacing: -0.2px;
 </div>
 <div class="nav-item" onclick="switchTab('tools')" data-tab="tools">
 <span class="icon">🧰</span><span>工具</span>
+</div>
+<div class="nav-item" onclick="switchTab('messages')" data-tab="messages">
+<span class="icon">💬</span><span>消息</span>
+<span class="nav-badge" id="navBadge">0</span>
 </div>
 <div class="nav-item" onclick="switchTab('user')" data-tab="user">
 <span class="icon">👤</span><span>我的</span>
@@ -453,6 +498,9 @@ document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')
 document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
 if (navigator.vibrate) navigator.vibrate(8);
 refreshLoginUI();
+if (tabName === 'messages') {
+loadNotifications();
+}
 }
 
 function logout() {
@@ -494,6 +542,105 @@ else location.href = '/login';
 });
 }
 
+// ==================== 消息中心 ====================
+const notifTypeIcon = {
+'treehole_reply': '🌳 树洞回复',
+'message_reply': '✍️ 留言回复',
+'message_public': '🌟 留言公开',
+'menu_order': '🍽️ 菜单点单',
+'community_reply': '💬 社区回复',
+'market_interest': '🛒 二手询问'
+};
+
+function timeAgo(dateStr) {
+if (!dateStr) return '';
+const d = new Date(dateStr);
+const diff = Date.now() - d.getTime();
+const m = Math.floor(diff / 60000);
+if (m < 1) return '刚刚';
+if (m < 60) return m + ' 分钟前';
+const h = Math.floor(m / 60);
+if (h < 24) return h + ' 小时前';
+const days = Math.floor(h / 24);
+if (days < 30) return days + ' 天前';
+return d.toLocaleDateString('zh-CN');
+}
+
+async function loadNotifCount() {
+const token = localStorage.getItem('access_token');
+const email = localStorage.getItem('user_email');
+const badge = document.getElementById('navBadge');
+
+if (!token || !email) {
+badge.classList.remove('show');
+return;
+}
+try {
+const resp = await fetch('/api/notifications/unread?owner=' + encodeURIComponent(email));
+const data = await resp.json();
+const unread = data.unread || 0;
+if (unread > 0) {
+badge.textContent = unread > 99 ? '99+' : unread;
+badge.classList.add('show');
+} else {
+badge.classList.remove('show');
+}
+} catch(e) {}
+}
+
+async function loadNotifications() {
+const list = document.getElementById('notifList');
+const email = localStorage.getItem('user_email');
+const token = localStorage.getItem('access_token');
+
+if (!token || !email) {
+list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:40px 20px;font-size:14px;">登录后查看消息</div>';
+return;
+}
+
+list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:13px;">加载中...</div>';
+
+try {
+const resp = await fetch('/api/notifications?owner=' + encodeURIComponent(email));
+const data = await resp.json();
+if (!Array.isArray(data) || data.length === 0) {
+list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:40px 20px;font-size:14px;">还没有消息</div>';
+return;
+}
+
+list.innerHTML = '';
+const unreadIds = [];
+data.forEach(n => {
+if (!n.is_read) unreadIds.push(n.id);
+const div = document.createElement('div');
+div.className = 'notif-item' + (n.is_read ? '' : ' unread');
+const typeLabel = notifTypeIcon[n.type] || '🔔 通知';
+div.innerHTML = `
+${n.is_read ? '' : '<span class="unread-dot"></span>'}
+<div class="notif-type">${typeLabel}</div>
+<div class="notif-content">${n.content || ''}</div>
+<div class="notif-time">${timeAgo(n.created_at)}</div>
+`;
+div.addEventListener('click', () => {
+if (n.link) location.href = n.link;
+});
+list.appendChild(div);
+});
+
+// 标记为已读
+if (unreadIds.length > 0) {
+fetch('/api/notifications/read', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ ids: unreadIds })
+});
+document.getElementById('navBadge').classList.remove('show');
+}
+} catch(e) {
+list.innerHTML = '<div style="text-align:center;color:var(--text-dim);padding:20px;font-size:13px;">加载失败</div>';
+}
+}
+
 function updateClock() {
 const now = new Date();
 const spainTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}));
@@ -509,102 +656,21 @@ setInterval(updateClock, 1000);
 renderApps();
 refreshLoginUI();
 
+// 每隔 30 秒检查一次未读数
+setTimeout(loadNotifCount, 1000);
+setInterval(loadNotifCount, 30000);
+
 window.addEventListener('load', () => {
 const params = new URLSearchParams(window.location.search);
 if (params.get('tab') === 'tools') {
 switchTab('tools');
 window.history.replaceState({}, '', '/');
 }
+if (params.get('tab') === 'messages') {
+switchTab('messages');
+window.history.replaceState({}, '', '/');
+}
 });
-
-// ============ 铃铛消息 ============
-  let bellOpen = false;
-
-  async function loadBellCount() {
-    const token = localStorage.getItem('access_token');
-    const email = localStorage.getItem('user_email');
-    const bell = document.getElementById('bellBtn');
-    const dot = document.getElementById('bellDot');
-
-    if (!token || !email) {
-      bell.style.display = 'none';
-      return;
-    }
-    bell.style.display = 'block';
-
-    try {
-      const resp = await fetch('/api/my_replies?owner=' + encodeURIComponent(email));
-      const data = await resp.json();
-      if (!Array.isArray(data)) return;
-
-      // 上次读消息时间
-      const lastSeen = localStorage.getItem('bell_last_seen') || '1970-01-01';
-      const unread = data.filter(r => r.created_at > lastSeen);
-
-      if (unread.length > 0) {
-        dot.style.display = 'flex';
-        dot.textContent = unread.length > 99 ? '99+' : unread.length;
-      } else {
-        dot.style.display = 'none';
-      }
-
-      window._bellData = data;
-    } catch(e) {}
-  }
-
-  async function toggleBell() {
-    const panel = document.getElementById('bellPanel');
-    bellOpen = !bellOpen;
-
-    if (bellOpen) {
-      panel.style.display = 'block';
-      await renderBellList();
-      // 标记已读
-      localStorage.setItem('bell_last_seen', new Date().toISOString());
-      document.getElementById('bellDot').style.display = 'none';
-    } else {
-      panel.style.display = 'none';
-    }
-  }
-
-  async function renderBellList() {
-    const list = document.getElementById('bellList');
-    list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
-
-    const email = localStorage.getItem('user_email');
-    try {
-      const resp = await fetch('/api/my_replies?owner=' + encodeURIComponent(email));
-      const data = await resp.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;font-size:13px;">还没有收到新回复</div>';
-        return;
-      }
-      list.innerHTML = '';
-      data.forEach(r => {
-        const div = document.createElement('div');
-        div.style.cssText = 'padding:12px 14px; background:rgba(255,255,255,0.04); border-radius:12px; margin-bottom:8px; cursor:pointer;';
-        div.innerHTML = `
-          <div style="font-size:12px; color:#e8a8b8; margin-bottom:6px;">💬 有人回复了你的树洞</div>
-          <div style="font-size:13px; color:#fff; line-height:1.5; margin-bottom:6px;">"${r.content}"</div>
-          <div style="font-size:11px; color:#888;">你的树洞：${(r.tree_content || '').slice(0, 30)}...</div>
-        `;
-        div.addEventListener('click', () => {
-          location.href = '/treehole';
-        });
-        list.appendChild(div);
-      });
-    } catch(e) {
-      list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载失败</div>';
-    }
-  }
-
-  // 页面加载时检查铃铛
-  setTimeout(loadBellCount, 1000);
-
-  // 每分钟刷新一次
-  setInterval(loadBellCount, 60000);
-
 </script>
 </body>
 </html>
-
