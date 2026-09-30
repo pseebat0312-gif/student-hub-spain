@@ -98,6 +98,15 @@ def homesick():
 def treehole():
     return render_template("treehole.html")
 
+@app.route("/vip")
+def vip_page():
+    return render_template("vip.html")
+
+
+
+
+
+
 def notify(email, ntype, content, link=""):
     if not supabase or not email:
         return

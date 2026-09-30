@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<link rel="stylesheet" href="/static/style.css">
+<title>VIP 会员 · 西班牙留学生工具站</title>
+<style>
+  .top-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);
+    z-index: 10;
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+  .top-bar .back-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #fff; font-size: 18px;
+    width: 40px; height: 40px;
+    border-radius: 999px; cursor: pointer;
+  }
+  .top-bar .back-btn:active { transform: scale(0.9); }
+  .top-bar .title { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.4px; }
+
+  #content { padding: 80px 20px 60px; }
+
+  .hero { text-align: center; margin-bottom: 30px; }
+  .hero .crown { font-size: 56px; margin-bottom: 10px; }
+  .hero h1 {
+    font-size: 28px; font-weight: 900; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #e8a8b8, #c98094);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .hero p { font-size: 14px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+
+  .benefits {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: 22px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+  }
+  .benefits h3 { font-size: 15px; font-weight: 700; color: #e8a8b8; margin-bottom: 16px; }
+  .benefit-item {
+    display: flex; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px; color: rgba(255,255,255,0.85); line-height: 1.5;
+  }
+  .benefit-item:last-child { border-bottom: none; }
+  .benefit-item .check { color: #6fbf8e; font-size: 18px; flex-shrink: 0; }
+
+  .price-card {
+    background: linear-gradient(135deg, #e8a8b8, #c98094);
+    color: #1a0f14;
+    border-radius: 22px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 12px 40px rgba(232,168,184,0.4);
+  }
+  .price-card .price-tag {
+    display: inline-block;
+    background: rgba(26,15,20,0.15);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .price-card .first-month { font-size: 13px; opacity: 0.75; margin-bottom: 8px; }
+  .price-card .price-big {
+    font-size: 56px;
+    font-weight: 900;
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .price-card .price-big .unit { font-size: 20px; font-weight: 600; opacity: 0.7; margin-left: 4px; }
+  .price-card .price-after { font-size: 13px; opacity: 0.75; margin-top: 8px; }
+
+  .subscribe-btn {
+    width: 100%;
+    padding: 18px;
+    border-radius: 999px;
+    border: none;
+    background: #ffffff;
+    color: #1a0f14;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    letter-spacing: -0.2px;
+    box-shadow: 0 8px 28px rgba(255,255,255,0.2);
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .subscribe-btn:active { transform: scale(0.96); }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.8;
+    margin-top: 16px;
+  }
+
+  .vip-active {
+    background: linear-gradient(135deg, #e8a8b8, #c98094);
+    color: #1a0f14;
+    border-radius: 22px;
+    padding: 30px 24px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .vip-active .crown-big { font-size: 56px; margin-bottom: 10px; }
+  .vip-active h2 { font-size: 22px; font-weight: 900; margin-bottom: 6px; }
+  .vip-active p { font-size: 13px; opacity: 0.75; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">👑 VIP 会员</div>
+</div>
+
+<div id="content">
+
+  <div id="vipActiveCard" style="display:none;">
+    <div class="vip-active">
+      <div class="crown-big">👑</div>
+      <h2>你已经是 VIP 啦！</h2>
+      <p id="vipSince">感谢你的支持 💗</p >
+    </div>
+  </div>
+
+  <div id="vipIntro">
+    <div class="hero">
+      <div class="crown">👑</div>
+      <h1>VIP 会员</h1>
+      <p>解锁全部高级功能<br>让你的留学生活更轻松</p >
+    </div>
+
+    <div class="benefits">
+      <h3>✨ 你将获得</h3>
+      <div class="benefit-item">
+        <span class="check">✓</span>
+        <span>AI 检测器无限次使用（免费用户每天 3 次）</span>
+      </div>
+      <div class="benefit-item">
+        <span class="check">✓</span>
+        <span>合同分析无限次（即将上线）</span>
+      </div>
+      <div class="benefit-item">
+        <span class="check">✓</span>
+        <span>独家菜单无限上传（免费用户 10 道）</span>
+      </div>
+      <div class="benefit-item">
+        <span class="check">✓</span>
+        <span>优先体验新功能</span>
+      </div>
+      <div class="benefit-item">
+        <span class="check">✓</span>
+        <span>专属会员标识</span>
+      </div>
+    </div>
+
+    <div class="price-card">
+      <div class="price-tag">🎉 首月优惠</div>
+      <div class="first-month">第一个月只要</div>
+      <div class="price-big">€1<span class="unit">.00</span></div>
+      <div class="price-after">之后 €2.99 / 月，随时可取消</div>
+    </div>
+
+    <button class="subscribe-btn" onclick="goSubscribe()">立即订阅 →</button>
+
+    <div class="footer-note">
+      支持信用卡、Apple Pay、Google Pay<br>
+      随时可以在 Stripe 后台取消订阅
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const MY_EMAIL = localStorage.getItem('user_email') || '';
+
+  // ⚠️ 这里填你刚才生成的 Stripe 付款链接（测试环境链接，真实环境要换成 live 链接）
+  const STRIPE_PAYMENT_LINK = 'https://buy.stripe.com/test_fZucN570geOD1DRfDm9k401?prefilled_promo_code=VIP1EURO';
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/?tab=tools';
+  }
+
+  function goSubscribe() {
+    if (navigator.vibrate) navigator.vibrate(15);
+    if (!MY_EMAIL) {
+      alert('请先登录再订阅');
+      location.href = '/login';
+      return;
+    }
+    // 跳转到 Stripe 付款页面
+    location.href = STRIPE_PAYMENT_LINK;
+  }
+
+  // 检查是不是 VIP（暂时留空，等接了 Stripe webhook 之后再做）
+  function checkVipStatus() {
+    // 等下一轮做
+  }
+
+  checkVipStatus();
+</script>
+</body>
+</html>
