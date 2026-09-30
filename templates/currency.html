@@ -77,11 +77,17 @@
 
   .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
   .input-row input {
-    flex: 1; padding: 14px 16px; border-radius: 16px;
-    border: 1px solid rgba(255,255,255,0.10);
-    background: rgba(255,255,255,0.045);
-    color: #fff; font-size: 18px; outline: none; font-family: inherit;
-  }
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.045);
+  color: #fff;
+  font-size: 18px;
+  outline: none;
+  font-family: inherit;
+}
   .input-row input:focus { border-color: rgba(255,255,255,0.24); }
   .input-row select {
     width: 116px; flex-shrink: 0;
