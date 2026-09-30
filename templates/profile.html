@@ -181,8 +181,6 @@
     <button class="primary-btn" onclick="saveProfile()">💾 保存资料</button>
   </div>
 
-
-
   <div class="section-card">
     <div class="section-title">💎 会员状态</div>
     <div class="member-row">
@@ -211,7 +209,6 @@
     if (!token || !email) {
       stateEl.textContent = '请先登录 →';
       stateEl.onclick = () => location.href = '/login';
-      // 未登录，弹窗提示后跳走
       setTimeout(() => {
         if (confirm('请先登录再访问个人中心')) {
           location.href = '/login';
@@ -230,7 +227,6 @@
       location.href = '/';
     };
 
-    // 显示当前用户邮箱
     const emailEl = document.querySelector('.hero-card .email');
     if (emailEl) emailEl.textContent = email;
   })();
@@ -283,8 +279,8 @@
       alert('请选择图片文件');
       return;
     }
-    if (file.size > 2 * 1024 * 1024) {
-      alert('图片太大了，请选择 2MB 以内的图片');
+    if (file.size > 200 * 1024) {
+      alert('图片太大了，请选择 200KB 以内的图片');
       return;
     }
 
@@ -299,34 +295,68 @@
     reader.readAsDataURL(file);
   }
 
+  // ===== 加载已有资料 =====
+  async function loadProfile() {
+    const email = localStorage.getItem('user_email');
+    if (!email) return;
+    try {
+      const resp = await fetch('/api/profile?email=' + encodeURIComponent(email));
+      const data = await resp.json();
+      if (data && data.nickname) {
+        document.getElementById('nicknameInput').value = data.nickname;
+        document.getElementById('heroNickname').textContent = data.nickname;
+      }
+      if (data && data.avatar) {
+        if (data.avatar.startsWith('data:image') || data.avatar.startsWith('http')) {
+          document.getElementById('heroAvatar').innerHTML = `<img src="${data.avatar}" alt="avatar">`;
+          uploadedImageData = data.avatar;
+        } else {
+          selectedEmoji = data.avatar;
+          renderEmojiGrid();
+          document.getElementById('heroAvatar').textContent = data.avatar;
+        }
+      }
+    } catch (e) {}
+  }
+
   // ===== 保存资料 =====
-  function saveProfile() {
+  async function saveProfile() {
     const nickname = document.getElementById('nicknameInput').value.trim();
+    const email = localStorage.getItem('user_email');
+    if (!email) { alert('请先登录'); return; }
+    if (!nickname) { alert('请先输入昵称'); return; }
     if (navigator.vibrate) navigator.vibrate(15);
-    if (!nickname) {
-      alert('请先输入昵称');
-      return;
-    }
 
     document.getElementById('heroNickname').textContent = nickname;
 
+    let avatarValue = selectedEmoji;
     if (uploadedImageData) {
+      avatarValue = uploadedImageData;
       document.getElementById('heroAvatar').innerHTML = `<img src="${uploadedImageData}" alt="avatar">`;
-      alert('✅ 资料已保存（图片头像）。\n\n等接上数据库后，图片会先上传到 Supabase Storage，再把链接存进 user_profiles 表。');
     } else {
       document.getElementById('heroAvatar').textContent = selectedEmoji;
-      alert('✅ 资料已保存（emoji 头像）。\n\n等接上数据库后，会直接写入 user_profiles 表。');
     }
+
+    try {
+      const resp = await fetch('/api/profile/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, nickname, avatar: avatarValue })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('保存失败：' + data.error); return; }
+      alert('✅ 资料已保存');
+    } catch (e) { alert('网络错误'); }
   }
-
-  // ===== 修改密码 =====
-
 
   // ===== 升级会员 =====
   function upgradeMember() {
     if (navigator.vibrate) navigator.vibrate(10);
     alert('付费功能正在开发中，敬请期待。');
   }
+
+  // 页面加载
+  loadProfile();
 </script>
 </body>
 </html>

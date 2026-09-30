@@ -186,36 +186,8 @@
     <button class="sort-btn" data-sort="hot" onclick="sortBy('hot', this)">最多回复</button>
   </div>
 
-  <!-- 帖子列表（演示数据） -->
-  <div id="postList">
-
-    <div class="post-card">
-      <div class="post-head">
-        <div class="post-title">刚到马德里，NIE 办理经验分享</div>
-        <div class="post-tag">经验分享</div>
-      </div>
-      <div class="post-meta">发布者：molly@example.com · 2026-09-28</div>
-      <div class="post-content-preview">今天刚办完 NIE，分享一下整个流程。最重要的是提前预约，然后带齐材料...</div>
-      <div class="post-footer">
-        <span>💬 3 条回复</span>
-        <button onclick="openPost('刚到马德里，NIE 办理经验分享', '今天刚办完 NIE，分享一下整个流程。最重要的是提前预约，然后带齐材料。\n\n预约系统经常崩，建议凌晨去刷。材料一定要准备齐全，特别是住家证明和缴费单。', '经验分享', 'molly@example.com', ['感谢分享！很有用', '请问住家证明要提前多久办？', '我也刚办完，补充一句：记得带两张照片'])">查看详情</button>
-      </div>
-    </div>
-
-    <div class="post-card">
-      <div class="post-head">
-        <div class="post-title">租房遇到黑心房东，求支招</div>
-        <div class="post-tag">踩坑求助</div>
-      </div>
-      <div class="post-meta">发布者：lucas@example.com · 2026-09-27</div>
-      <div class="post-content-preview">押金一直不退，房东各种理由拖着，有人有类似经验吗？...</div>
-      <div class="post-footer">
-        <span>💬 1 条回复</span>
-        <button onclick="openPost('租房遇到黑心房东，求支招', '押金一直不退，房东各种理由拖着。合同上是说退房后 30 天内退押金，现在已经两个月了。\n\n有没有人有类似经验？应该去哪里投诉？', '踩坑求助', 'lucas@example.com', ['可以去消费者协会投诉，也可以找学校的法律援助'])">查看详情</button>
-      </div>
-    </div>
-
-  </div>
+  <!-- 帖子列表（从数据库加载） -->
+  <div id="postList"></div>
 
 </div>
 
@@ -238,83 +210,167 @@
 </div>
 
 <script>
-    // ===== 智能返回 =====
+  // ===== 智能返回 =====
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
-    // 如果是从别的页面跳进来的（有历史记录），就返回上一页
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      // 如果用户是直接打开这个链接的，就回主页
       location.href = '/';
     }
   }
+
   // ===== 发布表单 =====
   function togglePublish() {
     if (navigator.vibrate) navigator.vibrate(10);
     document.getElementById('publishForm').classList.toggle('show');
   }
 
-  function submitPost() {
-    const title = document.getElementById('postTitle').value.trim();
-    const content = document.getElementById('postContent').value.trim();
-    if (!title || !content) {
-      alert('标题和内容不能为空');
+  // ===== HTML 转义 =====
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ===== 帖子数据 =====
+  let allPosts = [];
+  let currentSort = 'new';
+  let currentPostId = null;
+
+  async function loadPosts() {
+    const list = document.getElementById('postList');
+    list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;font-size:13px;">加载中...</div>';
+    try {
+      const resp = await fetch('/api/community/posts');
+      allPosts = await resp.json();
+    } catch (e) { allPosts = []; }
+    renderPosts();
+  }
+
+  function renderPosts() {
+    const list = document.getElementById('postList');
+    if (!Array.isArray(allPosts) || !allPosts.length) {
+      list.innerHTML = '<div style="text-align:center;color:#666;padding:40px 20px;font-size:14px;">还没有帖子，来发第一帖吧</div>';
       return;
     }
-    if (navigator.vibrate) navigator.vibrate(20);
-    alert('✅ 已填写完毕。\n\n等我们接上 Supabase 后，点这里就会直接发帖到数据库。');
-    togglePublish();
-  }
-
-  // ===== 排序 =====
-  function sortBy(type, el) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-  }
-
-  // ===== 打开详情 =====
-  let currentPost = null;
-  function openPost(title, body, category, author, replies) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    currentPost = { title, replies: replies || [] };
-    document.getElementById('dTitle').textContent = title;
-    document.getElementById('dMeta').textContent = `[${category}] ${author}`;
-    document.getElementById('dBody').textContent = body;
-    renderReplies();
-    document.getElementById('detailModal').classList.add('show');
-  }
-
-  function renderReplies() {
-    const list = document.getElementById('replyList');
+    let arr = allPosts.slice();
+    if (currentSort === 'hot') {
+      arr.sort((a, b) => (b.replies_count || 0) - (a.replies_count || 0));
+    }
     list.innerHTML = '';
-    if (!currentPost.replies || currentPost.replies.length === 0) {
-      list.innerHTML = '<div style="color:#666; font-size:13px; margin-bottom:10px;">还没有回复，来抢沙发吧！</div>';
-      return;
-    }
-    currentPost.replies.forEach(r => {
+    arr.forEach(p => {
       const div = document.createElement('div');
-      div.className = 'reply-item';
-      div.innerHTML = `<span class="reply-user">匿名用户：</span>${r}`;
+      div.className = 'post-card';
+      const date = (p.created_at || '').slice(0, 10);
+      const emailPrefix = (p.user_email || '').split('@')[0];
+      div.innerHTML = `
+        <div class="post-head">
+          <div class="post-title">${escapeHtml(p.title)}</div>
+          <div class="post-tag">${escapeHtml(p.category || '其他')}</div>
+        </div>
+        <div class="post-meta">发布者：${escapeHtml(emailPrefix)} · ${date}</div>
+        <div class="post-content-preview">${escapeHtml((p.content || '').slice(0, 80))}...</div>
+        <div class="post-footer">
+          <span>💬 ${p.replies_count || 0} 条回复</span>
+          <button onclick="openPostById(${p.id})">查看详情</button>
+        </div>
+      `;
       list.appendChild(div);
     });
   }
 
-  function sendReply() {
+  async function submitPost() {
+    const title = document.getElementById('postTitle').value.trim();
+    const content = document.getElementById('postContent').value.trim();
+    const category = document.getElementById('postCategory').value;
+    if (!title || !content) { alert('标题和内容不能为空'); return; }
+    const email = localStorage.getItem('user_email');
+    if (!email) { alert('请先登录'); return; }
+    if (navigator.vibrate) navigator.vibrate(20);
+    try {
+      const resp = await fetch('/api/community/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, title, content, category })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('发布失败：' + data.error); return; }
+    } catch (e) { alert('网络错误'); return; }
+    document.getElementById('postTitle').value = '';
+    document.getElementById('postContent').value = '';
+    togglePublish();
+    await loadPosts();
+  }
+
+  function sortBy(type, el) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    currentSort = type;
+    renderPosts();
+  }
+
+  async function openPostById(id) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const p = allPosts.find(x => x.id === id);
+    if (!p) return;
+    currentPostId = id;
+    document.getElementById('dTitle').textContent = p.title;
+    document.getElementById('dMeta').textContent = `[${p.category || '其他'}] ${p.user_email}`;
+    document.getElementById('dBody').textContent = p.content;
+    await loadReplies(id);
+    document.getElementById('detailModal').classList.add('show');
+  }
+
+  async function loadReplies(postId) {
+    const list = document.getElementById('replyList');
+    list.innerHTML = '<div style="color:#666;font-size:13px;">加载中...</div>';
+    try {
+      const resp = await fetch('/api/community/replies?post_id=' + postId);
+      const replies = await resp.json();
+      list.innerHTML = '';
+      if (!Array.isArray(replies) || !replies.length) {
+        list.innerHTML = '<div style="color:#666; font-size:13px; margin-bottom:10px;">还没有回复，来抢沙发吧！</div>';
+        return;
+      }
+      replies.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'reply-item';
+        const prefix = (r.user_email || '').split('@')[0] || '匿名';
+        div.innerHTML = `<span class="reply-user">${escapeHtml(prefix)}：</span>${escapeHtml(r.content)}`;
+        list.appendChild(div);
+      });
+    } catch (e) {
+      list.innerHTML = '<div style="color:#ff6b6b;font-size:13px;">加载失败</div>';
+    }
+  }
+
+  async function sendReply() {
     const input = document.getElementById('replyInput');
     const text = input.value.trim();
-    if (!text) return;
+    if (!text || !currentPostId) return;
+    const email = localStorage.getItem('user_email');
+    if (!email) { alert('请先登录'); return; }
     if (navigator.vibrate) navigator.vibrate(15);
-    currentPost.replies.push(text);
-    renderReplies();
+    try {
+      const resp = await fetch('/api/community/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ post_id: currentPostId, email, content: text })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('回复失败：' + data.error); return; }
+    } catch (e) { alert('网络错误'); return; }
     input.value = '';
+    await loadReplies(currentPostId);
+    await loadPosts();
   }
 
   function closePost() {
     document.getElementById('detailModal').classList.remove('show');
   }
 
+  // 页面加载时拉帖子
+  loadPosts();
 </script>
 <script src="/static/js/auth-gate.js"></script>
 </body>

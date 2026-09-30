@@ -730,7 +730,200 @@ def api_layout_save():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================================
+#                        二手市场
+# ==========================================================
+@app.route("/api/market")
+def api_market_list():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = supabase.table("market_items").select("*").order("created_at", desc=True).limit(200).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/market/add", methods=["POST"])
+def api_market_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    title = data.get("title", "").strip()
+    if not email or not title:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("market_items").insert({
+            "user_email": email,
+            "title": title,
+            "description": data.get("description", ""),
+            "price": data.get("price", ""),
+            "contact": data.get("contact", ""),
+            "image_url": data.get("image_url", ""),
+            "category": data.get("category", ""),
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/market/delete", methods=["POST"])
+def api_market_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("id")
+    email = data.get("email", "").strip()
+    if not item_id or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 只能删自己的
+        supabase.table("market_items").delete().eq("id", item_id).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/market/view", methods=["POST"])
+def api_market_view():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("id")
+    if not item_id:
+        return jsonify({"error": "缺少 id"}), 400
+    try:
+        cur = supabase.table("market_items").select("views").eq("id", item_id).execute()
+        v = (cur.data[0]["views"] if cur.data else 0) or 0
+        supabase.table("market_items").update({"views": v + 1}).eq("id", item_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#                        社区
+# ==========================================================
+@app.route("/api/community/posts")
+def api_community_posts():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = supabase.table("community_posts").select("*").order("created_at", desc=True).limit(200).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/community/add", methods=["POST"])
+def api_community_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    title = data.get("title", "").strip()
+    content = data.get("content", "").strip()
+    if not email or not title or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("community_posts").insert({
+            "user_email": email,
+            "title": title,
+            "content": content,
+            "category": data.get("category", "其他"),
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/community/replies")
+def api_community_replies():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    pid = request.args.get("post_id", "").strip()
+    if not pid:
+        return jsonify({"error": "缺少 post_id"}), 400
+    try:
+        result = supabase.table("community_replies").select("*").eq("post_id", pid).order("created_at", desc=False).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/community/reply", methods=["POST"])
+def api_community_reply():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    pid = data.get("post_id")
+    email = data.get("email", "").strip()
+    content = data.get("content", "").strip()
+    if not pid or not email or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("community_replies").insert({
+            "post_id": pid,
+            "user_email": email,
+            "content": content,
+        }).execute()
+        # 回复数 +1
+        cur = supabase.table("community_posts").select("replies_count").eq("id", pid).execute()
+        c = (cur.data[0]["replies_count"] if cur.data else 0) or 0
+        supabase.table("community_posts").update({"replies_count": c + 1}).eq("id", pid).execute()
+        # 通知楼主
+        post = supabase.table("community_posts").select("user_email, title").eq("id", pid).execute()
+        if post.data:
+            owner = post.data[0]["user_email"]
+            if owner and owner != email:
+                notify(owner, "community_reply", "有人回复了你的帖子：" + content[:30], "/community")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#                        用户资料
+# ==========================================================
+@app.route("/api/profile")
+def api_profile_get():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = supabase.table("user_profiles").select("*").eq("user_email", email).execute()
+        return jsonify(result.data[0] if result.data else {})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/profile/save", methods=["POST"])
+def api_profile_save():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    payload = {
+        "user_email": email,
+        "nickname": data.get("nickname", ""),
+        "avatar": data.get("avatar", ""),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        exist = supabase.table("user_profiles").select("id").eq("user_email", email).execute()
+        if exist.data:
+            supabase.table("user_profiles").update(payload).eq("user_email", email).execute()
+        else:
+            supabase.table("user_profiles").insert(payload).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 # ==========================================================
 #                        汇率
 # ==========================================================
