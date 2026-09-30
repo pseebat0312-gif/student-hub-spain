@@ -526,3 +526,31 @@ h1, h2, h3, h4, h5, h6 {
 .btn-primary {
   color: inherit;
 }
+
+/* ============================================================
+   桌面图标拖拽（SortableJS）
+   ============================================================ */
+.app-icon-ghost {
+  opacity: 0.25;
+  transform: scale(0.85) !important;
+  background: transparent !important;
+}
+.app-icon-chosen {
+  z-index: 10;
+  transform: scale(1.08) !important;
+}
+
+/* iOS 抖动效果 */
+@keyframes appWiggle {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}
+.app-grid.editing .app-icon {
+  animation: appWiggle 0.28s ease-in-out infinite;
+}
+.app-grid.editing .app-icon:nth-child(2n) {
+  animation-delay: 0.05s;
+}
+.app-grid.editing .app-icon:nth-child(3n) {
+  animation-delay: 0.10s;
+}

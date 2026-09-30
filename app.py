@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 import calendar
 from flask import Flask, render_template, request, jsonify
 import pytz
@@ -170,14 +170,11 @@ def api_update_password():
     if not token or not password:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 用 token 设置当前会话
         supabase.auth.set_session(token, token)
-        # 再更新密码
         supabase.auth.update_user({"password": password})
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
 
 @app.route("/api/messages")
 def api_messages():
@@ -601,7 +598,7 @@ def api_letters_read():
     if not letter_id:
         return jsonify({"error": "缺少 id"}), 400
     try:
-        supabase.table("homesick_letters").update({"is_delivered": True, "read_at": datetime.utcnow().isoformat()}).eq("id", letter_id).execute()
+        supabase.table("homesick_letters").update({"is_delivered": True, "read_at": datetime.now(timezone.utc).isoformat()}).eq("id", letter_id).execute()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -690,13 +687,57 @@ def api_my_replies():
 
 
 # ==========================================================
+#                        桌面布局
+# ==========================================================
+@app.route("/api/layout")
+def api_layout_get():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = supabase.table("user_layouts").select("*").eq("user_email", owner).execute()
+        if result.data:
+            return jsonify({"layout": result.data[0].get("layout")})
+        return jsonify({"layout": None})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/layout/save", methods=["POST"])
+def api_layout_save():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    owner = data.get("owner", "").strip()
+    layout = data.get("layout", [])
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        exist = supabase.table("user_layouts").select("id").eq("user_email", owner).execute()
+        if exist.data:
+            supabase.table("user_layouts").update({
+                "layout": layout,
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+            }).eq("user_email", owner).execute()
+        else:
+            supabase.table("user_layouts").insert({
+                "user_email": owner,
+                "layout": layout,
+            }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
 #                        汇率
 # ==========================================================
 @app.route("/api/rates")
 def api_rates():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
-    # 优先从缓存表读，没有就返回默认
     try:
         result = supabase.table("rates_cache").select("*").order("updated_at", desc=True).limit(1).execute()
         if result.data:
@@ -790,7 +831,6 @@ def api_rates_refresh():
         return jsonify({"error": "数据库未连接"}), 500
     import urllib.request
     try:
-        # 用 frankfurter.app，免费、无需 key
         req = urllib.request.Request(
             "https://api.frankfurter.app/latest?from=EUR&to=CNY,USD",
             headers={"User-Agent": "trans-spain-tools"},
@@ -800,11 +840,10 @@ def api_rates_refresh():
             payload = _json.loads(r.read().decode("utf-8"))
         cny = payload["rates"]["CNY"]
         usd = payload["rates"]["USD"]
-        from datetime import datetime as _dt
         supabase.table("rates_cache").insert({
             "eur_to_cny": cny,
             "eur_to_usd": usd,
-            "updated_at": _dt.utcnow().isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
         return jsonify({"success": True, "EUR_TO_CNY": cny, "EUR_TO_USD": usd})
     except Exception as e:

@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <title>西班牙留学生工具站</title>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <style>
-/* 首页专属：登录横幅（style.css 里没有，只影响首页） */
 .login-banner {
   display: flex;
   align-items: center;
@@ -28,28 +28,41 @@
   transform: scale(0.97);
   background: rgba(255, 255, 255, 0.11);
 }
-.login-banner .lb-icon {
-  font-size: 26px;
-  line-height: 1;
-  flex-shrink: 0;
-}
+.login-banner .lb-icon { font-size: 26px; line-height: 1; flex-shrink: 0; }
 .login-banner .lb-text { flex: 1; text-align: left; }
 .login-banner .lb-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.3px;
-  margin-bottom: 3px;
+  font-size: 15px; font-weight: 700; color: #fff;
+  letter-spacing: -0.3px; margin-bottom: 3px;
 }
 .login-banner .lb-sub {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  line-height: 1.4;
+  font-size: 12px; color: rgba(255, 255, 255, 0.6); line-height: 1.4;
 }
 .login-banner .lb-arrow {
-  font-size: 18px;
-  color: rgba(255, 255, 255, 0.55);
-  flex-shrink: 0;
+  font-size: 18px; color: rgba(255, 255, 255, 0.55); flex-shrink: 0;
+}
+
+/* ===== 拖拽相关 ===== */
+.app-icon-ghost {
+  opacity: 0.25;
+  transform: scale(0.85) !important;
+  background: transparent !important;
+}
+.app-icon-chosen {
+  z-index: 10;
+  transform: scale(1.08) !important;
+}
+@keyframes appWiggle {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}
+.app-grid.editing .app-icon {
+  animation: appWiggle 0.28s ease-in-out infinite;
+}
+.app-grid.editing .app-icon:nth-child(2n) {
+  animation-delay: 0.05s;
+}
+.app-grid.editing .app-icon:nth-child(3n) {
+  animation-delay: 0.10s;
 }
 </style>
 </head>
@@ -64,7 +77,6 @@
 
 <div class="tab-page active" id="tab-home">
 
-<!-- ============ 登录横幅（未登录显示，登录后自动隐藏） ============ -->
 <div class="login-banner" id="loginBanner" onclick="goLogin()" style="display:none;">
   <div class="lb-icon">🔐</div>
   <div class="lb-text">
@@ -95,6 +107,9 @@
 
 <div class="tab-page" id="tab-tools">
 <div class="app-grid" id="appGrid"></div>
+<div style="font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 8px; padding-bottom: 12px;">
+  长按图标可拖动排序（登录后会自动同步到云端）
+</div>
 </div>
 
 <div class="tab-page" id="tab-messages">
@@ -141,231 +156,320 @@
 <script>
 const ADMIN_EMAIL = "pseebat0312@gmail.com";
 
-const apps = [
-{ name: '倒数日', icon: '⏳', url: '/countdown', color: 'color-gold' },
-{ name: '独家菜单', icon: '🍽️', url: '/menu', color: 'color-pink' },
-{ name: '学校导览', icon: '🏫', url: '/school', color: 'color-blue' },
-{ name: '办事导览', icon: '📋', url: '/affairs', color: 'color-green' },
-{ name: 'AI 检测', icon: '🔍', url: '/ai_detect', color: 'color-purple' },
-{ name: '二手市场', icon: '🛒', url: '/market', color: 'color-orange' },
-{ name: '互助社区', icon: '💬', url: '/community', color: 'color-green' },
-{ name: '探店地图', icon: '🗺️', url: '/map', color: 'color-red' },
-{ name: '留言板', icon: '✍️', url: '/message', color: 'color-blue' },
-{ name: '汇率换算与记账', icon: '💱', url: '/currency', color: 'color-purple' },
-{ name: '想家急救包', icon: '🏠', url: '/homesick', color: 'color-pink' },
-{ name: '急救卡', icon: '🆘', url: '/emergency', color: 'color-red' },
-{ name: '匿名树洞', icon: '🌳', url: '/treehole', color: 'color-green' }
+// ===== 所有工具定义 =====
+const ALL_APPS = [
+{ id: 'countdown', name: '倒数日', icon: '⏳', url: '/countdown', color: 'color-gold' },
+{ id: 'menu', name: '独家菜单', icon: '🍽️', url: '/menu', color: 'color-pink' },
+{ id: 'school', name: '学校导览', icon: '🏫', url: '/school', color: 'color-blue' },
+{ id: 'affairs', name: '办事导览', icon: '📋', url: '/affairs', color: 'color-green' },
+{ id: 'ai_detect', name: 'AI 检测', icon: '🔍', url: '/ai_detect', color: 'color-purple' },
+{ id: 'market', name: '二手市场', icon: '🛒', url: '/market', color: 'color-orange' },
+{ id: 'community', name: '互助社区', icon: '💬', url: '/community', color: 'color-green' },
+{ id: 'map', name: '探店地图', icon: '🗺️', url: '/map', color: 'color-red' },
+{ id: 'message', name: '留言板', icon: '✍️', url: '/message', color: 'color-blue' },
+{ id: 'currency', name: '汇率换算与记账', icon: '💱', url: '/currency', color: 'color-purple' },
+{ id: 'homesick', name: '想家急救包', icon: '🏠', url: '/homesick', color: 'color-pink' },
+{ id: 'emergency', name: '急救卡', icon: '🆘', url: '/emergency', color: 'color-red' },
+{ id: 'treehole', name: '匿名树洞', icon: '🌳', url: '/treehole', color: 'color-green' }
 ];
 
-function renderApps() {
-const grid = document.getElementById('appGrid');
-grid.innerHTML = '';
-apps.forEach(app => {
-const div = document.createElement('div');
-div.className = 'app-icon';
-div.onclick = () => {
-if (navigator.vibrate) navigator.vibrate(10);
-if (['/fortune'].includes(app.url)) {
-alert('【' + app.name + '】正在开发中，敬请期待！');
-} else {
-location.href = app.url;
-}
-};
-div.innerHTML = `
-<div class="icon-box ${app.color}">${app.icon}</div>
-<div class="app-name">${app.name}</div>
-`;
-grid.appendChild(div);
-});
+const DEFAULT_ORDER = ALL_APPS.map(a => a.id);
+
+// ===== 布局：从 localStorage 读，没有就用默认 =====
+function getLocalLayout() {
+  try {
+    const raw = localStorage.getItem('app_layout');
+    if (!raw) return DEFAULT_ORDER.slice();
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return DEFAULT_ORDER.slice();
+    // 过滤掉已经不存在的 app id，并补齐新的
+    const valid = parsed.filter(id => ALL_APPS.some(a => a.id === id));
+    ALL_APPS.forEach(a => { if (!valid.includes(a.id)) valid.push(a.id); });
+    return valid;
+  } catch (e) {
+    return DEFAULT_ORDER.slice();
+  }
 }
 
-function switchTab(tabName) {
-document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-document.getElementById('tab-' + tabName).classList.add('active');
-document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
-if (navigator.vibrate) navigator.vibrate(8);
-refreshLoginUI();
-if (tabName === 'messages') {
-loadNotifications();
+function setLocalLayout(order) {
+  try {
+    localStorage.setItem('app_layout', JSON.stringify(order));
+  } catch (e) {}
 }
+
+// ===== 云端同步 =====
+async function loadCloudLayout() {
+  const email = localStorage.getItem('user_email');
+  const token = localStorage.getItem('access_token');
+  if (!email || !token) return null;
+  try {
+    const resp = await fetch('/api/layout?owner=' + encodeURIComponent(email));
+    const data = await resp.json();
+    if (data && Array.isArray(data.layout)) {
+      // 补齐和过滤
+      const valid = data.layout.filter(id => ALL_APPS.some(a => a.id === id));
+      ALL_APPS.forEach(a => { if (!valid.includes(a.id)) valid.push(a.id); });
+      return valid;
+    }
+  } catch (e) {}
+  return null;
+}
+
+async function saveCloudLayout(order) {
+  const email = localStorage.getItem('user_email');
+  const token = localStorage.getItem('access_token');
+  if (!email || !token) return;
+  try {
+    await fetch('/api/layout/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ owner: email, layout: order })
+    });
+  } catch (e) {}
+}
+
+// ===== 渲染 =====
+function renderApps(order) {
+  if (!Array.isArray(order)) order = getLocalLayout();
+  const grid = document.getElementById('appGrid');
+  grid.innerHTML = '';
+  order.forEach(id => {
+    const app = ALL_APPS.find(a => a.id === id);
+    if (!app) return;
+    const div = document.createElement('div');
+    div.className = 'app-icon';
+    div.dataset.id = app.id;
+    div.onclick = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      if (grid.classList.contains('editing')) return; // 编辑模式不跳转
+      location.href = app.url;
+    };
+    div.innerHTML = `
+      <div class="icon-box ${app.color}">${app.icon}</div>
+      <div class="app-name">${app.name}</div>
+    `;
+    grid.appendChild(div);
+  });
+  initSortable();
+}
+
+// ===== SortableJS =====
+let sortableInstance = null;
+function initSortable() {
+  const grid = document.getElementById('appGrid');
+  if (!grid) return;
+  if (sortableInstance) {
+    sortableInstance.destroy();
+    sortableInstance = null;
+  }
+  sortableInstance = new Sortable(grid, {
+    animation: 200,
+    delay: 200,
+    delayOnTouchOnly: true,
+    touchStartThreshold: 5,
+    ghostClass: 'app-icon-ghost',
+    chosenClass: 'app-icon-chosen',
+    onStart: () => {
+      if (navigator.vibrate) navigator.vibrate(15);
+      grid.classList.add('editing');
+    },
+    onEnd: () => {
+      grid.classList.remove('editing');
+      const order = Array.from(grid.children).map(el => el.dataset.id);
+      setLocalLayout(order);
+      saveCloudLayout(order);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }
+  });
+}
+
+// ===== 首次加载：先本地，再尝试云端合并 =====
+(async function initLayout() {
+  renderApps(getLocalLayout());
+  const cloud = await loadCloudLayout();
+  if (cloud) {
+    setLocalLayout(cloud);
+    renderApps(cloud);
+  }
+})();
+
+// ===== Tab 切换 =====
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tabName).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelector(`.nav-item[data-tab="${tabName}"]`).classList.add('active');
+  if (navigator.vibrate) navigator.vibrate(8);
+  refreshLoginUI();
+  if (tabName === 'messages') {
+    loadNotifications();
+  }
 }
 
 function goLogin() {
-if (navigator.vibrate) navigator.vibrate(10);
-location.href = '/login';
+  if (navigator.vibrate) navigator.vibrate(10);
+  location.href = '/login';
 }
 
 function logout() {
-if (navigator.vibrate) navigator.vibrate(15);
-if (!confirm('确定要退出登录吗？')) return;
-localStorage.removeItem('access_token');
-localStorage.removeItem('user_email');
-location.reload();
+  if (navigator.vibrate) navigator.vibrate(15);
+  if (!confirm('确定要退出登录吗？')) return;
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('user_email');
+  location.reload();
 }
 
 function refreshLoginUI() {
-const token = localStorage.getItem('access_token');
-const email = localStorage.getItem('user_email');
-const userOnly = document.getElementById('userOnlyCards');
-const adminCard = document.getElementById('adminCard');
-const topDisplay = document.getElementById('userDisplay');
-const statusCard = document.getElementById('userStatusCard');
-const banner = document.getElementById('loginBanner');
+  const token = localStorage.getItem('access_token');
+  const email = localStorage.getItem('user_email');
+  const userOnly = document.getElementById('userOnlyCards');
+  const adminCard = document.getElementById('adminCard');
+  const topDisplay = document.getElementById('userDisplay');
+  const statusCard = document.getElementById('userStatusCard');
+  const banner = document.getElementById('loginBanner');
 
-if (token && email) {
-document.getElementById('userCardTitle').textContent = '✅ ' + email;
-document.getElementById('userCardDesc').textContent = '点击进入个人中心';
-userOnly.style.display = 'block';
-adminCard.style.display = (email === ADMIN_EMAIL) ? 'block' : 'none';
-topDisplay.textContent = email.split('@')[0];
-topDisplay.onclick = logout;
-if (banner) banner.style.display = 'none';
-} else {
-document.getElementById('userCardTitle').textContent = '🔑 点击登录';
-document.getElementById('userCardDesc').textContent = '登录后可使用个人中心、留言、社区等功能';
-userOnly.style.display = 'none';
-adminCard.style.display = 'none';
-topDisplay.textContent = '登录 →';
-topDisplay.onclick = () => location.href = '/login';
-if (banner) banner.style.display = 'flex';
-}
+  if (token && email) {
+    document.getElementById('userCardTitle').textContent = '✅ ' + email;
+    document.getElementById('userCardDesc').textContent = '点击进入个人中心';
+    userOnly.style.display = 'block';
+    adminCard.style.display = (email === ADMIN_EMAIL) ? 'block' : 'none';
+    topDisplay.textContent = email.split('@')[0];
+    topDisplay.onclick = logout;
+    if (banner) banner.style.display = 'none';
+  } else {
+    document.getElementById('userCardTitle').textContent = '🔑 点击登录';
+    document.getElementById('userCardDesc').textContent = '登录后可使用个人中心、留言、社区等功能';
+    userOnly.style.display = 'none';
+    adminCard.style.display = 'none';
+    topDisplay.textContent = '登录 →';
+    topDisplay.onclick = () => location.href = '/login';
+    if (banner) banner.style.display = 'flex';
+  }
 
-statusCard.addEventListener('click', function() {
-if (navigator.vibrate) navigator.vibrate(10);
-if (localStorage.getItem('access_token')) location.href = '/profile';
-else location.href = '/login';
-});
+  statusCard.addEventListener('click', function () {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (localStorage.getItem('access_token')) location.href = '/profile';
+    else location.href = '/login';
+  });
 }
 
 // ==================== 消息中心 ====================
 const notifTypeIcon = {
-'treehole_reply': '🌳 树洞回复',
-'message_reply': '✍️ 留言回复',
-'message_public': '🌟 留言公开',
-'menu_order': '🍽️ 菜单点单',
-'community_reply': '💬 社区回复',
-'market_interest': '🛒 二手询问'
+  'treehole_reply': '🌳 树洞回复',
+  'message_reply': '✍️ 留言回复',
+  'message_public': '🌟 留言公开',
+  'menu_order': '🍽️ 菜单点单',
+  'community_reply': '💬 社区回复',
+  'market_interest': '🛒 二手询问'
 };
 
 function timeAgo(dateStr) {
-if (!dateStr) return '';
-const d = new Date(dateStr);
-const diff = Date.now() - d.getTime();
-const m = Math.floor(diff / 60000);
-if (m < 1) return '刚刚';
-if (m < 60) return m + ' 分钟前';
-const h = Math.floor(m / 60);
-if (h < 24) return h + ' 小时前';
-const days = Math.floor(h / 24);
-if (days < 30) return days + ' 天前';
-return d.toLocaleDateString('zh-CN');
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const diff = Date.now() - d.getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return '刚刚';
+  if (m < 60) return m + ' 分钟前';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + ' 小时前';
+  const days = Math.floor(h / 24);
+  if (days < 30) return days + ' 天前';
+  return d.toLocaleDateString('zh-CN');
 }
 
 async function loadNotifCount() {
-const token = localStorage.getItem('access_token');
-const email = localStorage.getItem('user_email');
-const badge = document.getElementById('navBadge');
-
-if (!token || !email) {
-badge.classList.remove('show');
-return;
-}
-try {
-const resp = await fetch('/api/notifications/unread?owner=' + encodeURIComponent(email));
-const data = await resp.json();
-const unread = data.unread || 0;
-if (unread > 0) {
-badge.textContent = unread > 99 ? '99+' : unread;
-badge.classList.add('show');
-} else {
-badge.classList.remove('show');
-}
-} catch(e) {}
+  const token = localStorage.getItem('access_token');
+  const email = localStorage.getItem('user_email');
+  const badge = document.getElementById('navBadge');
+  if (!token || !email) { badge.classList.remove('show'); return; }
+  try {
+    const resp = await fetch('/api/notifications/unread?owner=' + encodeURIComponent(email));
+    const data = await resp.json();
+    const unread = data.unread || 0;
+    if (unread > 0) {
+      badge.textContent = unread > 99 ? '99+' : unread;
+      badge.classList.add('show');
+    } else {
+      badge.classList.remove('show');
+    }
+  } catch (e) {}
 }
 
 async function loadNotifications() {
-const list = document.getElementById('notifList');
-const email = localStorage.getItem('user_email');
-const token = localStorage.getItem('access_token');
-
-if (!token || !email) {
-list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">登录后查看消息</div>';
-return;
-}
-
-list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载中...</div>';
-
-try {
-const resp = await fetch('/api/notifications?owner=' + encodeURIComponent(email));
-const data = await resp.json();
-if (!Array.isArray(data) || data.length === 0) {
-list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">还没有消息</div>';
-return;
-}
-
-list.innerHTML = '';
-const unreadIds = [];
-data.forEach(n => {
-if (!n.is_read) unreadIds.push(n.id);
-const div = document.createElement('div');
-div.className = 'notif-item' + (n.is_read ? '' : ' unread');
-const typeLabel = notifTypeIcon[n.type] || '🔔 通知';
-div.innerHTML = `
-${n.is_read ? '' : '<span class="unread-dot"></span>'}
-<div class="notif-type">${typeLabel}</div>
-<div class="notif-content">${n.content || ''}</div>
-<div class="notif-time">${timeAgo(n.created_at)}</div>
-`;
-div.addEventListener('click', () => {
-if (n.link) location.href = n.link;
-});
-list.appendChild(div);
-});
-
-if (unreadIds.length > 0) {
-fetch('/api/notifications/read', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ ids: unreadIds })
-});
-document.getElementById('navBadge').classList.remove('show');
-}
-} catch(e) {
-list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载失败</div>';
-}
+  const list = document.getElementById('notifList');
+  const email = localStorage.getItem('user_email');
+  const token = localStorage.getItem('access_token');
+  if (!token || !email) {
+    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">登录后查看消息</div>';
+    return;
+  }
+  list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载中...</div>';
+  try {
+    const resp = await fetch('/api/notifications?owner=' + encodeURIComponent(email));
+    const data = await resp.json();
+    if (!Array.isArray(data) || data.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">还没有消息</div>';
+      return;
+    }
+    list.innerHTML = '';
+    const unreadIds = [];
+    data.forEach(n => {
+      if (!n.is_read) unreadIds.push(n.id);
+      const div = document.createElement('div');
+      div.className = 'notif-item' + (n.is_read ? '' : ' unread');
+      const typeLabel = notifTypeIcon[n.type] || '🔔 通知';
+      div.innerHTML = `
+        ${n.is_read ? '' : '<span class="unread-dot"></span>'}
+        <div class="notif-type">${typeLabel}</div>
+        <div class="notif-content">${n.content || ''}</div>
+        <div class="notif-time">${timeAgo(n.created_at)}</div>
+      `;
+      div.addEventListener('click', () => { if (n.link) location.href = n.link; });
+      list.appendChild(div);
+    });
+    if (unreadIds.length > 0) {
+      fetch('/api/notifications/read', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: unreadIds })
+      });
+      document.getElementById('navBadge').classList.remove('show');
+    }
+  } catch (e) {
+    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载失败</div>';
+  }
 }
 
 function updateClock() {
-const now = new Date();
-const spainTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Madrid"}));
-const chinaTime = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Shanghai"}));
-const pad = (n) => String(n).padStart(2, '0');
-const fmt = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-document.getElementById('spainClock').textContent = fmt(spainTime);
-document.getElementById('chinaClock').textContent = fmt(chinaTime);
+  const now = new Date();
+  const spainTime = new Date(now.toLocaleString("en-US", { timeZone: "Europe/Madrid" }));
+  const chinaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
+  const pad = (n) => String(n).padStart(2, '0');
+  const fmt = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+  document.getElementById('spainClock').textContent = fmt(spainTime);
+  document.getElementById('chinaClock').textContent = fmt(chinaTime);
 }
 updateClock();
 setInterval(updateClock, 1000);
 
-renderApps();
 refreshLoginUI();
 
 setTimeout(loadNotifCount, 1000);
 setInterval(loadNotifCount, 30000);
 
 window.addEventListener('load', () => {
-const params = new URLSearchParams(window.location.search);
-if (params.get('tab') === 'tools') {
-switchTab('tools');
-window.history.replaceState({}, '', '/');
-}
-if (params.get('tab') === 'messages') {
-switchTab('messages');
-window.history.replaceState({}, '', '/');
-}
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('tab') === 'tools') {
+    switchTab('tools');
+    window.history.replaceState({}, '', '/');
+  }
+  if (params.get('tab') === 'messages') {
+    switchTab('messages');
+    window.history.replaceState({}, '', '/');
+  }
 });
 </script>
+
 <!-- ============ PWA 添加到桌面引导（iOS + 安卓） ============ -->
 <div id="pwaGuide" style="
   display: none;
@@ -394,15 +498,10 @@ window.history.replaceState({}, '', '/');
     overflow-y: auto;
   ">
     <button onclick="closePwaGuide()" style="
-      position: absolute;
-      top: 18px; right: 18px;
-      width: 36px; height: 36px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(255,255,255,0.08);
-      color: #fff;
-      font-size: 18px;
-      cursor: pointer;
+      position: absolute; top: 18px; right: 18px;
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.08); color: #fff;
+      font-size: 18px; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
     ">✕</button>
 
@@ -416,9 +515,7 @@ window.history.replaceState({}, '', '/');
     <div style="
       background: rgba(160,216,179,0.08);
       border: 1px solid rgba(160,216,179,0.22);
-      border-radius: 16px;
-      padding: 14px 16px;
-      margin-bottom: 22px;
+      border-radius: 16px; padding: 14px 16px; margin-bottom: 22px;
     ">
       <div style="font-size: 13px; font-weight: 700; color: #a0d8b3; margin-bottom: 8px;">
         ✨ 添加到桌面的好处
@@ -431,7 +528,6 @@ window.history.replaceState({}, '', '/');
       </div>
     </div>
 
-    <!-- ============ iOS Safari 步骤 ============ -->
     <div id="pwaStepsIOS" style="display: none;">
       <div style="display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start;">
         <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1</div>
@@ -462,7 +558,6 @@ window.history.replaceState({}, '', '/');
       </div>
     </div>
 
-    <!-- ============ 安卓 Chrome 步骤 ============ -->
     <div id="pwaStepsAndroid" style="display: none;">
       <div style="display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start;">
         <div style="flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: #fff; color: #000; font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1</div>
@@ -494,56 +589,32 @@ window.history.replaceState({}, '', '/');
     </div>
 
     <button onclick="closePwaGuide()" style="
-      width: 100%;
-      padding: 17px;
-      border-radius: 999px;
-      border: none;
-      background: #fff;
-      color: #000;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: inherit;
-      letter-spacing: -0.2px;
+      width: 100%; padding: 17px; border-radius: 999px; border: none;
+      background: #fff; color: #000; font-size: 16px; font-weight: 700;
+      cursor: pointer; font-family: inherit; letter-spacing: -0.2px;
       margin-bottom: 12px;
     ">👍 我知道了，去添加</button>
 
     <button onclick="closePwaGuide()" style="
-      width: 100%;
-      padding: 12px;
-      border-radius: 999px;
-      border: none;
-      background: transparent;
-      color: rgba(255,255,255,0.45);
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
+      width: 100%; padding: 12px; border-radius: 999px; border: none;
+      background: transparent; color: rgba(255,255,255,0.45);
+      font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
     ">以后再说，继续用网页版</button>
   </div>
 </div>
 
 <style>
-  @keyframes pwaFadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  @keyframes pwaSlideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
+  @keyframes pwaFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes pwaSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 </style>
 
 <script>
   (function showPwaGuide() {
-    // 已点过"以后再说"或"我知道了"，7 天内不再显示
     const dismissed = localStorage.getItem('pwa_dismissed_at');
     if (dismissed) {
       const days = (Date.now() - parseInt(dismissed)) / (1000 * 60 * 60 * 24);
       if (days < 7) return;
     }
-
-    // 已经添加到桌面（standalone 模式）就不显示
     if (window.matchMedia('(display-mode: standalone)').matches) return;
     if (window.navigator.standalone === true) return;
 
@@ -556,18 +627,14 @@ window.history.replaceState({}, '', '/');
     let platform = null;
     if (isIOS && isSafari) platform = 'ios';
     else if (isChromeAndroid) platform = 'android';
-
-    // 只对 iOS Safari 和 安卓 Chrome 显示
     if (!platform) return;
 
-    // 显示对应步骤
     if (platform === 'ios') {
       document.getElementById('pwaStepsIOS').style.display = 'block';
     } else {
       document.getElementById('pwaStepsAndroid').style.display = 'block';
     }
 
-    // 延迟 1.5 秒显示，避免页面加载时打扰
     setTimeout(() => {
       const guide = document.getElementById('pwaGuide');
       if (guide) guide.style.display = 'flex';
