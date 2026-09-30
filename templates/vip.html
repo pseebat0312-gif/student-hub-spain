@@ -58,9 +58,10 @@
   .benefit-item:last-child { border-bottom: none; }
   .benefit-item .check { color: #6fbf8e; font-size: 18px; flex-shrink: 0; }
 
-  .price-card {
+  /* ===== 价格卡片：粉色底 + 深色字（不用强制覆盖） ===== */
+    .price-card {
     background: linear-gradient(135deg, #e8a8b8, #c98094);
-    color: #1a0f14;
+    color: #ffffff;
     border-radius: 22px;
     padding: 24px;
     text-align: center;
@@ -69,22 +70,63 @@
   }
   .price-card .price-tag {
     display: inline-block;
-    background: rgba(26,15,20,0.15);
+    background: rgba(255,255,255,0.2);
+    color: #ffffff;
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 11px;
     font-weight: 700;
     margin-bottom: 12px;
   }
-  .price-card .first-month { font-size: 13px; opacity: 0.75; margin-bottom: 8px; }
+  .price-card .first-month {
+    font-size: 13px;
+    color: #ffffff;
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
   .price-card .price-big {
     font-size: 56px;
     font-weight: 900;
     letter-spacing: -2px;
     line-height: 1;
+    color: #ffffff;
   }
-  .price-card .price-big .unit { font-size: 20px; font-weight: 600; opacity: 0.7; margin-left: 4px; }
-  .price-card .price-after { font-size: 13px; opacity: 0.75; margin-top: 8px; }
+  .price-card .price-big .unit {
+    font-size: 20px;
+    font-weight: 600;
+    opacity: 0.85;
+    margin-left: 4px;
+    color: #ffffff;
+  }
+  .price-card .price-after {
+    font-size: 13px;
+    color: #ffffff;
+    opacity: 0.85;
+    margin-top: 8px;
+  }
+
+  /* ===== 未开通提示条（醒目） ===== */
+  .coming-soon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 196, 0, 0.12);
+    border: 1px solid rgba(255, 196, 0, 0.4);
+    color: #ffc400;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px 16px;
+    border-radius: 14px;
+    margin-bottom: 14px;
+    text-align: center;
+    letter-spacing: -0.2px;
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  @keyframes pulseGlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.75; }
+  }
 
   .subscribe-btn {
     width: 100%;
@@ -100,8 +142,12 @@
     box-shadow: 0 8px 28px rgba(232,168,184,0.35);
     transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
-  
   .subscribe-btn:active { transform: scale(0.96); }
+  .subscribe-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
 
   .footer-note {
     text-align: center;
@@ -137,7 +183,7 @@
     <div class="vip-active">
       <div class="crown-big">👑</div>
       <h2>你已经是 VIP 啦！</h2>
-      <p id="vipSince">感谢你的支持 💗</p >
+      <p id="vipSince">感谢你的支持 💗</p>
     </div>
   </div>
 
@@ -145,7 +191,7 @@
     <div class="hero">
       <div class="crown">👑</div>
       <h1>VIP 会员</h1>
-      <p>解锁全部高级功能<br>让你的留学生活更轻松</p >
+      <p>解锁全部高级功能<br>让你的留学生活更轻松</p>
     </div>
 
     <div class="benefits">
@@ -177,6 +223,11 @@
       <div class="first-month">第一个月只要</div>
       <div class="price-big">€1<span class="unit">.00</span></div>
       <div class="price-after">之后 €2.99 / 月，随时可取消</div>
+    </div>
+
+    <!-- 未开通提示 -->
+    <div class="coming-soon">
+      🔒 还未开通，敬请期待
     </div>
 
     <button class="subscribe-btn" onclick="goSubscribe()">立即订阅 →</button>
@@ -212,7 +263,6 @@
     location.href = STRIPE_PAYMENT_LINK;
   }
 
-  // 检查是不是 VIP（暂时留空，等接了 Stripe webhook 之后再做）
   function checkVipStatus() {
     // 等下一轮做
   }
