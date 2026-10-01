@@ -65,6 +65,57 @@
 .app-grid.editing .app-icon:nth-child(3n) {
   animation-delay: 0.10s;
 }
+
+/* ===== 和"进入工具箱"完全同参数的卡片 ===== */
+.card-tool-like {
+  position: relative;
+  width: 100%;
+  padding: 18px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  background: rgba(255, 255, 255, 0.075);
+  color: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              background 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  margin-bottom: 14px;
+}
+.card-tool-like:active {
+  transform: scale(0.965);
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.card-tool-like .ct-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.card-tool-like .ct-text { flex: 1; min-width: 0; }
+.card-tool-like .ct-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.2px;
+  margin-bottom: 2px;
+}
+.card-tool-like .ct-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.55);
+  letter-spacing: -0.1px;
+}
 </style>
 </head>
 <body>
@@ -104,66 +155,15 @@
 </div>
 
 <button class="big-btn" onclick="switchTab('tools')">进入工具箱</button>
+
+<div class="card-tool-like" onclick="toggleInstallGuide()">
+  <span class="ct-icon">📱</span>
+  <div class="ct-text">
+    <div class="ct-title">添加到手机桌面</div>
+    <div class="ct-sub">像 App 一样一键打开，点这里看步骤 →</div>
+  </div>
 </div>
 
-<!-- ============ 添加到手机桌面 ============ -->
-<div class="card" onclick="toggleInstallGuide()" style="
-  border-radius: 22px !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  padding: 14px 18px !important;
-  margin-bottom: 14px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  max-width: 100% !important;
-">
-  <div style="
-    width: 40px; height: 40px;
-    border-radius: 12px;
-    background: rgba(160, 216, 179, 0.12);
-    border: 1px solid rgba(160, 216, 179, 0.25);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
-  ">📱</div>
-  <div style="flex: 1; min-width: 0; text-align: left;">
-    <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 3px; letter-spacing: -0.2px;">
-      添加到手机桌面
-    </div>
-    <div style="font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.4;">
-      像 App 一样一键打开，点这里看步骤 →
-    </div>
-  </div>
-</div> cursor: pointer;
-  backdrop-filter: blur(30px) saturate(140%);
-  -webkit-backdrop-filter: blur(30px) saturate(140%);
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  box-sizing: border-box;
-  width: 100%;
-">
-  <div style="
-    width: 48px; height: 48px;
-    border-radius: 14px;
-    background: rgba(160, 216, 179, 0.12);
-    border: 1px solid rgba(160, 216, 179, 0.25);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 24px;
-    flex-shrink: 0;
-  ">📱</div>
-  <div style="flex: 1; min-width: 0; text-align: left;">
-    <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; letter-spacing: -0.2px;">
-      添加到手机桌面
-    </div>
-    <div style="font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.4;">
-      像 App 一样一键打开，点这里看步骤 →
-    </div>
-  </div>
 </div>
 
 <div class="tab-page" id="tab-tools">
@@ -194,8 +194,7 @@
 <p>点了就会退出当前账号</p>
 </div>
 </div>
-
-
+</div>
 
 </div>
 
@@ -245,7 +244,6 @@ function getLocalLayout() {
     if (!raw) return DEFAULT_ORDER.slice();
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return DEFAULT_ORDER.slice();
-    // 过滤掉已经不存在的 app id，并补齐新的
     const valid = parsed.filter(id => ALL_APPS.some(a => a.id === id));
     ALL_APPS.forEach(a => { if (!valid.includes(a.id)) valid.push(a.id); });
     return valid;
@@ -269,7 +267,6 @@ async function loadCloudLayout() {
     const resp = await fetch('/api/layout?owner=' + encodeURIComponent(email));
     const data = await resp.json();
     if (data && Array.isArray(data.layout)) {
-      // 补齐和过滤
       const valid = data.layout.filter(id => ALL_APPS.some(a => a.id === id));
       ALL_APPS.forEach(a => { if (!valid.includes(a.id)) valid.push(a.id); });
       return valid;
@@ -304,7 +301,7 @@ function renderApps(order) {
     div.dataset.id = app.id;
     div.onclick = () => {
       if (navigator.vibrate) navigator.vibrate(10);
-      if (grid.classList.contains('editing')) return; // 编辑模式不跳转
+      if (grid.classList.contains('editing')) return;
       location.href = app.url;
     };
     div.innerHTML = `
@@ -534,7 +531,7 @@ window.addEventListener('load', () => {
 });
 </script>
 
-<!-- ============ PWA 添加到桌面引导（iOS + 安卓） ============ -->
+<!-- ============ PWA 添加到桌面引导 ============ -->
 <div id="pwaGuide" style="
   display: none;
   position: fixed; inset: 0;
@@ -715,7 +712,8 @@ window.addEventListener('load', () => {
     localStorage.setItem('pwa_dismissed_at', Date.now().toString());
   }
 </script>
-<!-- ============ 添加到桌面 引导 ============ -->
+
+<!-- ============ 卡片点击后的引导弹窗 ============ -->
 <div id="installGuideOverlay" style="
   display: none;
   position: fixed; inset: 0;
