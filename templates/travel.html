@@ -242,27 +242,29 @@
       zoomControl: true,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO',
-      subdomains: 'abcd',
+    // ✅ 换成 OpenStreetMap 免费瓦片（不需要 Key）
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
       maxZoom: 19,
     }).addTo(map);
 
-    // 加载国家边界
-    fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json')
+    // ✅ 加载国家边界（用 GeoJSON 数据，避免 topojson 转换）
+    // 这份数据是 110m 精度的世界国家边界，加载快
+    fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson')
       .then(r => r.json())
-      .then(data => {
-        // topojson 转 geojson
-        return fetch('https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js')
-          .then(() => data);
-      })
-      .then(topo => {
-        const countries = topojson.feature(topo, topo.objects.countries);
-        drawCountries(countries);
+      .then(geojson => {
+        drawCountries(geojson);
       })
       .catch(e => {
-        console.error('地图加载失败', e);
+        console.error('国家边界加载失败', e);
+        alert('地图数据加载失败，请刷新重试');
       });
+  }
+
+  function getCountryCode(feature) {
+    // natural-earth 数据里属性字段是 ISO_A2 或 NAME
+    const p = feature.properties || {};
+    return p.ISO_A2 || p.NAME || p.name || feature.id || '';
   }
 
   function drawCountries(geojson) {
@@ -280,17 +282,11 @@
       onEachFeature: (feature, layer) => {
         layer.on('click', () => {
           const code = getCountryCode(feature);
-          const name = feature.properties.name || code;
+          const name = feature.properties.NAME || feature.properties.name || code;
           showCountryPicker(code, name);
         });
       }
     }).addTo(map);
-  }
-
-  function getCountryCode(feature) {
-    // world-atlas 里有的字段是 id（数字），有的是 properties.name
-    // 简化处理：用 name 做 key
-    return feature.properties.name || feature.id || '';
   }
 
   function refreshCountryColors() {
@@ -378,7 +374,6 @@
     const box = document.getElementById('friendsList');
     box.innerHTML = '';
 
-    // 待我处理的邀请
     const pending = received.filter(r => r.status === 'pending');
     pending.forEach(r => {
       const div = document.createElement('div');
@@ -391,7 +386,6 @@
       box.appendChild(div);
     });
 
-    // 已接受的（双向）
     const accepted = [
       ...sent.filter(s => s.status === 'accepted').map(s => ({ ...s, other: s.friend_email, role: 'sent' })),
       ...received.filter(r => r.status === 'accepted').map(r => ({ ...r, other: r.owner_email, role: 'received' })),
@@ -407,7 +401,6 @@
       box.appendChild(div);
     });
 
-    // 我发出去还没被接受的
     const outgoing = sent.filter(s => s.status === 'pending');
     outgoing.forEach(s => {
       const div = document.createElement('div');
@@ -481,7 +474,6 @@
     try {
       const resp = await fetch('/api/location/positions?email=' + encodeURIComponent(MY_EMAIL));
       const positions = await resp.json();
-      // 清掉旧 marker
       friendMarkers.forEach(m => map.removeLayer(m));
       friendMarkers = [];
       let onlineCount = 0;
@@ -507,7 +499,6 @@
   function toggleLive() {
     const btn = document.getElementById('liveBtn');
     if (liveWatchId) {
-      // 关闭
       navigator.geolocation.clearWatch(liveWatchId);
       liveWatchId = null;
       if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
@@ -521,7 +512,6 @@
       if (navigator.vibrate) navigator.vibrate(15);
       return;
     }
-    // 开启
     if (!navigator.geolocation) {
       alert('你的浏览器不支持定位');
       return;
@@ -533,11 +523,8 @@
         const lng = pos.coords.longitude;
         sendLocation(lat, lng);
         map.setView([lat, lng], 8);
-        // 持续更新
         liveWatchId = navigator.geolocation.watchPosition(
-          p => {
-            sendLocation(p.coords.latitude, p.coords.longitude);
-          },
+          p => { sendLocation(p.coords.latitude, p.coords.longitude); },
           err => {},
           { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
         );
@@ -574,22 +561,17 @@
     document.getElementById('shareSection').scrollIntoView({ behavior: 'smooth' });
   }
 
-    // ===== 初始化 =====
+  // ===== 初始化 =====
   (async function init() {
     if (!MY_EMAIL) {
-      // 没登录就跳登录
       location.href = '/login?back=' + encodeURIComponent('/travel');
       return;
     }
     initMap();
     await loadTravel();
-    // 等国家边界加载完再上色
-    setTimeout(refreshCountryColors, 1500);
     await loadFriends();
     await loadFriendPositions();
-    // 每 30 秒刷新一次好友位置
     setInterval(loadFriendPositions, 30000);
-    // 每 30 秒刷新一次好友列表（处理新邀请）
     setInterval(loadFriends, 30000);
   })();
 </script>
