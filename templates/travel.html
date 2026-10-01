@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0f0c29">
+<title>足迹地图 · 西班牙留学生工具站</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 1000;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; transition: 0.1s;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+  #topBar .share-btn {
+    background: rgba(160,216,179,0.15); border: 1px solid rgba(160,216,179,0.3);
+    color: #a0d8b3; font-size: 12px; padding: 8px 12px; border-radius: 10px;
+    cursor: pointer;
+  }
+  #topBar .share-btn:active { transform: scale(0.95); }
+
+  #content { padding: 10px 20px 40px; }
+
+  .map-wrap {
+    width: 100%;
+    height: 55vh;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 16px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: #1a1a2e;
+  }
+  #map { width: 100%; height: 100%; }
+
+  .stats {
+    display: flex; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .stat-box {
+    flex: 1;
+    background: rgba(160,216,179,0.08);
+    border: 1px solid rgba(160,216,179,0.2);
+    border-radius: 14px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat-box .label { font-size: 11px; color: #888; margin-bottom: 6px; }
+  .stat-box .value { font-size: 22px; font-weight: bold; color: #a0d8b3; }
+
+  .legend {
+    display: flex; gap: 16px; justify-content: center;
+    font-size: 12px; color: #888;
+    margin-bottom: 16px;
+  }
+  .legend .dot {
+    display: inline-block;
+    width: 10px; height: 10px; border-radius: 3px;
+    margin-right: 5px; vertical-align: middle;
+  }
+
+  .section-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .section-card h3 {
+    font-size: 14px; font-weight: bold; color: #a0d8b3;
+    margin-bottom: 12px;
+  }
+
+  .friend-input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .friend-input-row input {
+    flex: 1; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    font-family: inherit;
+  }
+  .friend-input-row button {
+    padding: 0 18px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-weight: bold; font-size: 14px; cursor: pointer;
+  }
+
+  .friend-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .friend-item .name { flex: 1; color: #fff; }
+  .friend-item .status { font-size: 11px; padding: 3px 8px; border-radius: 8px; }
+  .friend-item .status.pending { background: rgba(255,196,0,0.15); color: #ffc400; }
+  .friend-item .status.accepted { background: rgba(160,216,179,0.15); color: #a0d8b3; }
+  .friend-item .status.rejected { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+  .friend-item button {
+    padding: 6px 12px; border-radius: 8px; border: none;
+    background: rgba(160,216,179,0.15); color: #a0d8b3;
+    font-size: 12px; cursor: pointer;
+  }
+  .friend-item button.danger { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+  .friend-item button:active { transform: scale(0.95); }
+
+  .live-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 15px; font-weight: bold;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  .live-btn.stop {
+    background: rgba(255,107,107,0.15);
+    color: #ff6b6b;
+    border: 1px solid rgba(255,107,107,0.3);
+  }
+  .live-btn:active { transform: scale(0.97); }
+
+  .hint { font-size: 12px; color: #888; line-height: 1.7; }
+
+  /* Leaflet 地图适配深色 */
+  .leaflet-container {
+    background: #1a1a2e !important;
+  }
+  .leaflet-tile-pane {
+    filter: invert(0.92) hue-rotate(180deg) brightness(0.9) contrast(0.9);
+  }
+  .leaflet-control-attribution {
+    background: rgba(0,0,0,0.5) !important;
+    color: #888 !important;
+  }
+  .leaflet-control-attribution a { color: #aaa !important; }
+  .leaflet-control-zoom a {
+    background: rgba(26,26,46,0.9) !important;
+    color: #fff !important;
+    border-color: rgba(255,255,255,0.1) !important;
+  }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">🗺️ 足迹地图</div>
+  <button class="share-btn" onclick="scrollToShare()">👥 好友</button>
+</div>
+
+<div id="content">
+
+  <div class="map-wrap">
+    <div id="map"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-box">
+      <div class="label">已去过</div>
+      <div class="value" id="visitedCount">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">想去</div>
+      <div class="value" id="wishlistCount">0</div>
+    </div>
+    <div class="stat-box">
+      <div class="label">好友在线</div>
+      <div class="value" id="onlineCount">0</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#6fbf8e;"></span>去过</span>
+    <span><span class="dot" style="background:#ffc400;"></span>想去</span>
+    <span><span class="dot" style="background:#444;"></span>未标记</span>
+  </div>
+
+  <div class="hint" style="text-align:center; margin-bottom:16px;">
+    💡 点地图上的国家 → 标记为"去过"/"想去"/"取消"
+  </div>
+
+  <div class="section-card" id="shareSection">
+    <h3>👥 位置共享（邀请制）</h3>
+    <div class="hint" style="margin-bottom:12px;">
+      输入对方注册用的邮箱，发送共享邀请。对方接受后，你们就能在地图上互相看到位置。
+    </div>
+    <div class="friend-input-row">
+      <input type="email" id="friendEmail" placeholder="好友的邮箱">
+      <button onclick="sendInvite()">邀请</button>
+    </div>
+    <div id="friendsList"></div>
+  </div>
+
+  <div class="section-card">
+    <h3>📍 实时位置</h3>
+    <div class="hint" style="margin-bottom:12px;">
+      开启后，已接受共享的好友可以在他们地图上看到你的实时位置。关闭后会立即从服务器移除。
+    </div>
+    <button class="live-btn" id="liveBtn" onclick="toggleLive()">🟢 开启实时位置共享</button>
+  </div>
+
+</div>
+
+<script>
+  const MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  let map, geojsonLayer;
+  let visited = [];
+  let wishlist = [];
+  let liveWatchId = null;
+  let liveInterval = null;
+  let friendMarkers = [];
+
+  // ===== 初始化地图 =====
+  function initMap() {
+    map = L.map('map', {
+      center: [40.4168, -3.7038], // 马德里
+      zoom: 3,
+      minZoom: 2,
+      maxZoom: 8,
+      worldCopyJump: true,
+      zoomControl: true,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO',
+      subdomains: 'abcd',
+      maxZoom: 19,
+    }).addTo(map);
+
+    // 加载国家边界
+    fetch('https://unpkg.com/world-atlas@2.0.2/countries-110m.json')
+      .then(r => r.json())
+      .then(data => {
+        // topojson 转 geojson
+        return fetch('https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js')
+          .then(() => data);
+      })
+      .then(topo => {
+        const countries = topojson.feature(topo, topo.objects.countries);
+        drawCountries(countries);
+      })
+      .catch(e => {
+        console.error('地图加载失败', e);
+      });
+  }
+
+  function drawCountries(geojson) {
+    geojsonLayer = L.geoJSON(geojson, {
+      style: feature => {
+        const code = getCountryCode(feature);
+        if (visited.includes(code)) {
+          return { fillColor: '#6fbf8e', fillOpacity: 0.7, color: '#6fbf8e', weight: 1 };
+        }
+        if (wishlist.includes(code)) {
+          return { fillColor: '#ffc400', fillOpacity: 0.6, color: '#ffc400', weight: 1 };
+        }
+        return { fillColor: '#2a2a3e', fillOpacity: 0.5, color: '#444', weight: 0.5 };
+      },
+      onEachFeature: (feature, layer) => {
+        layer.on('click', () => {
+          const code = getCountryCode(feature);
+          const name = feature.properties.name || code;
+          showCountryPicker(code, name);
+        });
+      }
+    }).addTo(map);
+  }
+
+  function getCountryCode(feature) {
+    // world-atlas 里有的字段是 id（数字），有的是 properties.name
+    // 简化处理：用 name 做 key
+    return feature.properties.name || feature.id || '';
+  }
+
+  function refreshCountryColors() {
+    if (!geojsonLayer) return;
+    geojsonLayer.eachLayer(layer => {
+      const code = getCountryCode(layer.feature);
+      let style;
+      if (visited.includes(code)) {
+        style = { fillColor: '#6fbf8e', fillOpacity: 0.7, color: '#6fbf8e', weight: 1 };
+      } else if (wishlist.includes(code)) {
+        style = { fillColor: '#ffc400', fillOpacity: 0.6, color: '#ffc400', weight: 1 };
+      } else {
+        style = { fillColor: '#2a2a3e', fillOpacity: 0.5, color: '#444', weight: 0.5 };
+      }
+      layer.setStyle(style);
+    });
+  }
+
+  // ===== 国家选择弹窗 =====
+  function showCountryPicker(code, name) {
+    const isVisited = visited.includes(code);
+    const isWish = wishlist.includes(code);
+    let msg = `📍 ${name}\n\n`;
+    if (isVisited) msg += '✅ 已标记为「去过」\n';
+    if (isWish) msg += '⭐ 已标记为「想去」\n';
+    msg += '\n选择操作：';
+
+    const choice = prompt(msg + '\n\n输入 1 = 去过\n输入 2 = 想去\n输入 3 = 取消标记', isVisited ? '1' : (isWish ? '2' : '1'));
+    if (choice === '1') {
+      if (!visited.includes(code)) visited.push(code);
+      wishlist = wishlist.filter(c => c !== code);
+    } else if (choice === '2') {
+      if (!wishlist.includes(code)) wishlist.push(code);
+      visited = visited.filter(c => c !== code);
+    } else if (choice === '3') {
+      visited = visited.filter(c => c !== code);
+      wishlist = wishlist.filter(c => c !== code);
+    } else {
+      return;
+    }
+    refreshCountryColors();
+    updateStats();
+    saveTravel();
+  }
+
+  function updateStats() {
+    document.getElementById('visitedCount').textContent = visited.length;
+    document.getElementById('wishlistCount').textContent = wishlist.length;
+  }
+
+  // ===== 加载 / 保存足迹 =====
+  async function loadTravel() {
+    if (!MY_EMAIL) return;
+    try {
+      const resp = await fetch('/api/travel?email=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      visited = Array.isArray(data.visited) ? data.visited : [];
+      wishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
+      updateStats();
+    } catch (e) {}
+  }
+
+  async function saveTravel() {
+    if (!MY_EMAIL) return;
+    try {
+      await fetch('/api/travel/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, visited, wishlist })
+      });
+    } catch (e) {}
+  }
+
+  // ===== 好友共享 =====
+  async function loadFriends() {
+    if (!MY_EMAIL) return;
+    try {
+      const resp = await fetch('/api/location/friends?email=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      renderFriends(data.sent || [], data.received || []);
+    } catch (e) {}
+  }
+
+  function renderFriends(sent, received) {
+    const box = document.getElementById('friendsList');
+    box.innerHTML = '';
+
+    // 待我处理的邀请
+    const pending = received.filter(r => r.status === 'pending');
+    pending.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'friend-item';
+      div.innerHTML = `
+        <span class="name">📩 ${escapeHtml(r.owner_email)} 想和你共享位置</span>
+        <button onclick="respondInvite(${r.id}, 'accept')">接受</button>
+        <button class="danger" onclick="respondInvite(${r.id}, 'reject')">拒绝</button>
+      `;
+      box.appendChild(div);
+    });
+
+    // 已接受的（双向）
+    const accepted = [
+      ...sent.filter(s => s.status === 'accepted').map(s => ({ ...s, other: s.friend_email, role: 'sent' })),
+      ...received.filter(r => r.status === 'accepted').map(r => ({ ...r, other: r.owner_email, role: 'received' })),
+    ];
+    accepted.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'friend-item';
+      div.innerHTML = `
+        <span class="name">✅ ${escapeHtml(r.other)}</span>
+        <span class="status accepted">已共享</span>
+        <button class="danger" onclick="removeShare(${r.id})">解除</button>
+      `;
+      box.appendChild(div);
+    });
+
+    // 我发出去还没被接受的
+    const outgoing = sent.filter(s => s.status === 'pending');
+    outgoing.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'friend-item';
+      div.innerHTML = `
+        <span class="name">📤 ${escapeHtml(s.friend_email)}</span>
+        <span class="status pending">等待接受</span>
+        <button class="danger" onclick="removeShare(${s.id})">取消</button>
+      `;
+      box.appendChild(div);
+    });
+
+    if (!box.innerHTML) {
+      box.innerHTML = '<div class="hint" style="text-align:center;padding:12px;">还没有共享好友</div>';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function sendInvite() {
+    const friend = document.getElementById('friendEmail').value.trim().toLowerCase();
+    if (!friend) { alert('请输入邮箱'); return; }
+    if (friend === MY_EMAIL) { alert('不能邀请自己'); return; }
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      const resp = await fetch('/api/location/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ owner: MY_EMAIL, friend })
+      });
+      const data = await resp.json();
+      if (data.error) { alert(data.error); return; }
+      document.getElementById('friendEmail').value = '';
+      alert('✅ 邀请已发送');
+      await loadFriends();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function respondInvite(id, action) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      await fetch('/api/location/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action, email: MY_EMAIL })
+      });
+      await loadFriends();
+      await loadFriendPositions();
+    } catch (e) {}
+  }
+
+  async function removeShare(id) {
+    if (!confirm('确定解除共享吗？')) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      await fetch('/api/location/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action: 'remove', email: MY_EMAIL })
+      });
+      await loadFriends();
+      await loadFriendPositions();
+    } catch (e) {}
+  }
+
+  // ===== 好友位置 =====
+  async function loadFriendPositions() {
+    if (!MY_EMAIL) return;
+    try {
+      const resp = await fetch('/api/location/positions?email=' + encodeURIComponent(MY_EMAIL));
+      const positions = await resp.json();
+      // 清掉旧 marker
+      friendMarkers.forEach(m => map.removeLayer(m));
+      friendMarkers = [];
+      let onlineCount = 0;
+      (positions || []).forEach(p => {
+        if (!p.lat || !p.lng) return;
+        onlineCount++;
+        const m = L.marker([p.lat, p.lng], {
+          icon: L.divIcon({
+            className: 'friend-marker',
+            html: `<div style="width:14px;height:14px;background:#e8a8b8;border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px rgba(232,168,184,0.8);"></div>`,
+            iconSize: [14, 14],
+            iconAnchor: [7, 7],
+          })
+        }).addTo(map);
+        m.bindPopup(`<b>${escapeHtml(p.user_email.split('@')[0])}</b><br>${new Date(p.updated_at).toLocaleString('zh-CN')}`);
+        friendMarkers.push(m);
+      });
+      document.getElementById('onlineCount').textContent = onlineCount;
+    } catch (e) {}
+  }
+
+  // ===== 我的实时位置 =====
+  function toggleLive() {
+    const btn = document.getElementById('liveBtn');
+    if (liveWatchId) {
+      // 关闭
+      navigator.geolocation.clearWatch(liveWatchId);
+      liveWatchId = null;
+      if (liveInterval) { clearInterval(liveInterval); liveInterval = null; }
+      fetch('/api/location/stop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL })
+      });
+      btn.textContent = '🟢 开启实时位置共享';
+      btn.classList.remove('stop');
+      if (navigator.vibrate) navigator.vibrate(15);
+      return;
+    }
+    // 开启
+    if (!navigator.geolocation) {
+      alert('你的浏览器不支持定位');
+      return;
+    }
+    btn.textContent = '⏳ 正在获取位置...';
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        sendLocation(lat, lng);
+        map.setView([lat, lng], 8);
+        // 持续更新
+        liveWatchId = navigator.geolocation.watchPosition(
+          p => {
+            sendLocation(p.coords.latitude, p.coords.longitude);
+          },
+          err => {},
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 }
+        );
+        btn.textContent = '🔴 关闭实时位置共享';
+        btn.classList.add('stop');
+        if (navigator.vibrate) navigator.vibrate(15);
+      },
+      err => {
+        alert('无法获取位置：' + err.message);
+        btn.textContent = '🟢 开启实时位置共享';
+      },
+      { enableHighAccuracy: true, timeout: 15000 }
+    );
+  }
+
+  async function sendLocation(lat, lng) {
+    try {
+      await fetch('/api/location/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, lat, lng })
+      });
+    } catch (e) {}
+  }
+
+  // ===== 返回 =====
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/?tab=tools';
+  }
+
+  function scrollToShare() {
+    document.getElementById('shareSection').scrollIntoView({ behavior: 'smooth' });
+  }
+
+    // ===== 初始化 =====
+  (async function init() {
+    if (!MY_EMAIL) {
+      // 没登录就跳登录
+      location.href = '/login?back=' + encodeURIComponent('/travel');
+      return;
+    }
+    initMap();
+    await loadTravel();
+    // 等国家边界加载完再上色
+    setTimeout(refreshCountryColors, 1500);
+    await loadFriends();
+    await loadFriendPositions();
+    // 每 30 秒刷新一次好友位置
+    setInterval(loadFriendPositions, 30000);
+    // 每 30 秒刷新一次好友列表（处理新邀请）
+    setInterval(loadFriends, 30000);
+  })();
+</script>
+</body>
+</html>

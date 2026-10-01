@@ -988,7 +988,203 @@ def api_upload():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================================
+#                        足迹地图
+# ==========================================================
+@app.route("/api/travel")
+def api_travel_get():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = supabase.table("user_travel").select("*").eq("user_email", email).execute()
+        if result.data:
+            return jsonify(result.data[0])
+        return jsonify({"visited": [], "wishlist": []})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/travel/save", methods=["POST"])
+def api_travel_save():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    visited = data.get("visited", [])
+    wishlist = data.get("wishlist", [])
+    if not isinstance(visited, list): visited = []
+    if not isinstance(wishlist, list): wishlist = []
+    try:
+        exist = supabase.table("user_travel").select("id").eq("user_email", email).execute()
+        payload = {
+            "user_email": email,
+            "visited": visited,
+            "wishlist": wishlist,
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        if exist.data:
+            supabase.table("user_travel").update(payload).eq("user_email", email).execute()
+        else:
+            supabase.table("user_travel").insert(payload).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#                        位置共享
+# ==========================================================
+@app.route("/api/location/update", methods=["POST"])
+def api_location_update():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    lat = data.get("lat")
+    lng = data.get("lng")
+    if not email or lat is None or lng is None:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        payload = {
+            "user_email": email,
+            "lat": float(lat),
+            "lng": float(lng),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+        exist = supabase.table("user_locations").select("user_email").eq("user_email", email).execute()
+        if exist.data:
+            supabase.table("user_locations").update(payload).eq("user_email", email).execute()
+        else:
+            supabase.table("user_locations").insert(payload).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/location/stop", methods=["POST"])
+def api_location_stop():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        supabase.table("user_locations").delete().eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/location/friends")
+def api_location_friends():
+    """返回我的好友列表（我共享给的和共享给我的），带他们的位置"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        # 我发给别人的
+        sent = supabase.table("location_shares").select("*").eq("owner_email", email).execute()
+        # 别人发给我的
+        received = supabase.table("location_shares").select("*").eq("friend_email", email).execute()
+        return jsonify({
+            "sent": sent.data or [],
+            "received": received.data or [],
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/location/share", methods=["POST"])
+def api_location_share():
+    """发起共享邀请"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    owner = data.get("owner", "").strip().lower()
+    friend = data.get("friend", "").strip().lower()
+    if not owner or not friend:
+        return jsonify({"error": "缺少参数"}), 400
+    if owner == friend:
+        return jsonify({"error": "不能共享给自己"}), 400
+    try:
+        exist = supabase.table("location_shares").select("id,status").eq("owner_email", owner).eq("friend_email", friend).execute()
+        if exist.data:
+            return jsonify({"error": "已经邀请过了"}), 400
+        supabase.table("location_shares").insert({
+            "owner_email": owner,
+            "friend_email": friend,
+            "status": "pending",
+        }).execute()
+        # 通知对方
+        notify(friend, "location_invite", owner + " 想和你共享位置", "/travel")
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/location/respond", methods=["POST"])
+def api_location_respond():
+    """接受或拒绝共享邀请"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    share_id = data.get("id")
+    action = data.get("action")  # accept / reject / remove
+    email = data.get("email", "").strip().lower()
+    if not share_id or action not in ("accept", "reject", "remove") or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 校验权限：只能操作跟我有关的
+        row = supabase.table("location_shares").select("*").eq("id", share_id).execute()
+        if not row.data:
+            return jsonify({"error": "记录不存在"}), 404
+        r = row.data[0]
+        if email not in (r["owner_email"], r["friend_email"]):
+            return jsonify({"error": "无权限"}), 403
+        if action == "remove":
+            supabase.table("location_shares").delete().eq("id", share_id).execute()
+        else:
+            new_status = "accepted" if action == "accept" else "rejected"
+            supabase.table("location_shares").update({"status": new_status}).eq("id", share_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/location/positions")
+def api_location_positions():
+    """返回我所有已接受好友的实时位置"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        # 拿到所有 accepted 的共享关系
+        sent = supabase.table("location_shares").select("friend_email").eq("owner_email", email).eq("status", "accepted").execute()
+        received = supabase.table("location_shares").select("owner_email").eq("friend_email", email).eq("status", "accepted").execute()
+        friend_emails = set()
+        for r in (sent.data or []): friend_emails.add(r["friend_email"])
+        for r in (received.data or []): friend_emails.add(r["owner_email"])
+        friend_emails.discard(email)
+        if not friend_emails:
+            return jsonify([])
+        # 拿这些人的位置
+        positions = supabase.table("user_locations").select("*").in_("user_email", list(friend_emails)).execute()
+        return jsonify(positions.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+    
 # ==========================================================
 #                        汇率
 # ==========================================================
