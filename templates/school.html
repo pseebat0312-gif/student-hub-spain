@@ -16,7 +16,6 @@
     padding-bottom: 40px;
   }
 
-  /* 顶部返回 */
   #topBar {
     padding: 16px 20px;
     display: flex; align-items: center; gap: 12px;
@@ -30,12 +29,50 @@
     cursor: pointer; transition: 0.1s;
   }
   #topBar .back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.15); }
-  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+  #topBar .switch-btn {
+    background: rgba(160,216,179,0.15);
+    border: 1px solid rgba(160,216,179,0.3);
+    color: #a0d8b3;
+    font-size: 12px; font-weight: 700;
+    padding: 8px 14px; border-radius: 999px;
+    cursor: pointer; transition: 0.15s;
+  }
+  #topBar .switch-btn:active { transform: scale(0.95); }
 
-  /* 主内容区 */
   #content { padding: 10px 20px 40px; }
 
-  /* 学校选择器 */
+  /* 学校头部卡片 */
+  .school-header {
+    background: linear-gradient(135deg, rgba(160,216,179,0.12), rgba(74,124,89,0.08));
+    border: 1px solid rgba(160,216,179,0.25);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .school-header .logo {
+    width: 56px; height: 56px;
+    border-radius: 16px;
+    background: rgba(160,216,179,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .school-header .info { flex: 1; min-width: 0; }
+  .school-header .info .name {
+    font-size: 17px; font-weight: 800;
+    color: #fff; line-height: 1.3;
+    letter-spacing: -0.3px;
+  }
+  .school-header .info .sub {
+    font-size: 12px; color: #888;
+    margin-top: 4px;
+  }
+
+  /* 学校选择器（初始 / 切换时显示） */
   .school-select {
     width: 100%;
     padding: 16px 20px;
@@ -84,7 +121,6 @@
   }
   .link-btn .emoji { font-size: 22px; margin-bottom: 6px; }
 
-  /* 提示框 */
   .tip-box {
     background: rgba(160, 216, 179, 0.08);
     border-left: 4px solid #a0d8b3;
@@ -95,26 +131,87 @@
     margin-top: 24px;
   }
 
-  /* 未选择的提示 */
   .empty-state {
     text-align: center; padding: 60px 20px;
     color: #666; font-size: 14px;
   }
+
+  /* 切换学校的底部弹窗 */
+  .picker-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: none;
+    justify-content: flex-end;
+    align-items: flex-end;
+    animation: fadeIn 0.25s ease;
+  }
+  .picker-overlay.show { display: flex; }
+  .picker-sheet {
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: #1c1c1e;
+    border-radius: 28px 28px 0 0;
+    padding: 24px 20px 34px;
+    box-sizing: border-box;
+    animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .picker-sheet .picker-title {
+    font-size: 18px; font-weight: 800;
+    color: #fff; margin-bottom: 16px;
+    text-align: center;
+  }
+  .picker-option {
+    width: 100%;
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    color: #fff; font-size: 15px;
+    text-align: left; cursor: pointer;
+    margin-bottom: 10px;
+    transition: 0.15s;
+    font-family: inherit;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .picker-option:active {
+    transform: scale(0.98);
+    background: rgba(160,216,179,0.12);
+    border-color: rgba(160,216,179,0.3);
+  }
+  .picker-option.active {
+    background: rgba(160,216,179,0.15);
+    border-color: #a0d8b3;
+  }
+  .picker-option .check {
+    margin-left: auto; color: #a0d8b3; font-size: 18px;
+  }
+  .picker-cancel {
+    width: 100%; padding: 14px;
+    background: transparent; border: none;
+    color: #888; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    margin-top: 6px;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 </style>
 </head>
 <body>
 
-<!-- 顶部导航 -->
 <div id="topBar">
   <button class="back-btn" onclick="goBack()">←</button>
-  <div class="title">🏛️ 学校快速导览</div>
+  <div class="title">🏛️ 学校导览</div>
+  <button class="switch-btn" id="switchBtn" onclick="openSchoolPicker()" style="display:none;">换学校</button>
 </div>
 
-<!-- 内容 -->
 <div id="content">
 
-  <!-- 学校下拉 -->
-  <select class="school-select" id="schoolSelect" onchange="onSchoolChange()">
+  <!-- 如果还没选学校，显示下拉 -->
+  <select class="school-select" id="schoolSelect" onchange="onSchoolChange(this.value)">
     <option value="">📌 请选择你的学校</option>
     <option value="UCM">马德里康普顿斯大学 (UCM)</option>
     <option value="UAM">马德里自治大学 (UAM)</option>
@@ -123,29 +220,57 @@
     <option value="other">其他（即将添加）</option>
   </select>
 
-  <!-- 动态内容区 -->
+  <!-- 学校内容 -->
   <div id="schoolContent">
     <div class="empty-state">👆 请从上方选择你的学校</div>
   </div>
 
 </div>
 
+<!-- 换学校弹窗 -->
+<div class="picker-overlay" id="pickerOverlay" onclick="closeSchoolPicker(event)">
+  <div class="picker-sheet" onclick="event.stopPropagation()">
+    <div class="picker-title">选择学校</div>
+    <button class="picker-option" data-key="UCM" onclick="pickSchool('UCM')">
+      <span>🏛️</span><span>马德里康普顿斯大学 (UCM)</span>
+      <span class="check" style="display:none;">✓</span>
+    </button>
+    <button class="picker-option" data-key="UAM" onclick="pickSchool('UAM')">
+      <span>🏛️</span><span>马德里自治大学 (UAM)</span>
+      <span class="check" style="display:none;">✓</span>
+    </button>
+    <button class="picker-option" data-key="UB" onclick="pickSchool('UB')">
+      <span>🏛️</span><span>巴塞罗那大学 (UB)</span>
+      <span class="check" style="display:none;">✓</span>
+    </button>
+    <button class="picker-option" data-key="UPF" onclick="pickSchool('UPF')">
+      <span>🏛️</span><span>庞培法布拉大学 (UPF)</span>
+      <span class="check" style="display:none;">✓</span>
+    </button>
+    <button class="picker-option" data-key="other" onclick="pickSchool('other')">
+      <span>✨</span><span>其他学校</span>
+      <span class="check" style="display:none;">✓</span>
+    </button>
+    <button class="picker-cancel" onclick="closeSchoolPicker()">取消</button>
+  </div>
+</div>
+
 <script>
-    // ===== 智能返回 =====
+  // ===== 智能返回 =====
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
-    // 如果是从别的页面跳进来的（有历史记录），就返回上一页
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      // 如果用户是直接打开这个链接的，就回主页
       location.href = '/';
     }
   }
-  // 学校数据（直接写在前端，瞬间切换）
+
+  // ===== 学校数据 =====
   const schoolData = {
     UCM: {
       name: "马德里康普顿斯大学 (UCM)",
+      emoji: "🏛️",
       sections: [
         {
           title: "📚 学术与教学",
@@ -167,26 +292,54 @@
       ],
       tip: "💡 提示：在校外访问 Campus Virtual 时，需要先连接学校的 VPN。"
     },
-    UAM: { name: "马德里自治大学 (UAM)", sections: [], tip: "UAM 的入口正在整理中，敬请期待！" },
-    UB: { name: "巴塞罗那大学 (UB)", sections: [], tip: "UB 的入口正在整理中，敬请期待！" },
-    UPF: { name: "庞培法布拉大学 (UPF)", sections: [], tip: "UPF 的入口正在整理中，敬请期待！" },
-    other: { name: "其他学校", sections: [], tip: "如果你希望添加你的学校，欢迎在留言板留言联系作者！" }
+    UAM: { name: "马德里自治大学 (UAM)", emoji: "🏛️", sections: [], tip: "UAM 的入口正在整理中，敬请期待！" },
+    UB: { name: "巴塞罗那大学 (UB)", emoji: "🏛️", sections: [], tip: "UB 的入口正在整理中，敬请期待！" },
+    UPF: { name: "庞培法布拉大学 (UPF)", emoji: "🏛️", sections: [], tip: "UPF 的入口正在整理中，敬请期待！" },
+    other: { name: "其他学校", emoji: "✨", sections: [], tip: "如果你希望添加你的学校，欢迎在留言板留言联系作者！" }
   };
 
-  function onSchoolChange() {
-    const key = document.getElementById('schoolSelect').value;
-    const container = document.getElementById('schoolContent');
+  const STORAGE_KEY = 'selected_school';
 
-    // 震动反馈
-    if (navigator.vibrate) navigator.vibrate(10);
+  // ===== 渲染 =====
+  function renderSchool(key) {
+    const container = document.getElementById('schoolContent');
+    const selectEl = document.getElementById('schoolSelect');
+    const switchBtn = document.getElementById('switchBtn');
 
     if (!key || !schoolData[key]) {
       container.innerHTML = '<div class="empty-state">👆 请从上方选择你的学校</div>';
+      selectEl.style.display = 'block';
+      switchBtn.style.display = 'none';
       return;
     }
 
     const data = schoolData[key];
-    let html = '';
+
+    // 隐藏下拉，显示换学校按钮
+    selectEl.style.display = 'none';
+    switchBtn.style.display = 'block';
+
+    // 更新弹窗里的勾
+    document.querySelectorAll('.picker-option').forEach(btn => {
+      const check = btn.querySelector('.check');
+      if (btn.dataset.key === key) {
+        btn.classList.add('active');
+        if (check) check.style.display = 'inline';
+      } else {
+        btn.classList.remove('active');
+        if (check) check.style.display = 'none';
+      }
+    });
+
+    let html = `
+      <div class="school-header">
+        <div class="logo">${data.emoji}</div>
+        <div class="info">
+          <div class="name">${data.name}</div>
+          <div class="sub">快速入口 · 一键直达</div>
+        </div>
+      </div>
+    `;
 
     if (data.sections.length === 0) {
       html += `<div class="empty-state">${data.tip}</div>`;
@@ -196,19 +349,57 @@
         html += `<div class="link-grid">`;
         sec.links.forEach(link => {
           html += `
-              <a class="link-btn" href="${link.url} " target="_blank">
-                <span class="emoji">${link.emoji}</span>
-                <span>${link.name}</span>
-              </a >
-            `;
+            <a class="link-btn" href="${link.url}" target="_blank">
+              <span class="emoji">${link.emoji}</span>
+              <span>${link.name}</span>
+            </a>
+          `;
         });
         html += `</div>`;
       });
-      html += `<div class="tip-box">${data.tip}</div>`;
+      if (data.tip) html += `<div class="tip-box">${data.tip}</div>`;
     }
 
     container.innerHTML = html;
   }
+
+  // ===== 下拉选择（首次） =====
+  function onSchoolChange(key) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!key) {
+      localStorage.removeItem(STORAGE_KEY);
+      renderSchool('');
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, key);
+    renderSchool(key);
+  }
+
+  // ===== 弹窗选择（切换） =====
+  function openSchoolPicker() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    document.getElementById('pickerOverlay').classList.add('show');
+  }
+  function closeSchoolPicker(e) {
+    if (e && e.target !== e.currentTarget && !e.target.classList.contains('picker-cancel')) return;
+    document.getElementById('pickerOverlay').classList.remove('show');
+  }
+  function pickSchool(key) {
+    if (navigator.vibrate) navigator.vibrate(12);
+    localStorage.setItem(STORAGE_KEY, key);
+    renderSchool(key);
+    document.getElementById('pickerOverlay').classList.remove('show');
+  }
+
+  // ===== 初始化 =====
+  (function init() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && schoolData[saved]) {
+      renderSchool(saved);
+    } else {
+      renderSchool('');
+    }
+  })();
 </script>
 </body>
 </html>
