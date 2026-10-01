@@ -107,11 +107,40 @@
 </div>
 
 <!-- ============ 添加到手机桌面 ============ -->
-<div class="card" onclick="toggleInstallGuide()">
-<h3>📱 添加到手机桌面</h3>
-<p>像 App 一样一键打开，点这里看步骤 →</p>
-</div>
-
+<div onclick="toggleInstallGuide()" style="
+  position: relative;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 22px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-sizing: border-box;
+  width: 100%;
+">
+  <div style="
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: rgba(160, 216, 179, 0.12);
+    border: 1px solid rgba(160, 216, 179, 0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  ">📱</div>
+  <div style="flex: 1; min-width: 0; text-align: left;">
+    <div style="font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; letter-spacing: -0.2px;">
+      添加到手机桌面
+    </div>
+    <div style="font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.4;">
+      像 App 一样一键打开，点这里看步骤 →
+    </div>
+  </div>
 </div>
 
 <div class="tab-page" id="tab-tools">
