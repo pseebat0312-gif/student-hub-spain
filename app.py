@@ -1310,3 +1310,53 @@ def api_rates_refresh():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
+
+
+# ==========================================================
+#                        汇率提醒
+# ==========================================================
+@app.route("/api/rate_alerts")
+def api_rate_alerts_get():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = supabase.table("rate_alerts").select("*").eq("user_email", email).execute()
+        if result.data:
+            return jsonify(result.data[0])
+        return jsonify({
+            "user_email": email,
+            "enabled": False,
+            "upper_threshold": 8.00,
+            "lower_threshold": 7.00,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/rate_alerts/save", methods=["POST"])
+def api_rate_alerts_save():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    payload = {
+        "user_email": email,
+        "enabled": bool(data.get("enabled", False)),
+        "upper_threshold": float(data.get("upper_threshold", 8.00)),
+        "lower_threshold": float(data.get("lower_threshold", 7.00)),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        exist = supabase.table("rate_alerts").select("id").eq("user_email", email).execute()
+        if exist.data:
+            supabase.table("rate_alerts").update(payload).eq("user_email", email).execute()
+        else:
+            supabase.table("rate_alerts").insert(payload).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

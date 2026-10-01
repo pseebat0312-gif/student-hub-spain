@@ -441,6 +441,40 @@
     </div>
   </div>
 
+  <div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div style="font-size:14px;font-weight:700;color:#fff;">🔔 汇率提醒</div>
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+      <input type="checkbox" id="alertEnabled" style="width:auto;accent-color:#7ad19f;">
+      <span style="font-size:13px;color:#888;">开启</span>
+    </label>
+  </div>
+
+  <div id="alertBody" style="display:none;">
+    <div style="font-size:12px;color:#888;line-height:1.6;margin-bottom:14px;">
+      汇率超过或低于你设的值时，会在页面顶部提醒你。<br>
+      （需要打开这个页面才会生效）
+    </div>
+
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+      <div style="flex:1;">
+        <div style="font-size:11px;color:#888;margin-bottom:6px;">超过提醒（高）</div>
+        <input type="number" id="upperThreshold" step="0.01" value="8.00" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.06);color:#fff;font-size:15px;outline:none;font-family:inherit;">
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:11px;color:#888;margin-bottom:6px;">低于提醒（低）</div>
+        <input type="number" id="lowerThreshold" step="0.01" value="7.00" style="width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.06);color:#fff;font-size:15px;outline:none;font-family:inherit;">
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:#888;margin-bottom:12px;">
+      当前汇率：<b id="alertCurrent" style="color:#7ad19f;">--</b>
+    </div>
+
+    <button class="primary-btn" onclick="saveAlertSettings()" style="margin-top:0;">💾 保存设置</button>
+  </div>
+</div>
+
   <!-- ============ 记账本 ============ -->
   <div class="tab-panel" id="panel-book">
 
@@ -1115,13 +1149,170 @@ function showLoginNeeded() {
     else location.href = '/?tab=tools';
   }
 
-  // ============ 初始化 ============
+  // ==================== 汇率提醒 ====================
+let alertConfig = { enabled: false, upper_threshold: 8.00, lower_threshold: 7.00 };
+let alertCheckTimer = null;
+let lastAlertShownAt = 0;         // 上次弹横幅时间（防抖）
+const ALERT_COOLDOWN = 30 * 60 * 1000; // 30 分钟内不重复弹同方向
+
+async function loadAlertSettings() {
+  try {
+    const resp = await fetch('/api/rate_alerts?email=' + encodeURIComponent(MY_EMAIL));
+    const data = await resp.json();
+    alertConfig.enabled = !!data.enabled;
+    alertConfig.upper_threshold = parseFloat(data.upper_threshold) || 8.00;
+    alertConfig.lower_threshold = parseFloat(data.lower_threshold) || 7.00;
+
+    document.getElementById('alertEnabled').checked = alertConfig.enabled;
+    document.getElementById('upperThreshold').value = alertConfig.upper_threshold;
+    document.getElementById('lowerThreshold').value = alertConfig.lower_threshold;
+    document.getElementById('alertBody').style.display = alertConfig.enabled ? 'block' : 'none';
+    document.getElementById('alertCurrent').textContent = '¥' + rates.EUR_TO_CNY.toFixed(2);
+  } catch (e) {}
+}
+
+document.getElementById('alertEnabled').addEventListener('change', (e) => {
+  document.getElementById('alertBody').style.display = e.target.checked ? 'block' : 'none';
+});
+
+async function saveAlertSettings() {
+  if (!localStorage.getItem('access_token')) {
+    alert('请先登录');
+    return;
+  }
+  const enabled = document.getElementById('alertEnabled').checked;
+  const upper = parseFloat(document.getElementById('upperThreshold').value) || 8.00;
+  const lower = parseFloat(document.getElementById('lowerThreshold').value) || 7.00;
+  if (lower >= upper) {
+    alert('下限必须小于上限');
+    return;
+  }
+  if (navigator.vibrate) navigator.vibrate(12);
+  try {
+    const resp = await fetch('/api/rate_alerts/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: MY_EMAIL,
+        enabled,
+        upper_threshold: upper,
+        lower_threshold: lower
+      })
+    });
+    const data = await resp.json();
+    if (data.error) { alert('保存失败：' + data.error); return; }
+    alertConfig.enabled = enabled;
+    alertConfig.upper_threshold = upper;
+    alertConfig.lower_threshold = lower;
+    alert('✅ 已保存');
+  } catch (e) { alert('网络错误'); }
+}
+
+// 检查一次汇率，触发提醒
+function checkRateAlert() {
+  if (!alertConfig.enabled) return;
+  const cur = rates.EUR_TO_CNY;
+  document.getElementById('alertCurrent').textContent = '¥' + cur.toFixed(2);
+
+  const now = Date.now();
+  if (now - lastAlertShownAt < ALERT_COOLDOWN) return;
+
+  if (cur >= alertConfig.upper_threshold) {
+    showRateBanner('📈', `汇率已到 ¥${cur.toFixed(2)}，超过你设的 ¥${alertConfig.upper_threshold.toFixed(2)}`, '#ff8b95');
+    lastAlertShownAt = now;
+  } else if (cur <= alertConfig.lower_threshold) {
+    showRateBanner('📉', `汇率已跌到 ¥${cur.toFixed(2)}，低于你设的 ¥${alertConfig.lower_threshold.toFixed(2)}`, '#7ad19f');
+    lastAlertShownAt = now;
+  }
+}
+
+function showRateBanner(icon, text, color) {
+  // 防止重复插入
+  if (document.getElementById('__rateBanner')) return;
+
+  const banner = document.createElement('div');
+  banner.id = '__rateBanner';
+  banner.style.cssText = `
+    position: fixed;
+    top: 70px;
+    left: 16px;
+    right: 16px;
+    max-width: 460px;
+    margin: 0 auto;
+    background: rgba(20,20,22,0.95);
+    border: 1px solid ${color}55;
+    color: #fff;
+    border-radius: 16px;
+    padding: 14px 16px;
+    z-index: 99998;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 1px ${color}22 inset;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    animation: __rateBannerIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  `;
+  banner.innerHTML = `
+    <style>
+      @keyframes __rateBannerIn {
+        from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+    </style>
+    <div style="font-size:24px;flex-shrink:0;">${icon}</div>
+    <div style="flex:1;font-size:13.5px;line-height:1.5;">${text}</div>
+    <button onclick="document.getElementById('__rateBanner').remove()" style="background:rgba(255,255,255,0.08);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px;flex-shrink:0;">✕</button>
+  `;
+  document.body.appendChild(banner);
+
+  // 震动
+  if (navigator.vibrate) navigator.vibrate([15, 50, 15]);
+
+  // 5 秒后自动消失
+  setTimeout(() => {
+    const b = document.getElementById('__rateBanner');
+    if (b) {
+      b.style.transition = 'opacity 0.3s, transform 0.3s';
+      b.style.opacity = '0';
+      b.style.transform = 'translateY(-20px)';
+      setTimeout(() => b.remove(), 300);
+    }
+  }, 5000);
+}
+
+// 每 10 分钟检查一次
+function startAlertLoop() {
+  if (alertCheckTimer) clearInterval(alertCheckTimer);
+  alertCheckTimer = setInterval(async () => {
+    // 拉一次最新汇率
+    try {
+      const resp = await fetch('/api/rates');
+      const data = await resp.json();
+      if (data && data.EUR_TO_CNY) {
+        rates.EUR_TO_CNY = parseFloat(data.EUR_TO_CNY);
+        rates.EUR_TO_USD = parseFloat(data.EUR_TO_USD);
+        renderRateBar();
+        convert();
+      }
+    } catch (e) {}
+    checkRateAlert();
+  }, 10 * 60 * 1000);
+}
+
+ // ============ 初始化 ============
   document.getElementById('txDate').value = new Date().toISOString().slice(0, 10);
   renderCategories();
   fetchRates();
   renderFilterRow();
   loadTransactions();
   document.getElementById('txAmount').addEventListener('input', onTxCurrencyChange);
+
+  // ===== 汇率提醒初始化 =====
+  loadAlertSettings().then(() => {
+    setTimeout(checkRateAlert, 3000);
+    startAlertLoop();
+  });
 </script>
 </body>
 </html>
