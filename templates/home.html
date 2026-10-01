@@ -134,6 +134,13 @@
 <p>点了就会退出当前账号</p>
 </div>
 </div>
+
+<!-- ============ 添加到手机桌面 ============ -->
+<div class="card" onclick="toggleInstallGuide()">
+<h3>📱 添加到手机桌面</h3>
+<p>像 App 一样一键打开，点这里看步骤 →</p>
+</div>
+
 </div>
 
 </div>
@@ -652,6 +659,136 @@ window.addEventListener('load', () => {
     }
     if (navigator.vibrate) navigator.vibrate(10);
     localStorage.setItem('pwa_dismissed_at', Date.now().toString());
+  }
+</script>
+<!-- ============ 添加到桌面 引导 ============ -->
+<div id="installGuideOverlay" style="
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 99999;
+  justify-content: flex-end;
+  align-items: flex-end;
+  animation: igFadeIn 0.3s ease;
+">
+  <div style="
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+    background: #1c1c1e;
+    border-radius: 28px 28px 0 0;
+    padding: 26px 22px 34px;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    animation: igSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+  ">
+    <button onclick="closeInstallGuide()" style="
+      position: absolute; top: 18px; right: 18px;
+      width: 36px; height: 36px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.08); color: #fff;
+      font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    ">✕</button>
+
+    <div style="font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px;">
+      📱 添加到手机桌面
+    </div>
+    <div style="font-size: 13px; color: rgba(255,255,255,0.55); line-height: 1.6; margin-bottom: 22px;">
+      添加到桌面后，就能像 App 一样一键打开，全屏无浏览器边框，还支持离线访问。
+    </div>
+
+    <div style="
+      background: rgba(160,216,179,0.08);
+      border: 1px solid rgba(160,216,179,0.22);
+      border-radius: 16px; padding: 14px 16px; margin-bottom: 22px;
+    ">
+      <div style="font-size: 13px; font-weight: 700; color: #a0d8b3; margin-bottom: 8px;">
+        ✨ 添加到桌面的好处
+      </div>
+      <div style="font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.9;">
+        • 一键打开，不用每次输网址<br>
+        • 全屏显示，没有浏览器地址栏<br>
+        • 有独立图标，和 App 一样<br>
+        • 网络不好也能打开
+      </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+      <div style="font-size: 14px; font-weight: 700; color: #a0d8b3; margin-bottom: 12px;">
+        🍎 iPhone / iPad（Safari）
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #000; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1</div>
+        <div style="flex: 1; padding-top: 3px; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6;">
+          在 Safari 底部点<b style="color:#fff;">分享按钮</b>（方框 + 向上箭头 <span style="display:inline-block; padding: 1px 6px; background: rgba(255,255,255,0.1); border-radius: 5px;">⬆️</span>）
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #000; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">2</div>
+        <div style="flex: 1; padding-top: 3px; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6;">
+          往下滑，找到 <b style="color:#fff;">"添加到主屏幕"</b>，点它
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #000; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">3</div>
+        <div style="flex: 1; padding-top: 3px; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6;">
+          右上角点 <b style="color:#fff;">"添加"</b>，桌面就会出现图标
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="font-size: 14px; font-weight: 700; color: #a0d8b3; margin-bottom: 12px;">
+        🤖 安卓（Chrome / 华为 / 小米浏览器）
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #000; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">1</div>
+        <div style="flex: 1; padding-top: 3px; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6;">
+          点浏览器<b style="color:#fff;">右上角菜单</b>（三个点 <span style="display:inline-block; padding: 1px 6px; background: rgba(255,255,255,0.1); border-radius: 5px;">⋮</span>）
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; margin-bottom: 14px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #000; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">2</div>
+        <div style="flex: 1; padding-top: 3px; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6;">
+          选 <b style="color:#fff;">"添加到主屏幕"</b> 或 <b style="color:#fff;">"安装应用"</b>
+        </div>
+      </div>
+      <div style="display: flex; gap: 14px; align-items: flex-start;">
+        <div style="flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; background: #fff; color: #000; font-size: 15px; font-weight: 800; display: flex; align-items: center; justify-content: center;">3</div>
+        <div style="flex: 1; padding-top: 3px; font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.6;">
+          点 <b style="color:#fff;">"添加"</b> 或 <b style="color:#fff;">"安装"</b>，桌面就会出现图标
+        </div>
+      </div>
+    </div>
+
+    <button onclick="closeInstallGuide()" style="
+      width: 100%; padding: 16px; border-radius: 999px; border: none;
+      background: #fff; color: #000; font-size: 16px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      margin-top: 24px;
+    ">我知道了</button>
+  </div>
+</div>
+
+<style>
+  @keyframes igFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes igSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+</style>
+
+<script>
+  function toggleInstallGuide() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    document.getElementById('installGuideOverlay').style.display = 'flex';
+  }
+  function closeInstallGuide() {
+    if (navigator.vibrate) navigator.vibrate(8);
+    document.getElementById('installGuideOverlay').style.display = 'none';
   }
 </script>
 </body>
