@@ -102,6 +102,10 @@ def treehole():
 def vip_page():
     return render_template("vip.html")
 
+@app.route("/travel")
+def travel():
+    return render_template("travel.html")
+
 
 
 
