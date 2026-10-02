@@ -1650,7 +1650,7 @@
         toggleBtn.style.background = 'rgba(244,184,208,0.15)';
         toggleBtn.style.borderColor = 'rgba(244,184,208,0.4)';
         toggleBtn.style.color = '#f4b8d0';
-        toggleBtn.textContent = '⭐';
+        toggleBtn.textContent = '关闭追星专区';
       }
     } else {
       if (btn) btn.style.display = 'none';
@@ -1794,6 +1794,103 @@
     }
   }
 
+    async function checkPendingSafetyInvites() {
+    if (!MY_EMAIL) return;
+    try {
+      const resp = await fetch('/api/her_safety/shares?email=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      const pending = (data.received || []).filter(r => r.status === 'pending');
+      if (pending.length > 0) {
+        // 直接在页面顶部显示一个横幅，点击进入暗号面板
+        showSafetyInviteBanner(pending);
+      }
+    } catch (e) {}
+  }
+
+  function showSafetyInviteBanner(pending) {
+    // 防止重复
+    if (document.getElementById('__safetyInviteBanner')) return;
+
+    const banner = document.createElement('div');
+    banner.id = '__safetyInviteBanner';
+    banner.style.cssText = `
+      position: fixed;
+      top: 74px;
+      left: 16px;
+      right: 16px;
+      max-width: 460px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(255,107,107,0.28), rgba(200,60,60,0.18));
+      border: 1px solid rgba(255,107,107,0.5);
+      color: #fff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      cursor: pointer;
+      animation: slideDown 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    `;
+    const names = pending.map(p => p.owner_email).join('、');
+    banner.innerHTML = `
+      <style>
+        @keyframes slideDown {
+          from { transform: translateY(-20px); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+      </style>
+      <div style="font-size:24px;flex-shrink:0;">🆘</div>
+      <div style="flex:1;">
+        <div style="font-size:13.5px;font-weight:700;margin-bottom:2px;">有人想和你共享遇险暗号</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.7);">点击查看 →</div>
+      </div>
+    `;
+    banner.onclick = () => {
+      banner.remove();
+      // 打开暗号面板：走 openSafety 流程
+      openSafetyAndShowInvites();
+    };
+    document.body.appendChild(banner);
+
+    // 10 秒后自动消失
+    setTimeout(() => {
+      const b = document.getElementById('__safetyInviteBanner');
+      if (b) b.remove();
+    }, 10000);
+  }
+
+  // 打开暗号面板并展示邀请（即使没设置过暗号也能处理邀请）
+  async function openSafetyAndShowInvites() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!MY_EMAIL) {
+      alert('请先登录');
+      location.href = '/login';
+      return;
+    }
+    try {
+      const resp = await fetch('/api/her_safety?email=' + encodeURIComponent(MY_EMAIL));
+      sosData = await resp.json();
+      if (!sosData || !sosData.secret_code) {
+        // 没设置过自己的暗号，也可以直接进"共享管理"模式
+        // 直接打开展示面板（不走验证），因为还没有自己的暗号
+        document.getElementById('safetyPanelModal').classList.add('show');
+        // 展示面板里"我的暗号"是空的，但"我守护的人"和"收到的邀请"都能操作
+        document.getElementById('sosCodeDisplay').textContent = '（还没设置）';
+        document.getElementById('sosCallList').innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:14px;">去"编辑设置"里先设置你自己的暗号</div>';
+        loadSafetyShares();
+        loadWatchingList();
+        return;
+      }
+      // 已设置过 → 走原验证流程，验证后进入面板
+      openSosVerify();
+    } catch (e) {
+      alert('网络错误');
+    }
+  }
 
   // ==========================================================
   //                        初始化
@@ -1817,6 +1914,8 @@
     if (MY_EMAIL) await loadMyIdols();
     await renderCycles();
     applyIdolTabVisibility();
+    // 检查是否有待处理的暗号共享邀请
+    checkPendingSafetyInvites();
   })();
 </script>
 </body>
