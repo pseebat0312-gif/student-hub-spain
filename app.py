@@ -772,6 +772,30 @@ def api_my_replies():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================================
+#                        每日更新
+# ==========================================================
+@app.route("/api/digest")
+def api_digest():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = (
+            supabase.table("daily_digest")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(20)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/digest")
+def digest_page():
+    return render_template("digest.html")
+
 
 # ==========================================================
 #                        桌面布局

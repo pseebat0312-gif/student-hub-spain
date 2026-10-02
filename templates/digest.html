@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>每日更新 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; transition: 0.1s;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.15); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+
+  #content { padding: 10px 20px 40px; }
+
+  .intro {
+    color: #888; font-size: 13px; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .digest-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 18px 18px 16px;
+    margin-bottom: 14px;
+  }
+
+  .digest-card .d-title {
+    font-size: 16px; font-weight: 700; color: #fff;
+    line-height: 1.4; margin-bottom: 8px;
+  }
+
+  .digest-card .d-summary {
+    font-size: 14px; color: #ccc; line-height: 1.7;
+    margin-bottom: 12px;
+    white-space: pre-wrap;
+  }
+
+  .digest-card .d-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; font-size: 12px;
+  }
+
+  .digest-card .d-source {
+    color: #888;
+    background: rgba(160,216,179,0.1);
+    border: 1px solid rgba(160,216,179,0.2);
+    padding: 3px 9px; border-radius: 999px;
+    color: #a0d8b3; font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .digest-card .d-link {
+    color: #a0d8b3; font-weight: 700;
+    text-decoration: none; font-size: 13px;
+    margin-left: auto;
+    white-space: nowrap;
+  }
+  .digest-card .d-link:active { opacity: 0.6; }
+
+  .empty {
+    text-align: center; color: #666; font-size: 13px;
+    padding: 60px 20px; line-height: 1.8;
+  }
+
+  .loading {
+    text-align: center; color: #666; font-size: 13px;
+    padding: 40px 20px;
+  }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">📰 每日更新</div>
+</div>
+
+<div id="content">
+  <p class="intro">每天凌晨自动更新，给你最新的西班牙留学生资讯。</p>
+  <div id="digestList"><div class="loading">加载中...</div></div>
+</div>
+
+<script>
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/';
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    const diff = Date.now() - d.getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return '刚刚';
+    if (m < 60) return m + ' 分钟前';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + ' 小时前';
+    const days = Math.floor(h / 24);
+    if (days < 30) return days + ' 天前';
+    return d.toLocaleDateString('zh-CN');
+  }
+
+  async function loadDigest() {
+    const list = document.getElementById('digestList');
+    try {
+      const resp = await fetch('/api/digest?t=' + Date.now());
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        list.innerHTML = '<div class="empty">今日暂无更新，稍后再来看看 👀</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.forEach(function(d) {
+        const card = document.createElement('div');
+        card.className = 'digest-card';
+
+        const title = d.title || '(无标题)';
+        const summary = d.summary || '';
+        const source = d.source || '';
+        const url = d.url || '';
+        const timeText = timeAgo(d.created_at);
+
+        let html = '<div class="d-title">' + escapeHtml(title) + '</div>';
+        if (summary) {
+          html += '<div class="d-summary">' + escapeHtml(summary) + '</div>';
+        }
+        html += '<div class="d-footer">';
+        if (source) {
+          html += '<span class="d-source">' + escapeHtml(source) + '</span>';
+        }
+        if (timeText) {
+          html += '<span style="color:#666;">' + timeText + '</span>';
+        }
+        if (url) {
+          html += '<a class="d-link" href="' + url + '" target="_blank" rel="noopener">阅读原文 →</a>';
+        }
+        html += '</div>';
+
+        card.innerHTML = html;
+        list.appendChild(card);
+      });
+    } catch (e) {
+      list.innerHTML = '<div class="empty">加载失败，请稍后重试</div>';
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  loadDigest();
+</script>
+</body>
+</html>
