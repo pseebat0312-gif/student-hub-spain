@@ -3,562 +3,794 @@
 <head>
 <link rel="stylesheet" href="/static/style.css">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1a0f0a">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#150c08">
 <title>想家急救包 · 西班牙留学生工具站</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
-body {
-background: #150c08;
-color: #fff;
-font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-min-height: 100vh;
-overflow-x: hidden;
-}
-.room {
-position: relative;
-min-height: 100vh;
-background: linear-gradient(180deg, #3a2010 0%, #1e1008 60%, #150c08 100%);
-overflow: hidden;
-padding: 0 0 60px;
-}
-.room::after {
-content: '';
-position: absolute;
-bottom: 0; left: 0; right: 0;
-height: 40%;
-background:
-repeating-linear-gradient(90deg, rgba(80,40,20,0.3) 0px, rgba(80,40,20,0.3) 1px, transparent 1px, transparent 60px),
-linear-gradient(180deg, #2a1a10 0%, #1a0f08 100%);
-}
-.warm-light {
-position: absolute;
-top: 30%; left: 50%;
-transform: translate(-50%, -50%);
-width: 600px; height: 600px;
-border-radius: 50%;
-background: radial-gradient(circle, rgba(255,170,90,0.18) 0%, transparent 70%);
-pointer-events: none;
-animation: flicker 6s infinite ease-in-out;
-}
-@keyframes flicker { 0%,100% { opacity:0.85; } 50% { opacity:1; } }
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #150c08;
+    color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-.window {
-position: absolute;
-top: 50px; left: 50%;
-transform: translateX(-50%);
-width: 200px; height: 240px;
-border-radius: 16px;
-background: linear-gradient(180deg, #1e3a5f 0%, #0f1f3a 100%);
-border: 8px solid #2a1608;
-box-shadow: inset 0 0 60px rgba(120,180,255,0.15), 0 8px 40px rgba(0,0,0,0.7);
-overflow: hidden;
-z-index: 2;
-}
-.window::before, .window::after {
-content: ''; position: absolute; background: #2a1608;
-}
-.window::before { top:0; left:50%; width:4px; height:100%; transform:translateX(-50%); }
-.window::after { top:50%; left:0; width:100%; height:4px; transform:translateY(-50%); }
-.moon {
-position: absolute;
-top: 30px; right: 30px;
-width: 36px; height: 36px;
-border-radius: 50%;
-background: radial-gradient(circle, #fff8e0, #f5e6a8);
-box-shadow: 0 0 30px #fff8e0;
-}
-.snow {
-position: absolute;
-top: -10px;
-color: #fff;
-font-size: 10px;
-animation: fall linear infinite;
-opacity: 0.85;
-}
-@keyframes fall {
-0% { transform: translateY(-10px) translateX(0); }
-100% { transform: translateY(260px) translateX(20px); opacity: 0; }
-}
+  .room {
+    position: relative;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #3a2010 0%, #1e1008 60%, #150c08 100%);
+    overflow: hidden;
+    padding: 0 0 80px;
+  }
+  .room::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40%;
+    background:
+      repeating-linear-gradient(90deg, rgba(80,40,20,0.3) 0px, rgba(80,40,20,0.3) 1px, transparent 1px, transparent 60px),
+      linear-gradient(180deg, #2a1a10 0%, #1a0f08 100%);
+  }
+  .warm-light {
+    position: absolute;
+    top: 30%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,170,90,0.16) 0%, transparent 70%);
+    pointer-events: none;
+    animation: flicker 6s infinite ease-in-out;
+  }
+  @keyframes flicker { 0%,100% { opacity:0.85; } 50% { opacity:1; } }
 
-.sofa {
-position: absolute; bottom: 200px; left: 50%;
-transform: translateX(-50%);
-z-index: 3; width: 240px; height: 110px;
-}
-.sofa-back {
-position: absolute; top:0; left:10px; right:10px; height:70px;
-background: linear-gradient(180deg, #8a4a2a, #5a2f1a);
-border-radius: 20px 20px 8px 8px;
-box-shadow: inset 0 -8px 12px rgba(0,0,0,0.3);
-}
-.sofa-seat {
-position: absolute; bottom:0; left:0; right:0; height:50px;
-background: linear-gradient(180deg, #a85a30, #6a3a1a);
-border-radius: 12px;
-box-shadow: inset 0 -6px 10px rgba(0,0,0,0.35), 0 10px 25px rgba(0,0,0,0.5);
-}
-.pillow {
-position: absolute; width:40px; height:40px;
-background: linear-gradient(135deg, #ffb87a, #d97a3a);
-border-radius: 12px; top:20px;
-box-shadow: inset 0 -4px 8px rgba(0,0,0,0.2);
-}
-.pillow.l { left: 20px; transform: rotate(-8deg); }
-.pillow.r { right: 20px; transform: rotate(8deg); }
+  .window {
+    position: absolute;
+    top: 50px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 240px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #1e3a5f 0%, #0f1f3a 100%);
+    border: 8px solid #2a1608;
+    box-shadow: inset 0 0 60px rgba(120,180,255,0.15), 0 8px 40px rgba(0,0,0,0.7);
+    overflow: hidden;
+    z-index: 2;
+  }
+  .window::before, .window::after {
+    content: ''; position: absolute; background: #2a1608;
+  }
+  .window::before { top:0; left:50%; width:4px; height:100%; transform:translateX(-50%); }
+  .window::after { top:50%; left:0; width:100%; height:4px; transform:translateY(-50%); }
+  .moon {
+    position: absolute;
+    top: 30px; right: 30px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff8e0, #f5e6a8);
+    box-shadow: 0 0 30px #fff8e0;
+  }
+  .snow {
+    position: absolute;
+    top: -10px;
+    color: #fff;
+    font-size: 10px;
+    animation: fall linear infinite;
+    opacity: 0.85;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-10px) translateX(0); }
+    100% { transform: translateY(260px) translateX(20px); opacity: 0; }
+  }
 
-.cocoa {
-position: absolute; bottom: 130px; left: 50%;
-transform: translateX(80px);
-z-index: 4; width: 44px; height: 50px;
-}
-.cocoa .cup {
-width:100%; height:40px;
-background: linear-gradient(180deg, #fff, #e8e0d0);
-border-radius: 6px 6px 12px 12px;
-box-shadow: inset 0 -4px 8px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.4);
-position: relative;
-}
-.cocoa .cup::after {
-content:''; position:absolute; top:-8px; left:8px; right:8px; height:12px;
-background: radial-gradient(circle, #c68a4a, #8a5a2a);
-border-radius: 50%;
-}
-.cocoa .steam {
-position: absolute; top:-20px; left:50%; transform:translateX(-50%);
-font-size: 16px; color: rgba(255,255,255,0.5);
-animation: steam 3s infinite ease-in-out;
-}
-@keyframes steam {
-0% { transform: translateX(-50%) translateY(0); opacity:0.6; }
-100% { transform: translateX(-50%) translateY(-20px); opacity:0; }
-}
-.rug {
-position: absolute; bottom: 80px; left: 50%;
-transform: translateX(-50%);
-width: 300px; height: 60px;
-background: radial-gradient(ellipse at center, #6a3018 0%, transparent 70%);
-border-radius: 50%; z-index: 1;
-}
+  .sofa {
+    position: absolute; bottom: 200px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 3; width: 240px; height: 110px;
+  }
+  .sofa-back {
+    position: absolute; top:0; left:10px; right:10px; height:70px;
+    background: linear-gradient(180deg, #8a4a2a, #5a2f1a);
+    border-radius: 20px 20px 8px 8px;
+    box-shadow: inset 0 -8px 12px rgba(0,0,0,0.3);
+  }
+  .sofa-seat {
+    position: absolute; bottom:0; left:0; right:0; height:50px;
+    background: linear-gradient(180deg, #a85a30, #6a3a1a);
+    border-radius: 12px;
+    box-shadow: inset 0 -6px 10px rgba(0,0,0,0.35), 0 10px 25px rgba(0,0,0,0.5);
+  }
+  .pillow {
+    position: absolute; width:40px; height:40px;
+    background: linear-gradient(135deg, #ffb87a, #d97a3a);
+    border-radius: 12px; top:20px;
+    box-shadow: inset 0 -4px 8px rgba(0,0,0,0.2);
+  }
+  .pillow.l { left: 20px; transform: rotate(-8deg); }
+  .pillow.r { right: 20px; transform: rotate(8deg); }
 
-.content {
-position: relative; z-index: 10;
-text-align: center;
-padding: 340px 24px 0;
-}
-.big-line {
-font-size: 24px; font-weight: bold; line-height: 1.5;
-margin-bottom: 12px; color: #fff5e0;
-text-shadow: 0 2px 30px rgba(255,180,100,0.5);
-}
-.small-line {
-font-size: 14px; color: #c8b0a0; line-height: 1.9;
-margin-bottom: 40px;
-}
-.btn-group {
-display: flex; flex-direction: column; gap: 12px;
-max-width: 320px; margin: 0 auto;
-}
-.comfort-btn {
-width: 100%; padding: 16px; border-radius: 16px;
-border: 1px solid rgba(255,200,150,0.2);
-background: rgba(255,180,100,0.06);
-color: #ffd8b0; font-size: 15px; font-weight: bold;
-cursor: pointer; transition: 0.2s;
-backdrop-filter: blur(6px);
-}
-.comfort-btn:active { transform: scale(0.97); }
-.comfort-btn.primary {
-background: linear-gradient(135deg, #ff8c42, #c94e1a);
-color: #fff; border: none;
-box-shadow: 0 8px 28px rgba(255,140,66,0.4);
-}
-.comfort-btn.active {
-background: rgba(255,140,66,0.25);
-border-color: #ff8c42;
-}
+  .cocoa {
+    position: absolute; bottom: 130px; left: 50%;
+    transform: translateX(80px);
+    z-index: 4; width: 44px; height: 50px;
+  }
+  .cocoa .cup {
+    width:100%; height:40px;
+    background: linear-gradient(180deg, #fff, #e8e0d0);
+    border-radius: 6px 6px 12px 12px;
+    box-shadow: inset 0 -4px 8px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.4);
+    position: relative;
+  }
+  .cocoa .cup::after {
+    content:''; position:absolute; top:-8px; left:8px; right:8px; height:12px;
+    background: radial-gradient(circle, #c68a4a, #8a5a2a);
+    border-radius: 50%;
+  }
+  .cocoa .steam {
+    position: absolute; top:-20px; left:50%; transform:translateX(-50%);
+    font-size: 16px; color: rgba(255,255,255,0.5);
+    animation: steam 3s infinite ease-in-out;
+  }
+  @keyframes steam {
+    0% { transform: translateX(-50%) translateY(0); opacity:0.6; }
+    100% { transform: translateX(-50%) translateY(-20px); opacity:0; }
+  }
+  .rug {
+    position: absolute; bottom: 80px; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 60px;
+    background: radial-gradient(ellipse at center, #6a3018 0%, transparent 70%);
+    border-radius: 50%; z-index: 1;
+  }
 
-.floating-heart {
-position: fixed; bottom: 0; font-size: 28px;
-pointer-events: none; z-index: 100;
-animation: floatUp 4s ease-out forwards;
-}
-@keyframes floatUp {
-0% { transform: translateY(0) scale(0.5); opacity: 0; }
-20% { opacity: 1; }
-100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
-}
+  .content {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 340px 24px 0;
+  }
+  .big-line {
+    font-size: 24px; font-weight: bold; line-height: 1.5;
+    margin-bottom: 12px; color: #fff5e0;
+    text-shadow: 0 2px 30px rgba(255,180,100,0.5);
+    transition: opacity 0.3s;
+  }
+  .small-line {
+    font-size: 14px; color: #c8b0a0; line-height: 1.9;
+    margin-bottom: 40px;
+    transition: opacity 0.3s;
+  }
+  .btn-group {
+    display: flex; flex-direction: column; gap: 12px;
+    max-width: 320px; margin: 0 auto;
+  }
+  .comfort-btn {
+    width: 100%; padding: 16px; border-radius: 16px;
+    border: 1px solid rgba(255,200,150,0.2);
+    background: rgba(255,180,100,0.06);
+    color: #ffd8b0; font-size: 15px; font-weight: bold;
+    cursor: pointer; transition: 0.2s;
+    backdrop-filter: blur(6px);
+    font-family: inherit;
+  }
+  .comfort-btn:active { transform: scale(0.97); }
+  .comfort-btn.primary {
+    background: linear-gradient(135deg, #ff8c42, #c94e1a);
+    color: #fff; border: none;
+    box-shadow: 0 8px 28px rgba(255,140,66,0.4);
+  }
+  .comfort-btn.active {
+    background: rgba(255,140,66,0.25);
+    border-color: #ff8c42;
+  }
 
-.modal {
-position: fixed; inset: 0;
-background: rgba(0,0,0,0.85);
-display: none; justify-content: center; align-items: center;
-z-index: 200; padding: 20px;
-backdrop-filter: blur(8px);
-}
-.modal.show { display: flex; }
-.modal-content {
-background: #251410;
-width: 100%; max-width: 400px;
-border-radius: 22px;
-padding: 26px 22px;
-border: 1px solid rgba(255,200,150,0.15);
-box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-max-height: 85vh; overflow-y: auto;
-}
-.modal-content h3 {
-font-size: 17px; color: #ffd8b0;
-margin-bottom: 14px; text-align: center;
-}
-.modal-sub {
-font-size: 12px; color: #a89080;
-line-height: 1.7; text-align: center;
-margin-bottom: 16px;
-}
-.recipient-grid {
-display: grid; grid-template-columns: repeat(3, 1fr);
-gap: 8px; margin-bottom: 14px;
-}
-.recipient-btn {
-padding: 12px 6px; border-radius: 12px;
-border: 1px solid rgba(255,200,150,0.15);
-background: rgba(255,180,100,0.05);
-color: #c8b0a0; font-size: 12px;
-cursor: pointer; text-align: center; line-height: 1.4;
-transition: 0.2s;
-}
-.recipient-btn.active {
-background: rgba(255,140,66,0.2);
-border-color: #ff8c42;
-color: #ffd8b0; font-weight: bold;
-}
-.modal-content textarea {
-width: 100%; height: 160px;
-padding: 14px; border-radius: 12px;
-border: 1px solid rgba(255,200,150,0.15);
-background: rgba(0,0,0,0.3);
-color: #fff; font-size: 14px;
-font-family: inherit; outline: none;
-resize: none; line-height: 1.7;
-margin-bottom: 12px;
-}
-.modal-content textarea:focus { border-color: #ff8c42; }
-.date-row {
-display: flex; align-items: center; gap: 10px;
-margin-bottom: 12px;
-padding: 12px 14px;
-background: rgba(0,0,0,0.25);
-border-radius: 12px;
-border: 1px solid rgba(255,200,150,0.1);
-}
-.date-row label {
-flex: 1; font-size: 12px; color: #c8b0a0;
-}
-.date-row input[type="date"] {
-background: rgba(0,0,0,0.3);
-border: 1px solid rgba(255,200,150,0.15);
-border-radius: 10px;
-color: #fff;
-padding: 8px 10px;
-font-size: 13px;
-outline: none;
-color-scheme: dark;
-}
-.modal-btns { display: flex; gap: 10px; margin-top: 6px; }
-.modal-btns button {
-flex: 1; padding: 12px; border-radius: 12px;
-border: none; font-size: 14px; font-weight: bold; cursor: pointer;
-}
-.modal-btns .cancel { background: rgba(255,255,255,0.08); color: #ccc; }
-.modal-btns .submit { background: linear-gradient(135deg, #ff8c42, #c94e1a); color: #fff; }
+  .floating-heart {
+    position: fixed; font-size: 28px;
+    pointer-events: none; z-index: 100;
+    animation: floatUp 4s ease-out forwards;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-100vh) scale(1.2); opacity: 0; }
+  }
 
-.footer-note {
-text-align: center; font-size: 11px;
-color: #6a5a50; margin-top: 50px;
-padding: 0 20px; line-height: 1.9;
-position: relative; z-index: 10;
-}
+  /* ===== 抱抱弹窗 ===== */
+  .hug-modal {
+    position: fixed; inset: 0;
+    background: rgba(15, 8, 4, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    padding: 24px;
+    animation: hugFadeIn 0.35s ease;
+  }
+  .hug-modal.show { display: flex; }
+  @keyframes hugFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .hug-card {
+    width: 100%;
+    max-width: 340px;
+    background: rgba(255, 180, 100, 0.08);
+    border: 1px solid rgba(255, 180, 100, 0.25);
+    border-radius: 28px;
+    padding: 32px 26px;
+    text-align: center;
+    animation: hugPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(20px);
+  }
+  @keyframes hugPop {
+    from { transform: scale(0.85); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .hug-card .emoji {
+    font-size: 56px;
+    margin-bottom: 16px;
+    animation: heartbeat 1.4s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .hug-card .msg {
+    font-size: 16px;
+    color: #fff5e0;
+    line-height: 1.8;
+    font-weight: 500;
+    margin-bottom: 24px;
+  }
+  .hug-card button {
+    width: 100%;
+    padding: 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 180, 100, 0.3);
+    background: rgba(255, 180, 100, 0.15);
+    color: #ffd8b0;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s;
+  }
+  .hug-card button:active { transform: scale(0.96); }
 
-/* 已保存信件列表 */
-.letters-list {
-margin-top: 14px;
-border-top: 1px solid rgba(255,200,150,0.1);
-padding-top: 14px;
-}
-.letter-item {
-padding: 10px 12px;
-background: rgba(0,0,0,0.2);
-border-radius: 10px;
-margin-bottom: 8px;
-font-size: 12px;
-color: #c8b0a0;
-display: flex;
-justify-content: space-between;
-align-items: center;
-gap: 8px;
-}
-.letter-item .recip { color: #ffd8b0; font-weight: bold; }
+  .modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none; justify-content: center; align-items: center;
+    z-index: 200; padding: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #251410;
+    width: 100%; max-width: 400px;
+    border-radius: 22px;
+    padding: 26px 22px;
+    border: 1px solid rgba(255,200,150,0.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-content h3 {
+    font-size: 17px; color: #ffd8b0;
+    margin-bottom: 8px; text-align: center;
+  }
+  .modal-sub {
+    font-size: 12px; color: #a89080;
+    line-height: 1.7; text-align: center;
+    margin-bottom: 16px;
+  }
+  .recipient-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; margin-bottom: 14px;
+  }
+  .recipient-btn {
+    padding: 12px 6px; border-radius: 12px;
+    border: 1px solid rgba(255,200,150,0.15);
+    background: rgba(255,180,100,0.05);
+    color: #c8b0a0; font-size: 12px;
+    cursor: pointer; text-align: center; line-height: 1.4;
+    transition: 0.2s;
+    font-family: inherit;
+  }
+  .recipient-btn.active {
+    background: rgba(255,140,66,0.2);
+    border-color: #ff8c42;
+    color: #ffd8b0; font-weight: bold;
+  }
+  .modal-content textarea {
+    width: 100%; height: 160px;
+    padding: 14px; border-radius: 12px;
+    border: 1px solid rgba(255,200,150,0.15);
+    background: rgba(0,0,0,0.3);
+    color: #fff; font-size: 14px;
+    font-family: inherit; outline: none;
+    resize: none; line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .modal-content textarea:focus { border-color: #ff8c42; }
+  .date-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    border: 1px solid rgba(255,200,150,0.1);
+  }
+  .date-row label {
+    flex: 1; font-size: 12px; color: #c8b0a0;
+  }
+  .date-row input[type="date"] {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,200,150,0.15);
+    border-radius: 10px;
+    color: #fff;
+    padding: 8px 10px;
+    font-size: 13px;
+    outline: none;
+    color-scheme: dark;
+  }
+  .modal-btns { display: flex; gap: 10px; margin-top: 6px; }
+  .modal-btns button {
+    flex: 1; padding: 12px; border-radius: 12px;
+    border: none; font-size: 14px; font-weight: bold; cursor: pointer;
+    font-family: inherit;
+  }
+  .modal-btns .cancel { background: rgba(255,255,255,0.08); color: #ccc; }
+  .modal-btns .submit { background: linear-gradient(135deg, #ff8c42, #c94e1a); color: #fff; }
+
+  .footer-note {
+    text-align: center; font-size: 11px;
+    color: #6a5a50; margin-top: 50px;
+    padding: 0 20px; line-height: 1.9;
+    position: relative; z-index: 10;
+  }
+
+  .letters-list {
+    margin-top: 8px;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  .letter-item {
+    padding: 14px 16px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #c8b0a0;
+    cursor: pointer;
+    border: 1px solid rgba(255,200,150,0.08);
+    transition: 0.2s;
+    line-height: 1.5;
+  }
+  .letter-item:active { transform: scale(0.98); background: rgba(255,140,66,0.1); }
+  .letter-item .recip {
+    color: #ffd8b0; font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .letter-item .recip .status {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 8px;
+  }
+  .letter-item .recip .status.delivered {
+    background: rgba(160,216,179,0.15);
+    color: #a0d8b3;
+  }
+  .letter-item .recip .status.pending {
+    background: rgba(255,196,0,0.15);
+    color: #ffc400;
+  }
+  .letter-item .preview {
+    color: #a89080;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 到期信弹窗 */
+  .due-letter-card {
+    width: 100%;
+    max-width: 380px;
+    background: linear-gradient(135deg, rgba(255,180,100,0.15), rgba(200,120,60,0.08));
+    border: 1px solid rgba(255,180,100,0.35);
+    border-radius: 24px;
+    padding: 30px 24px;
+    text-align: center;
+    animation: hugPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .due-letter-card .icon { font-size: 48px; margin-bottom: 14px; }
+  .due-letter-card .title {
+    font-size: 18px; font-weight: 800;
+    color: #fff5e0; margin-bottom: 6px;
+  }
+  .due-letter-card .sub {
+    font-size: 13px; color: #c8b0a0;
+    margin-bottom: 20px;
+  }
+  .due-letter-card .body {
+    text-align: left;
+    font-size: 14px;
+    color: #fff5e0;
+    line-height: 1.85;
+    background: rgba(0,0,0,0.25);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+    max-height: 40vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+  .due-letter-card button {
+    width: 100%;
+    padding: 14px;
+    border-radius: 999px;
+    border: none;
+    background: linear-gradient(135deg, #ff8c42, #c94e1a);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.2s;
+  }
+  .due-letter-card button:active { transform: scale(0.96); }
 </style>
 </head>
 <body>
 
 <div class="room">
-<div class="warm-light"></div>
+  <div class="warm-light"></div>
 
-<div class="window" id="window">
-<div class="moon"></div>
+  <div class="window" id="window">
+    <div class="moon"></div>
+  </div>
+
+  <div class="rug"></div>
+  <div class="sofa">
+    <div class="sofa-back"></div>
+    <div class="pillow l"></div>
+    <div class="pillow r"></div>
+    <div class="sofa-seat"></div>
+  </div>
+  <div class="cocoa">
+    <div class="steam">〜</div>
+    <div class="cup"></div>
+  </div>
+
+  <div class="content">
+    <div class="big-line" id="bigLine">你已经做得很好了。</div>
+    <div class="small-line" id="smallLine">
+      今天不用坚强。<br>
+      先在这里坐一会儿，等雪停。
+    </div>
+
+    <div class="btn-group">
+      <button class="comfort-btn primary" onclick="hugMe()">💗 抱抱我</button>
+      <button class="comfort-btn" onclick="openLetter()">✍️ 写一封信</button>
+      <button class="comfort-btn" onclick="showLetters()">📜 我写过的信</button>
+      <button class="comfort-btn" onclick="newSentence()">✨ 换一句话</button>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    这个房间只属于你。<br>
+    你写的信，只有你自己能看到。
+  </div>
 </div>
 
-<div class="rug"></div>
-<div class="sofa">
-<div class="sofa-back"></div>
-<div class="pillow l"></div>
-<div class="pillow r"></div>
-<div class="sofa-seat"></div>
-</div>
-<div class="cocoa">
-<div class="steam">〜</div>
-<div class="cup"></div>
+<!-- ============ 抱抱弹窗 ============ -->
+<div class="hug-modal" id="hugModal">
+  <div class="hug-card">
+    <div class="emoji" id="hugEmoji">💗</div>
+    <div class="msg" id="hugMsg">抱一下。</div>
+    <button onclick="closeHug()">嗯，我知道了</button>
+  </div>
 </div>
 
-<div class="content">
-<div class="big-line" id="bigLine">你已经做得很好了。</div>
-<div class="small-line" id="smallLine">
-今天不用坚强。<br>
-先在这里坐一会儿，等雪停。
-</div>
-
-<div class="btn-group">
-<button class="comfort-btn primary" onclick="hugMe()">💗 抱抱我</button>
-<button class="comfort-btn" onclick="toggleMusic()" id="musicBtn">🎵 播放温柔音乐</button>
-<button class="comfort-btn" onclick="openLetter()">✍️ 写一封信</button>
-<button class="comfort-btn" onclick="showLetters()">📜 我写过的信</button>
-<button class="comfort-btn" onclick="newSentence()">✨ 换一句话</button>
-</div>
-</div>
-
-<div class="footer-note">
-这个房间只属于你。<br>
-你写的信，只有你自己能看到。
-</div>
-</div>
-
-<!-- 写信弹窗 -->
+<!-- ============ 写信弹窗 ============ -->
 <div class="modal" id="letterModal">
-<div class="modal-content">
-<h3>✍️ 写一封信</h3>
-<div class="modal-sub">写给谁都可以。<br>如果写给未来的自己，可以选择什么时候收到。</div>
+  <div class="modal-content">
+    <h3>✍️ 写一封信</h3>
+    <div class="modal-sub">
+      写给谁都行。也可以写给未来的自己——<br>
+      到那天你打开这个页面，会收到它。
+    </div>
 
-<div class="recipient-grid" id="recipientGrid">
-<div class="recipient-btn" data-r="爸爸">👨 爸爸</div>
-<div class="recipient-btn" data-r="妈妈">👩 妈妈</div>
-<div class="recipient-btn" data-r="家人">🏠 家人</div>
-<div class="recipient-btn" data-r="朋友">👯 朋友</div>
-<div class="recipient-btn" data-r="自己">🪞 自己</div>
-<div class="recipient-btn" data-r="未来的自己">⏳ 未来的自己</div>
+    <div class="recipient-grid" id="recipientGrid">
+      <div class="recipient-btn" data-r="爸爸">👨 爸爸</div>
+      <div class="recipient-btn" data-r="妈妈">👩 妈妈</div>
+      <div class="recipient-btn" data-r="家人">🏠 家人</div>
+      <div class="recipient-btn" data-r="朋友">👯 朋友</div>
+      <div class="recipient-btn" data-r="自己">🪞 自己</div>
+      <div class="recipient-btn" data-r="未来的自己">⏳ 未来的我</div>
+    </div>
+
+    <textarea id="letterText" placeholder="亲爱的……"></textarea>
+
+    <div class="date-row" id="dateRow" style="display:none;">
+      <label>📅 哪天想收到它？</label>
+      <input type="date" id="deliverAt">
+    </div>
+
+    <div class="modal-btns">
+      <button class="cancel" onclick="closeLetter()">取消</button>
+      <button class="submit" onclick="saveLetter()">封存这封信</button>
+    </div>
+  </div>
 </div>
 
-<textarea id="letterText" placeholder="亲爱的……"></textarea>
-
-<div class="date-row" id="dateRow" style="display:none;">
-<label>📅 什么时候收到？</label>
-<input type="date" id="deliverAt">
-</div>
-
-<div class="modal-btns">
-<button class="cancel" onclick="closeLetter()">取消</button>
-<button class="submit" onclick="saveLetter()">保存这封信</button>
-</div>
-</div>
-</div>
-
-<!-- 我写过的信 -->
+<!-- ============ 我写过的信 ============ -->
 <div class="modal" id="lettersModal">
-<div class="modal-content">
-<h3>📜 我写过的信</h3>
-<div id="lettersListContainer" class="letters-list"></div>
-<div class="modal-btns" style="margin-top:14px;">
-<button class="cancel" onclick="closeLetters()">关闭</button>
+  <div class="modal-content">
+    <h3>📜 我写过的信</h3>
+    <div class="letters-list" id="lettersListContainer"></div>
+    <div class="modal-btns" style="margin-top:14px;">
+      <button class="cancel" onclick="closeLetters()">关闭</button>
+    </div>
+  </div>
 </div>
-</div>
+
+<!-- ============ 到期信弹窗 ============ -->
+<div class="modal" id="dueLetterModal">
+  <div class="due-letter-card">
+    <div class="icon">💌</div>
+    <div class="title">有封信，今天该拆开了</div>
+    <div class="sub" id="dueLetterSub"></div>
+    <div class="body" id="dueLetterBody"></div>
+    <button onclick="closeDueLetter()">读完了</button>
+  </div>
 </div>
 
 <script>
-const MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
+  const MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
 
-// ============ 温柔钢琴 ============
-let audioCtx = null;
-let musicPlaying = false;
-let musicTimer = null;
-let activeOscillators = [];
+  // ============ 抱抱我 ============
+  const hugs = [
+    { emoji: '🫂', msg: '抱一下。\n不用说话，也不用解释。' },
+    { emoji: '💗', msg: '你不需要一直很厉害。\n今天过得去就行。' },
+    { emoji: '🤍', msg: '有人在想你。\n可能就是现在。' },
+    { emoji: '🌙', msg: '累了就靠着。\n这间屋子今晚不锁门。' },
+    { emoji: '🕯️', msg: '一个人也可以很难过。\n难过完，我们接着走。' }
+  ];
 
-function getCtx() {
-if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-return audioCtx;
-}
-function playNote(freq, startTime, duration) {
-const ctx = getCtx();
-const osc = ctx.createOscillator();
-osc.type = 'sine';
-osc.frequency.value = freq;
-const gain = ctx.createGain();
-gain.gain.setValueAtTime(0, startTime);
-gain.gain.linearRampToValueAtTime(0.12, startTime + 0.05);
-gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-osc.connect(gain).connect(ctx.destination);
-osc.start(startTime);
-osc.stop(startTime + duration);
-activeOscillators.push(osc);
-}
-const melody = [
-[523.25,1.0],[659.25,1.0],[783.99,2.0],
-[698.46,1.0],[587.33,1.0],[523.25,2.0],
-[587.33,1.0],[698.46,1.0],[880.00,2.0],
-[783.99,1.0],[659.25,1.0],[523.25,2.5]
-];
-function scheduleMelody() {
-const ctx = getCtx();
-let t = ctx.currentTime + 0.1;
-melody.forEach(([freq, dur]) => {
-playNote(freq, t, dur);
-t += dur * 0.9;
-});
-musicTimer = setTimeout(scheduleMelody, (t - ctx.currentTime) * 1000 + 2000);
-}
-function toggleMusic() {
-if (navigator.vibrate) navigator.vibrate(10);
-const btn = document.getElementById('musicBtn');
-if (musicPlaying) {
-musicPlaying = false;
-clearTimeout(musicTimer);
-activeOscillators.forEach(o => { try { o.stop(); } catch(e){} });
-activeOscillators = [];
-btn.textContent = '🎵 播放温柔音乐';
-btn.classList.remove('active');
-return;
-}
-musicPlaying = true;
-btn.textContent = '⏸️ 暂停音乐';
-btn.classList.add('active');
-scheduleMelody();
-}
+  function hugMe() {
+    if (navigator.vibrate) navigator.vibrate([10, 30, 20]);
 
-// ============ 写信 ============
-let selectedRecipient = '妈妈';
-document.querySelectorAll('.recipient-btn').forEach(btn => {
-btn.addEventListener('click', () => {
-document.querySelectorAll('.recipient-btn').forEach(b => b.classList.remove('active'));
-btn.classList.add('active');
-selectedRecipient = btn.dataset.r;
-// 只有"未来的自己"显示日期选择
-document.getElementById('dateRow').style.display =
-(selectedRecipient === '未来的自己') ? 'flex' : 'none';
-});
-});
-document.querySelector('.recipient-btn[data-r="妈妈"]').classList.add('active');
+    // 屏幕中央浮出爱心
+    for (let i = 0; i < 6; i++) {
+      const heart = document.createElement('div');
+      heart.className = 'floating-heart';
+      heart.textContent = ['💗', '🤍', '🩷', '💞'][i % 4];
+      heart.style.left = (20 + Math.random() * 60) + '%';
+      heart.style.bottom = '20%';
+      heart.style.animationDelay = (i * 0.12) + 's';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 4500);
+    }
 
-function openLetter() {
-if (navigator.vibrate) navigator.vibrate(10);
-document.getElementById('letterText').value = '';
-document.getElementById('deliverAt').value = '';
-document.getElementById('dateRow').style.display = 'none';
-document.querySelectorAll('.recipient-btn').forEach(b => b.classList.remove('active'));
-document.querySelector('.recipient-btn[data-r="妈妈"]').classList.add('active');
-selectedRecipient = '妈妈';
-document.getElementById('letterModal').classList.add('show');
-}
-function closeLetter() {
-document.getElementById('letterModal').classList.remove('show');
-}
+    // 弹窗
+    const h = hugs[Math.floor(Math.random() * hugs.length)];
+    document.getElementById('hugEmoji').textContent = h.emoji;
+    document.getElementById('hugMsg').innerHTML = h.msg.replace(/\n/g, '<br>');
+    document.getElementById('hugModal').classList.add('show');
+  }
 
-async function saveLetter() {
-const text = document.getElementById('letterText').value.trim();
-if (!text) { alert('写点什么吧～'); return; }
+  function closeHug() {
+    if (navigator.vibrate) navigator.vibrate(8);
+    document.getElementById('hugModal').classList.remove('show');
+  }
 
-const deliverAt = document.getElementById('deliverAt').value || null;
-if (selectedRecipient === '未来的自己' && !deliverAt) {
-alert('选择未来的日期吧');
-return;
-}
+  // ============ 写信 ============
+  let selectedRecipient = '妈妈';
+  document.querySelectorAll('.recipient-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.recipient-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedRecipient = btn.dataset.r;
+      document.getElementById('dateRow').style.display =
+        (selectedRecipient === '未来的自己') ? 'flex' : 'none';
+    });
+  });
 
-if (navigator.vibrate) navigator.vibrate(15);
+  function resetRecipient() {
+    document.querySelectorAll('.recipient-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.recipient-btn[data-r="妈妈"]').classList.add('active');
+    selectedRecipient = '妈妈';
+  }
 
-try {
-const resp = await fetch('/api/letters/add', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-email: MY_EMAIL,
-recipient: selectedRecipient,
-content: text,
-deliver_at: deliverAt
-})
-});
-const data = await resp.json();
-if (data.error) { alert('保存失败：' + data.error); return; }
-} catch(e) {
-alert('网络错误，请稍后重试'); return;
-}
+  function openLetter() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    document.getElementById('letterText').value = '';
+    document.getElementById('deliverAt').value = '';
+    document.getElementById('dateRow').style.display = 'none';
+    resetRecipient();
+    document.getElementById('letterModal').classList.add('show');
+  }
+  function closeLetter() {
+    document.getElementById('letterModal').classList.remove('show');
+  }
 
-closeLetter();
-alert('✅ 给' + selectedRecipient + '的信已保存。');
-}
+  async function saveLetter() {
+    const text = document.getElementById('letterText').value.trim();
+    if (!text) { alert('写点什么吧～'); return; }
 
-// ============ 我写过的信 ============
-async function showLetters() {
-if (navigator.vibrate) navigator.vibrate(10);
-const container = document.getElementById('lettersListContainer');
-container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
-document.getElementById('lettersModal').classList.add('show');
+    const deliverAt = document.getElementById('deliverAt').value || null;
+    if (selectedRecipient === '未来的自己' && !deliverAt) {
+      alert('选一个未来的日期吧');
+      return;
+    }
 
-try {
-const resp = await fetch('/api/letters?owner=' + encodeURIComponent(MY_EMAIL));
-const data = await resp.json();
-if (!Array.isArray(data) || data.length === 0) {
-container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">你还没有写过信</div>';
-return;
-}
-container.innerHTML = '';
-data.forEach(letter => {
-const div = document.createElement('div');
-div.className = 'letter-item';
-const time = (letter.created_at || '').slice(0, 10);
-const deliverInfo = letter.deliver_at ? ` · 收信日 ${letter.deliver_at}` : '';
-div.innerHTML = `
-<span class="recip">💌 给${letter.recipient || '未知'}${deliverInfo}</span>
-<span>${time}</span>
-`;
-div.addEventListener('click', () => {
-alert(`给${letter.recipient}的信：\n\n${letter.content}`);
-});
-container.appendChild(div);
-});
-} catch(e) {
-container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载失败</div>';
-}
-}
-function closeLetters() {
-document.getElementById('lettersModal').classList.remove('show');
-}
+    if (navigator.vibrate) navigator.vibrate(15);
 
-// ============ 换一句话 ============
-const sentences = [
-['你已经做得很好了。', '今天不用坚强。<br>先在这里坐一会儿，等雪停。'],
-['没关系的。', '想家不代表软弱。<br>那是因为有人值得你想。'],
-['你很勇敢。', '一个人来这么远的地方，<br>已经很了不起了。'],
-['今天也辛苦了。', '不用向谁证明什么。<br>你已经足够好。'],
-['深呼吸一下。', '这杯热可可还热着，<br>窗外的雪也还在下。'],
-['会好起来的。', '不是"马上"，但一定会。<br>我陪着你等。'],
-['允许自己休息。', '不是每分钟都要努力。<br>停下来，也是前进的一部分。'],
-['你被爱着。', '哪怕现在隔着 10000 公里，<br>那份爱没有少一分。']
-];
-let sentenceIndex = 0;
-function newSentence() {
-if (navigator.vibrate) navigator.vibrate(10);
-sentenceIndex = (sentenceIndex + 1) % sentences.length;
-document.getElementById('bigLine').textContent = sentences[sentenceIndex][0];
-document.getElementById('smallLine').innerHTML = sentences[sentenceIndex][1];
-}
+    try {
+      const resp = await fetch('/api/letters/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          recipient: selectedRecipient,
+          content: text,
+          deliver_at: deliverAt
+        })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('保存失败：' + data.error); return; }
+    } catch(e) {
+      alert('网络错误，请稍后重试'); return;
+    }
+
+    closeLetter();
+    if (selectedRecipient === '未来的自己' && deliverAt) {
+      alert('✅ 已封存。' + deliverAt + ' 那天，打开这个页面，会看到它。');
+    } else {
+      alert('✅ 给' + selectedRecipient + '的信已保存。');
+    }
+  }
+
+  // ============ 我写过的信 ============
+  async function showLetters() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const container = document.getElementById('lettersListContainer');
+    container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
+    document.getElementById('lettersModal').classList.add('show');
+
+    try {
+      const resp = await fetch('/api/letters?owner=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">你还没有写过信</div>';
+        return;
+      }
+      container.innerHTML = '';
+      data.forEach(letter => {
+        const div = document.createElement('div');
+        div.className = 'letter-item';
+
+        const time = (letter.created_at || '').slice(0, 10);
+        let statusHtml = '';
+        if (letter.deliver_at) {
+          statusHtml = letter.is_delivered
+            ? `<span class="status delivered">已送达</span>`
+            : `<span class="status pending">${letter.deliver_at} 送达</span>`;
+        } else {
+          statusHtml = `<span class="status delivered">已写</span>`;
+        }
+
+        div.innerHTML = `
+          <div class="recip">
+            <span>💌 给${letter.recipient || '未知'}</span>
+            ${statusHtml}
+          </div>
+          <div class="preview">${(letter.content || '').slice(0, 30)}...</div>
+        `;
+        div.addEventListener('click', () => {
+          openLetterDetail(letter);
+        });
+        container.appendChild(div);
+      });
+    } catch(e) {
+      container.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载失败</div>';
+    }
+  }
+
+  function openLetterDetail(letter) {
+    // 复用到期信弹窗展示
+    document.getElementById('dueLetterSub').textContent =
+      '写给' + (letter.recipient || '') + ' · ' + (letter.created_at || '').slice(0, 10);
+    document.getElementById('dueLetterBody').textContent = letter.content || '';
+    document.getElementById('dueLetterModal').classList.add('show');
+  }
+
+  function closeLetters() {
+    document.getElementById('lettersModal').classList.remove('show');
+  }
+
+  // ============ 到期信 ============
+  async function checkDueLetters() {
+    if (!MY_EMAIL || MY_EMAIL === 'anonymous') return;
+    try {
+      const resp = await fetch('/api/letters/due?owner=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const letter = data[0];
+        document.getElementById('dueLetterSub').textContent =
+          '写给' + (letter.recipient || '') + ' · 那天你让自己记住';
+        document.getElementById('dueLetterBody').textContent = letter.content || '';
+        document.getElementById('dueLetterModal').classList.add('show');
+
+        // 标记已读
+        await fetch('/api/letters/read', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: letter.id })
+        });
+      }
+    } catch (e) {}
+  }
+
+  function closeDueLetter() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    document.getElementById('dueLetterModal').classList.remove('show');
+  }
+
+  // ============ 换一句话 ============
+  const sentences = [
+    ['你已经做得很好了。', '今天不用坚强。<br>先在这里坐一会儿，等雪停。'],
+    ['没关系的。', '想家不代表软弱。<br>那是因为有人值得你想。'],
+    ['你很勇敢。', '一个人来这么远的地方，<br>已经很了不起了。'],
+    ['今天也辛苦了。', '不用向谁证明什么。<br>你已经足够好。'],
+    ['深呼吸一下。', '这杯热可可还热着，<br>窗外的雪也还在下。'],
+    ['会好起来的。', '不是"马上"，但一定会。<br>我陪着你等。'],
+    ['允许自己休息。', '不是每分钟都要努力。<br>停下来，也是前进的一部分。'],
+    ['你被爱着。', '哪怕现在隔着 10000 公里，<br>那份爱没有少一分。'],
+    ['不着急。', '这间屋子没有截止日期。<br>你坐到什么时候都行。'],
+    ['你已经离家很远了。', '不是路远，是勇敢的那种远。<br>值得被好好照顾。'],
+    ['给家里打个电话吧。', '不用假装自己很好。<br>他们听得出来。'],
+    ['今晚只做一件事。', '把这一口气喘匀。<br>其他的明天再说。']
+  ];
+  let sentenceIndex = 0;
+
+  function newSentence() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const bigEl = document.getElementById('bigLine');
+    const smallEl = document.getElementById('smallLine');
+    bigEl.style.opacity = '0';
+    smallEl.style.opacity = '0';
+    setTimeout(() => {
+      sentenceIndex = (sentenceIndex + 1) % sentences.length;
+      bigEl.textContent = sentences[sentenceIndex][0];
+      smallEl.innerHTML = sentences[sentenceIndex][1];
+      bigEl.style.opacity = '1';
+      smallEl.style.opacity = '1';
+    }, 200);
+  }
+
+  // ============ 雪花 ============
+  (function makeSnow() {
+    const win = document.getElementById('window');
+    const flakes = ['❄', '❅', '❆', '•'];
+    for (let i = 0; i < 12; i++) {
+      const s = document.createElement('div');
+      s.className = 'snow';
+      s.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+      s.style.left = (Math.random() * 90) + '%';
+      s.style.fontSize = (6 + Math.random() * 8) + 'px';
+      s.style.animationDuration = (4 + Math.random() * 4) + 's';
+      s.style.animationDelay = (Math.random() * 4) + 's';
+      win.appendChild(s);
+    }
+  })();
+
+  // ============ 初始化：检查是否有到期的信 ============
+  checkDueLetters();
 </script>
 </body>
 </html>
