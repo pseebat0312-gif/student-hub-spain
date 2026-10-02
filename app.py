@@ -30,6 +30,43 @@ def index():
     progress = round((day_of_year / days_in_year) * 100, 1)
     return render_template("home.html", spain_time=now_spain.strftime("%Y-%m-%d %H:%M:%S"), china_time=now_china.strftime("%Y-%m-%d %H:%M:%S"), day_of_year=day_of_year, days_left=days_left, progress=progress, year=year)
 
+import urllib.request
+import urllib.parse
+
+@app.route("/api/geocode")
+def api_geocode():
+    """把地址文本转成经纬度（用 OpenStreetMap Nominatim，免费）"""
+    address = request.args.get("address", "").strip()
+    if not address:
+        return jsonify({"error": "缺少地址"}), 400
+    try:
+        params = urllib.parse.urlencode({
+            "q": address,
+            "format": "json",
+            "limit": 1,
+            "countrycodes": "es"
+        })
+        url = "https://nominatim.openstreetmap.org/search?" + params
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "StudentHubSpain/1.0"}
+        )
+        with urllib.request.urlopen(req, timeout=8) as r:
+            import json as _json
+            data = _json.loads(r.read().decode("utf-8"))
+        if not data:
+            return jsonify({"error": "找不到这个地址"}), 404
+        row = data[0]
+        return jsonify({
+            "success": True,
+            "lat": float(row["lat"]),
+            "lng": float(row["lon"]),
+            "display_name": row.get("display_name", "")
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    
 @app.route("/school")
 def school():
     return render_template("school.html")
@@ -974,6 +1011,87 @@ def api_shops_delete():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+    
+
+
+# ==========================================================
+#                        店铺评论
+# ==========================================================
+@app.route("/api/shops/comments")
+def api_shops_comments():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    shop_id = request.args.get("shop_id", "").strip()
+    if not shop_id:
+        return jsonify({"error": "缺少 shop_id"}), 400
+    try:
+        result = (
+            supabase.table("shop_comments")
+            .select("*")
+            .eq("shop_id", shop_id)
+            .order("created_at", desc=False)
+            .limit(500)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/shops/comments/add", methods=["POST"])
+def api_shops_comments_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    shop_id = data.get("shop_id")
+    email = data.get("email", "").strip().lower()
+    content = data.get("content", "").strip()
+    parent_id = data.get("parent_id")  # 可为 None
+    if not shop_id or not email or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        row = {
+            "shop_id": shop_id,
+            "user_email": email,
+            "content": content
+        }
+        if parent_id:
+            row["parent_id"] = parent_id
+        supabase.table("shop_comments").insert(row).execute()
+
+        # 通知：如果回复的是别人评论，通知那条评论的作者
+        if parent_id:
+            try:
+                p = supabase.table("shop_comments").select("user_email").eq("id", parent_id).execute()
+                if p.data:
+                    owner = p.data[0]["user_email"]
+                    if owner and owner != email:
+                        notify(owner, "shop_comment_reply",
+                               "有人回复了你的店铺评论：" + content[:30], "/map")
+            except Exception:
+                pass
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/shops/comments/delete", methods=["POST"])
+def api_shops_comments_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    cid = data.get("id")
+    email = data.get("email", "").strip().lower()
+    if not cid or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 只能删自己的
+        supabase.table("shop_comments").delete().eq("id", cid).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
     
 # ==========================================================
 #                        社区

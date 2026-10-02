@@ -26,8 +26,7 @@
   #topBar .back-btn {
     background: rgba(255,255,255,0.08); border: none; color: #fff;
     font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
-    cursor: pointer;
-    position: relative; z-index: 10000;
+    cursor: pointer; position: relative; z-index: 10000;
   }
   #topBar .back-btn:active { transform: scale(0.9); }
   #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
@@ -35,23 +34,56 @@
   #content { padding: 0 20px 40px; }
 
   #map {
-    width: 100%; height: 400px;
+    width: 100%; height: 380px;
     border-radius: 16px;
     overflow: hidden;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     border: 1px solid rgba(255,255,255,0.1);
     z-index: 1;
   }
 
+  .action-row {
+    display: flex; gap: 10px; margin-bottom: 14px;
+  }
   .publish-btn {
-    width: 100%; padding: 16px; border-radius: 16px;
+    flex: 1; padding: 14px; border-radius: 14px;
     border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-    color: #fff; font-size: 16px; font-weight: bold;
-    cursor: pointer; margin-bottom: 16px;
+    color: #fff; font-size: 15px; font-weight: bold;
+    cursor: pointer;
   }
   .publish-btn:active { transform: scale(0.97); }
+  .nearby-btn {
+    flex: 0 0 auto; padding: 14px 16px; border-radius: 14px;
+    border: 1px solid rgba(160,216,179,0.3);
+    background: rgba(160,216,179,0.1);
+    color: #a0d8b3; font-size: 15px; font-weight: bold;
+    cursor: pointer;
+  }
+  .nearby-btn:active { transform: scale(0.97); }
 
-  /* 发布表单 */
+  .filter-bar {
+    display: flex; gap: 8px; margin-bottom: 14px;
+    overflow-x: auto; padding-bottom: 4px;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 8px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #ccc; font-size: 13px;
+    cursor: pointer;
+    transition: 0.15s;
+    font-family: inherit;
+  }
+  .filter-chip.active {
+    background: rgba(160,216,179,0.18);
+    border-color: #a0d8b3;
+    color: #a0d8b3;
+    font-weight: 700;
+  }
+  .filter-chip:active { transform: scale(0.95); }
+
   .form-card {
     display: none; background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -81,7 +113,6 @@
   .radio-row label:has(input:checked) { border-color: #a0d8b3; background: rgba(160,216,179,0.15); }
   .radio-row label:has(input:checked) span { color: #a0d8b3; font-weight: bold; }
 
-  /* 选点模式 */
   .pick-hint {
     background: rgba(160,216,179,0.1);
     border: 1px solid rgba(160,216,179,0.3);
@@ -110,14 +141,11 @@
   .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
   .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
 
-  /* 店铺卡片 */
   .shop-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px; padding: 16px; margin-bottom: 12px;
-    transition: 0.15s;
   }
-  .shop-card:active { transform: scale(0.98); }
   .shop-card .shop-header {
     display: flex; align-items: flex-start; gap: 10px;
     margin-bottom: 8px;
@@ -146,22 +174,138 @@
     margin-bottom: 12px;
   }
   .shop-card .shop-actions {
-    display: flex; gap: 8px;
+    display: flex; gap: 8px; margin-bottom: 10px;
   }
   .shop-card .shop-actions button {
-    flex: 1; padding: 10px; border-radius: 10px;
+    padding: 10px; border-radius: 10px;
     border: none; font-size: 13px; font-weight: 600;
     cursor: pointer; font-family: inherit;
   }
   .shop-card .btn-nav {
+    flex: 1;
     background: rgba(160,216,179,0.15);
     color: #a0d8b3;
   }
   .shop-card .btn-nav:active { background: rgba(160,216,179,0.25); }
+  .shop-card .btn-cmt {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    color: #ccc;
+  }
   .shop-card .btn-del {
+    flex: 0 0 60px;
     background: rgba(231,76,60,0.12);
     color: #e74c3c;
-    flex: 0 0 60px;
+  }
+
+  .comment-section {
+    display: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+  .comment-section.open { display: block; }
+
+  .comment-input-row {
+    display: flex; gap: 8px; margin-bottom: 12px;
+  }
+  .comment-input-row input {
+    flex: 1;
+    padding: 10px 12px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 13px; outline: none;
+    font-family: inherit;
+  }
+  .comment-input-row button {
+    padding: 0 16px; border-radius: 10px;
+    border: none; background: rgba(160,216,179,0.2);
+    color: #a0d8b3; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .comment-list { padding-left: 0; }
+  .comment-item {
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .comment-item:last-child { border-bottom: none; }
+  .comment-item .c-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 4px;
+  }
+  .comment-item .c-avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(160,216,179,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: #a0d8b3; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .comment-item .c-name {
+    font-size: 12px; color: #a0d8b3; font-weight: 600;
+    max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .comment-item .c-time {
+    font-size: 11px; color: #666;
+    margin-left: auto;
+  }
+  .comment-item .c-content {
+    font-size: 13px; color: #ddd;
+    line-height: 1.6; padding-left: 34px;
+    word-break: break-word;
+  }
+  .comment-item .c-actions {
+    display: flex; gap: 12px;
+    padding-left: 34px; margin-top: 4px;
+  }
+  .comment-item .c-actions button {
+    background: none; border: none;
+    color: #666; font-size: 11px;
+    cursor: pointer; font-family: inherit;
+    padding: 0;
+  }
+  .comment-item .c-actions button:active { color: #a0d8b3; }
+
+  .comment-item .c-children {
+    margin-left: 34px;
+    margin-top: 8px;
+    padding-left: 12px;
+    border-left: 2px solid rgba(160,216,179,0.15);
+  }
+  .comment-item .c-children .comment-item {
+    padding: 8px 0;
+  }
+  .comment-item .c-children .c-content,
+  .comment-item .c-children .c-actions {
+    padding-left: 0;
+  }
+  .comment-item .c-children .c-head {
+    padding-left: 0;
+  }
+
+  .inline-reply {
+    margin-left: 34px; margin-top: 8px;
+    display: none;
+  }
+  .inline-reply.open { display: flex; gap: 8px; }
+  .inline-reply input {
+    flex: 1; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 12px; outline: none;
+    font-family: inherit;
+  }
+  .inline-reply button {
+    padding: 0 12px; border-radius: 8px; border: none;
+    background: rgba(160,216,179,0.2); color: #a0d8b3;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
+  }
+
+  .no-comment {
+    text-align: center; color: #666;
+    font-size: 12px; padding: 16px 0;
   }
 
   .empty-state {
@@ -177,12 +321,10 @@
   }
 
   .leaflet-popup-content-wrapper {
-    background: #1a1a2e; color: #fff;
-    border-radius: 12px;
+    background: #1a1a2e; color: #fff; border-radius: 12px;
   }
   .leaflet-popup-content { margin: 12px; }
   .leaflet-popup-tip { background: #1a1a2e; }
-
   .leaflet-container { background: #0f0c29; }
 </style>
 </head>
@@ -197,7 +339,19 @@
 
   <div id="map"></div>
 
-  <button class="publish-btn" onclick="togglePublish()">➕ 推荐一家店</button>
+  <div class="action-row">
+    <button class="publish-btn" onclick="togglePublish()">➕ 推荐一家店</button>
+    <button class="nearby-btn" onclick="findNearby()" id="nearbyBtn">📍 我附近</button>
+  </div>
+
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-chip active" data-filter="all">全部</button>
+    <button class="filter-chip" data-filter="recommend">👍 推荐</button>
+    <button class="filter-chip" data-filter="avoid">👎 避雷</button>
+    <button class="filter-chip" data-filter="mine">👤 我的</button>
+    <button class="filter-chip" data-filter="city">🏙️ 城市</button>
+    <button class="filter-chip" data-filter="category">🍽️ 类别</button>
+  </div>
 
   <div class="form-card" id="publishForm">
     <input type="text" id="shopName" placeholder="店名 *">
@@ -231,20 +385,22 @@
       <label><input type="radio" name="rec" value="avoid"><span>👎 避雷</span></label>
     </div>
 
-    <!-- 选点方式 -->
     <div class="pick-hint">
       📍 <b>怎么定位？</b><br>
-      1. 点下面「在地图上选点」→ 在地图上点一下<br>
-      2. 或者粘贴 Google Maps 链接自动解析
+      1. 直接输入地址（例：Av. Complutense, Madrid）→ 点「🔍 搜索地址」<br>
+      2. 或粘贴坐标（例：40.4200, -3.7050）<br>
+      3. 或点「🎯 在地图上选点」
     </div>
 
-    <button type="button" onclick="enterPickMode()" style="width:100%;padding:12px;border-radius:12px;border:1px dashed rgba(160,216,179,0.4);background:rgba(160,216,179,0.08);color:#a0d8b3;font-size:14px;cursor:pointer;margin-bottom:10px;font-family:inherit;" id="pickBtn">
-      🎯 在地图上选点
+    <input type="text" id="addrInput" placeholder="输入地址，例：Av. Complutense, Madrid" style="margin-bottom:10px;">
+    <button type="button" onclick="resolveAddress()" id="resolveBtn"
+      style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(160,216,179,0.3);background:rgba(160,216,179,0.1);color:#a0d8b3;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;font-family:inherit;">
+      🔍 搜索地址
     </button>
 
-    <input type="text" id="gmapsInput" placeholder="或粘贴 Google Maps 链接（可选）" style="margin-bottom:10px;">
-    <button type="button" onclick="parseGmapsLink()" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:#ccc;font-size:13px;cursor:pointer;margin-bottom:10px;font-family:inherit;">
-      🔗 解析链接
+    <button type="button" onclick="enterPickMode()" id="pickBtn"
+      style="width:100%;padding:12px;border-radius:12px;border:1px dashed rgba(160,216,179,0.4);background:rgba(160,216,179,0.08);color:#a0d8b3;font-size:14px;cursor:pointer;margin-bottom:10px;font-family:inherit;">
+      🎯 在地图上选点
     </button>
 
     <div class="coord-row">
@@ -261,19 +417,20 @@
   <div id="shopList"><div class="empty-state">加载中...</div></div>
 
   <div class="tip-box">
-    💡 地图上的 🟢 绿点是推荐，🔴 红点是避雷。点卡片可以在地图上定位，点「导航」直接打开 Google Maps。
+    💡 点卡片上的「💬 评论」展开评论区，任何人都能评论和回复。<br>
+    点「🧭 导航」直接打开 Google Maps。
   </div>
 
 </div>
 
 <script>
+  var el = function(id) { return document.getElementById(id); };
+
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (window.history.length > 1) window.history.back();
     else location.href = '/?tab=tools';
   }
-
-  var el = function(id) { return document.getElementById(id); };
 
   var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
 
@@ -282,9 +439,7 @@
     '甜品': '🍰', '超市': '🛒', '其他': '🍽️'
   };
 
-  // ===== 地图初始化 =====
   var map = L.map('map').setView([40.4168, -3.7038], 12);
-
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap',
     maxZoom: 19
@@ -295,118 +450,330 @@
   var pickMode = false;
   var pickMarker = null;
 
-  // ===== 加载店铺 =====
+  var filterMode = 'all';
+  var filterCity = '';
+  var filterCategory = '';
+
   async function loadShops() {
     try {
       var r = await fetch('/api/shops?t=' + Date.now());
       var d = await r.json();
-      if (Array.isArray(d)) {
-        shops = d;
-      } else {
-        shops = [];
-      }
+      shops = Array.isArray(d) ? d : [];
     } catch (e) {
       shops = [];
     }
     renderShops();
   }
 
-  // ===== 渲染 =====
+  function applyFilter(list) {
+    if (filterMode === 'all') return list;
+    if (filterMode === 'recommend') return list.filter(function(s) { return s.is_recommend; });
+    if (filterMode === 'avoid') return list.filter(function(s) { return !s.is_recommend; });
+    if (filterMode === 'mine') return list.filter(function(s) { return (s.user_email || '').toLowerCase() === MY_EMAIL; });
+    if (filterMode === 'city' && filterCity) return list.filter(function(s) { return s.city === filterCity; });
+    if (filterMode === 'category' && filterCategory) return list.filter(function(s) { return s.category === filterCategory; });
+    return list;
+  }
+
+  function setFilterMode(mode) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    if (mode === 'city') {
+      var v = prompt('输入城市名（马德里 / 巴塞罗那 / 瓦伦西亚 / 塞维利亚 / 萨拉曼卡 / 其他）');
+      if (!v) return;
+      filterCity = v;
+    } else if (mode === 'category') {
+      var v2 = prompt('输入类别（中餐 / 奶茶 / 咖啡 / 西餐 / 甜品 / 超市 / 其他）');
+      if (!v2) return;
+      filterCategory = v2;
+    } else {
+      filterCity = '';
+      filterCategory = '';
+    }
+    filterMode = mode;
+    document.querySelectorAll('.filter-chip').forEach(function(c) {
+      c.classList.toggle('active', c.getAttribute('data-filter') === mode);
+    });
+    renderShops();
+  }
+
   function renderShops() {
     markers.forEach(function(m) { map.removeLayer(m); });
     markers = [];
 
-    shops.forEach(function(s) {
+    var visible = applyFilter(shops);
+
+    visible.forEach(function(s) {
       var color = s.is_recommend ? '#2ecc71' : '#e74c3c';
       var marker = L.circleMarker([s.latitude, s.longitude], {
-        radius: 9,
-        color: color,
-        fillColor: color,
-        fillOpacity: 0.9,
-        weight: 2
+        radius: 9, color: color, fillColor: color, fillOpacity: 0.9, weight: 2
       }).addTo(map);
-
-      var popupHtml =
+      marker.bindPopup(
         '<div style="font-family: sans-serif; min-width: 180px;">' +
         '<div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">' + escapeHtml(s.name) + '</div>' +
         '<div style="font-size: 12px; color: #888; margin-bottom: 6px;">' + escapeHtml(s.city || '') + ' · ' + escapeHtml(s.category || '') + '</div>' +
         '<div style="font-size: 13px; margin-bottom: 6px;">' + escapeHtml(s.description || '') + '</div>' +
         '<div style="font-size: 12px; color: ' + (s.is_recommend ? '#2ecc71' : '#e74c3c') + ';">' +
-        (s.is_recommend ? '👍 推荐' : '👎 避雷') +
-        '</div></div>';
-      marker.bindPopup(popupHtml);
+        (s.is_recommend ? '👍 推荐' : '👎 避雷') + '</div></div>'
+      );
       markers.push(marker);
     });
 
     var list = el('shopList');
-    if (shops.length === 0) {
-      list.innerHTML = '<div class="empty-state">还没有人推荐店铺<br>点上面「➕ 推荐一家店」开始吧</div>';
+    if (visible.length === 0) {
+      list.innerHTML = '<div class="empty-state">没有符合条件的店铺<br>试试切换筛选，或者自己推荐一家</div>';
       return;
     }
 
     list.innerHTML = '';
-    shops.forEach(function(s) {
-      var icon = CAT_ICON[s.category] || '🍽️';
-      var badgeClass = s.is_recommend ? 'rec' : 'avoid';
-      var badgeText = s.is_recommend ? '👍 推荐' : '👎 避雷';
-      var canDelete = (s.user_email || '').toLowerCase() === MY_EMAIL;
-
-      var card = document.createElement('div');
-      card.className = 'shop-card';
-
-      card.innerHTML =
-        '<div class="shop-header">' +
-          '<div class="shop-cat-icon">' + icon + '</div>' +
-          '<div class="shop-title-wrap">' +
-            '<div class="shop-name">' + escapeHtml(s.name) + '</div>' +
-            '<div class="shop-meta">' + escapeHtml(s.city || '') + ' · ' + escapeHtml(s.category || '') + '</div>' +
-          '</div>' +
-          '<div class="shop-badge ' + badgeClass + '">' + badgeText + '</div>' +
-        '</div>' +
-        (s.description ? '<div class="shop-desc">' + escapeHtml(s.description) + '</div>' : '') +
-        '<div class="shop-actions">' +
-          '<button class="btn-nav" data-nav="' + s.id + '">🧭 导航</button>' +
-          (canDelete ? '<button class="btn-del" data-del="' + s.id + '">删除</button>' : '') +
-        '</div>';
-
-      // 点卡片 → 地图定位
-      card.addEventListener('click', function(e) {
-        if (e.target.tagName === 'BUTTON') return;
-        if (navigator.vibrate) navigator.vibrate(10);
-        map.flyTo([s.latitude, s.longitude], 16, { duration: 0.8 });
-      });
-
-      list.appendChild(card);
-    });
-
-    // 绑定导航 / 删除
-    list.querySelectorAll('[data-nav]').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var id = btn.getAttribute('data-nav');
-        var s = shops.filter(function(x) { return String(x.id) === String(id); })[0];
-        if (!s) return;
-        if (navigator.vibrate) navigator.vibrate(10);
-        openGoogleMaps(s.latitude, s.longitude, s.name);
-      });
-    });
-    list.querySelectorAll('[data-del]').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.stopPropagation();
-        var id = btn.getAttribute('data-del');
-        deleteShop(id);
-      });
+    visible.forEach(function(s) {
+      list.appendChild(buildShopCard(s));
     });
   }
 
-  // ===== Google Maps 导航 =====
+  function buildShopCard(s) {
+    var icon = CAT_ICON[s.category] || '🍽️';
+    var badgeClass = s.is_recommend ? 'rec' : 'avoid';
+    var badgeText = s.is_recommend ? '👍 推荐' : '👎 避雷';
+    var canDelete = (s.user_email || '').toLowerCase() === MY_EMAIL;
+
+    var card = document.createElement('div');
+    card.className = 'shop-card';
+
+    card.innerHTML =
+      '<div class="shop-header">' +
+        '<div class="shop-cat-icon">' + icon + '</div>' +
+        '<div class="shop-title-wrap">' +
+          '<div class="shop-name">' + escapeHtml(s.name) + '</div>' +
+          '<div class="shop-meta">' + escapeHtml(s.city || '') + ' · ' + escapeHtml(s.category || '') + '</div>' +
+        '</div>' +
+        '<div class="shop-badge ' + badgeClass + '">' + badgeText + '</div>' +
+      '</div>' +
+      (s.description ? '<div class="shop-desc">' + escapeHtml(s.description) + '</div>' : '') +
+      '<div class="shop-actions">' +
+        '<button class="btn-nav" data-nav="' + s.id + '">🧭 导航</button>' +
+        '<button class="btn-cmt" data-cmt="' + s.id + '">💬 评论</button>' +
+        (canDelete ? '<button class="btn-del" data-del="' + s.id + '">删除</button>' : '') +
+      '</div>' +
+      '<div class="comment-section" id="cmt-' + s.id + '">' +
+        '<div class="comment-input-row">' +
+          '<input type="text" id="cmt-input-' + s.id + '" placeholder="说点什么...">' +
+          '<button data-send="' + s.id + '">发送</button>' +
+        '</div>' +
+        '<div class="comment-list" id="cmt-list-' + s.id + '">' +
+          '<div class="no-comment">加载中...</div>' +
+        '</div>' +
+      '</div>';
+
+    card.addEventListener('click', function(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+      if (navigator.vibrate) navigator.vibrate(10);
+      map.flyTo([s.latitude, s.longitude], 16, { duration: 0.8 });
+    });
+
+    return card;
+  }
+
+  document.addEventListener('click', function(e) {
+    var t = e.target;
+
+    if (t.matches('[data-nav]')) {
+      e.stopPropagation();
+      var id = t.getAttribute('data-nav');
+      var s = shops.filter(function(x) { return String(x.id) === String(id); })[0];
+      if (s) openGoogleMaps(s.latitude, s.longitude, s.name);
+      return;
+    }
+
+    if (t.matches('[data-cmt]')) {
+      e.stopPropagation();
+      var sid = t.getAttribute('data-cmt');
+      var sec = el('cmt-' + sid);
+      if (!sec) return;
+      var isOpen = sec.classList.toggle('open');
+      if (isOpen) loadComments(sid);
+      return;
+    }
+
+    if (t.matches('[data-del]')) {
+      e.stopPropagation();
+      deleteShop(t.getAttribute('data-del'));
+      return;
+    }
+
+    if (t.matches('[data-send]')) {
+      e.stopPropagation();
+      var sid2 = t.getAttribute('data-send');
+      sendComment(sid2, null);
+      return;
+    }
+
+    if (t.matches('[data-reply]')) {
+      e.stopPropagation();
+      var cid = t.getAttribute('data-reply');
+      var box = el('reply-' + cid);
+      if (box) box.classList.toggle('open');
+      return;
+    }
+
+    if (t.matches('[data-reply-send]')) {
+      e.stopPropagation();
+      var cid2 = t.getAttribute('data-reply-send');
+      var sid3 = t.getAttribute('data-shop');
+      sendComment(sid3, cid2);
+      return;
+    }
+
+    if (t.matches('[data-cdel]')) {
+      e.stopPropagation();
+      deleteComment(t.getAttribute('data-cdel'));
+      return;
+    }
+  });
+
+  async function loadComments(shopId) {
+    var listEl = el('cmt-list-' + shopId);
+    if (!listEl) return;
+    try {
+      var r = await fetch('/api/shops/comments?shop_id=' + shopId + '&t=' + Date.now());
+      var data = await r.json();
+      if (!Array.isArray(data)) data = [];
+      renderComments(shopId, data);
+    } catch (e) {
+      listEl.innerHTML = '<div class="no-comment">加载失败</div>';
+    }
+  }
+
+  function renderComments(shopId, all) {
+    var listEl = el('cmt-list-' + shopId);
+    if (!listEl) return;
+
+    if (all.length === 0) {
+      listEl.innerHTML = '<div class="no-comment">还没有评论，来抢沙发～</div>';
+      return;
+    }
+
+    var top = [];
+    var children = {};
+    all.forEach(function(c) {
+      if (!c.parent_id) {
+        top.push(c);
+      } else {
+        if (!children[c.parent_id]) children[c.parent_id] = [];
+        children[c.parent_id].push(c);
+      }
+    });
+
+    listEl.innerHTML = '';
+    top.forEach(function(c) {
+      listEl.appendChild(buildCommentItem(shopId, c, children[c.id] || [], true));
+    });
+  }
+
+  function buildCommentItem(shopId, c, children, isTop) {
+    var item = document.createElement('div');
+    item.className = 'comment-item';
+
+    var isMine = (c.user_email || '').toLowerCase() === MY_EMAIL;
+    var name = (c.user_email || '匿名').split('@')[0];
+    var avatarChar = name.charAt(0).toUpperCase();
+    var time = timeAgo(c.created_at);
+
+    var html =
+      '<div class="c-head">' +
+        '<div class="c-avatar">' + escapeHtml(avatarChar) + '</div>' +
+        '<div class="c-name">' + escapeHtml(name) + '</div>' +
+        '<div class="c-time">' + time + '</div>' +
+      '</div>' +
+      '<div class="c-content">' + escapeHtml(c.content) + '</div>' +
+      '<div class="c-actions">' +
+        '<button data-reply="' + c.id + '">回复</button>' +
+        (isMine ? '<button data-cdel="' + c.id + '">删除</button>' : '') +
+      '</div>' +
+      '<div class="inline-reply" id="reply-' + c.id + '">' +
+        '<input type="text" id="reply-input-' + c.id + '" placeholder="回复 @' + escapeHtml(name) + '...">' +
+        '<button data-reply-send="' + c.id + '" data-shop="' + shopId + '">发送</button>' +
+      '</div>';
+
+    if (children && children.length > 0) {
+      html += '<div class="c-children">';
+      children.forEach(function(ch) {
+        var chName = (ch.user_email || '匿名').split('@')[0];
+        var chChar = chName.charAt(0).toUpperCase();
+        var chTime = timeAgo(ch.created_at);
+        var chMine = (ch.user_email || '').toLowerCase() === MY_EMAIL;
+        html +=
+          '<div class="comment-item">' +
+            '<div class="c-head">' +
+              '<div class="c-avatar">' + escapeHtml(chChar) + '</div>' +
+              '<div class="c-name">' + escapeHtml(chName) + '</div>' +
+              '<div class="c-time">' + chTime + '</div>' +
+            '</div>' +
+            '<div class="c-content">' + escapeHtml(ch.content) + '</div>' +
+            '<div class="c-actions">' +
+              (chMine ? '<button data-cdel="' + ch.id + '">删除</button>' : '') +
+            '</div>' +
+          '</div>';
+      });
+      html += '</div>';
+    }
+
+    item.innerHTML = html;
+    return item;
+  }
+
+  async function sendComment(shopId, parentId) {
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+    var inputEl = parentId ? el('reply-input-' + parentId) : el('cmt-input-' + shopId);
+    if (!inputEl) return;
+    var content = inputEl.value.trim();
+    if (!content) { alert('写点什么吧'); return; }
+
+    if (navigator.vibrate) navigator.vibrate(12);
+
+    try {
+      var r = await fetch('/api/shops/comments/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shop_id: shopId,
+          email: MY_EMAIL,
+          content: content,
+          parent_id: parentId || null
+        })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      inputEl.value = '';
+      if (parentId) {
+        var box = el('reply-' + parentId);
+        if (box) box.classList.remove('open');
+      }
+      loadComments(shopId);
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function deleteComment(cid) {
+    if (!MY_EMAIL) { alert('请先登录'); return; }
+    if (!confirm('确定删除这条评论吗？')) return;
+    try {
+      await fetch('/api/shops/comments/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: cid, email: MY_EMAIL })
+      });
+      var all = document.querySelectorAll('.comment-section.open');
+      all.forEach(function(sec) {
+        var id = sec.id.replace('cmt-', '');
+        loadComments(id);
+      });
+    } catch (e) { alert('网络错误'); }
+  }
+
   function openGoogleMaps(lat, lng, name) {
-    var url = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
-    if (name) url += '&destination_place_id=&travelmode=walking';
+    var url = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng + '&travelmode=walking';
     window.open(url, '_blank');
   }
 
-  // ===== 删除 =====
   async function deleteShop(id) {
     if (!MY_EMAIL) { alert('请先登录'); return; }
     if (!confirm('确定删除这家店吗？')) return;
@@ -422,30 +789,100 @@
     } catch (e) { alert('网络错误'); }
   }
 
-  // ===== 发布表单 =====
+  function findNearby() {
+    if (!navigator.geolocation) { alert('你的浏览器不支持定位'); return; }
+    if (navigator.vibrate) navigator.vibrate(10);
+    el('nearbyBtn').textContent = '📍 定位中...';
+
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      var myLat = pos.coords.latitude;
+      var myLng = pos.coords.longitude;
+      el('nearbyBtn').textContent = '📍 我附近';
+
+      shops.sort(function(a, b) {
+        return distance(myLat, myLng, a.latitude, a.longitude) -
+               distance(myLat, myLng, b.latitude, b.longitude);
+      });
+
+      map.flyTo([myLat, myLng], 14, { duration: 0.8 });
+      L.circleMarker([myLat, myLng], {
+        radius: 8, color: '#a0d8b3', fillColor: '#a0d8b3',
+        fillOpacity: 1, weight: 3
+      }).addTo(map).bindPopup('📍 你在这里').openPopup();
+
+      renderShops();
+    }, function() {
+      el('nearbyBtn').textContent = '📍 我附近';
+      alert('定位失败，请允许浏览器访问位置');
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  }
+
+  function distance(lat1, lng1, lat2, lng2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
   function togglePublish() {
     if (navigator.vibrate) navigator.vibrate(10);
     el('publishForm').classList.toggle('show');
-    if (!el('publishForm').classList.contains('show')) {
-      exitPickMode();
+    if (!el('publishForm').classList.contains('show')) exitPickMode();
+  }
+
+  // ===== 解析地址（新） =====
+  async function resolveAddress() {
+    var addr = el('addrInput').value.trim();
+    if (!addr) { alert('请输入地址'); return; }
+
+    // 先试试是不是坐标（40.4200, -3.7050）
+    var parts = addr.split(/[,\s]+/).filter(function(p) { return p.length > 0; });
+    if (parts.length >= 2) {
+      var lat = parseFloat(parts[0]);
+      var lng = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        el('latInput').value = lat.toFixed(6);
+        el('lngInput').value = lng.toFixed(6);
+        if (pickMarker) map.removeLayer(pickMarker);
+        pickMarker = L.marker([lat, lng]).addTo(map);
+        map.flyTo([lat, lng], 16, { duration: 0.8 });
+        if (navigator.vibrate) navigator.vibrate(15);
+        return;
+      }
+    }
+
+    // 不是坐标，当地址处理
+    el('resolveBtn').textContent = '🔍 搜索中...';
+    el('resolveBtn').disabled = true;
+    try {
+      var r = await fetch('/api/geocode?address=' + encodeURIComponent(addr));
+      var d = await r.json();
+      if (d.error) {
+        alert('找不到这个地址，试试写得更完整，或改用地图选点。');
+        return;
+      }
+      el('latInput').value = parseFloat(d.lat).toFixed(6);
+      el('lngInput').value = parseFloat(d.lng).toFixed(6);
+      if (pickMarker) map.removeLayer(pickMarker);
+      pickMarker = L.marker([d.lat, d.lng]).addTo(map);
+      map.flyTo([d.lat, d.lng], 16, { duration: 0.8 });
+      if (navigator.vibrate) navigator.vibrate(15);
+    } catch (e) {
+      alert('查询失败，请检查网络');
+    } finally {
+      el('resolveBtn').textContent = '🔍 搜索地址';
+      el('resolveBtn').disabled = false;
     }
   }
 
-  // ===== 地图选点模式 =====
   function enterPickMode() {
     pickMode = true;
     el('pickBtn').textContent = '🎯 点击地图选点中...（再点取消）';
     el('pickBtn').style.background = 'rgba(160,216,179,0.2)';
     map.getContainer().style.cursor = 'crosshair';
-
-    // 把地图移到用户当前位置附近（不强求）
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        map.flyTo([pos.coords.latitude, pos.coords.longitude], 15, { duration: 0.6 });
-      }, function() {}, { timeout: 3000 });
-    }
-
-    // 只在选点模式时响应地图点击
     map.off('click', onMapClick);
     map.on('click', onMapClick);
   }
@@ -464,49 +901,12 @@
     var lng = e.latlng.lng.toFixed(6);
     el('latInput').value = lat;
     el('lngInput').value = lng;
-
     if (pickMarker) map.removeLayer(pickMarker);
     pickMarker = L.marker([lat, lng]).addTo(map);
-
     if (navigator.vibrate) navigator.vibrate(15);
     exitPickMode();
   }
 
-  // ===== 解析 Google Maps 链接 =====
-  function parseGmapsLink() {
-    var url = el('gmapsInput').value.trim();
-    if (!url) { alert('请粘贴 Google Maps 链接'); return; }
-
-    // 常见格式：
-    // https://www.google.com/maps/@40.4168,-3.7038,15z
-    // https://www.google.com/maps/place/xxx/@40.4168,-3.7038,17z
-    // https://maps.google.com/?q=40.4168,-3.7038
-    // https://www.google.com/maps/search/?api=1&query=40.4168,-3.7038
-    var lat = null, lng = null;
-
-    // 格式 1：@lat,lng
-    var m1 = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (m1) { lat = m1[1]; lng = m1[2]; }
-
-    // 格式 2：?q=lat,lng 或 query=lat,lng
-    if (!lat) {
-      var m2 = url.match(/[?&](?:q|query)=(-?\d+\.\d+),(-?\d+\.\d+)/);
-      if (m2) { lat = m2[1]; lng = m2[2]; }
-    }
-
-    if (lat && lng) {
-      el('latInput').value = parseFloat(lat).toFixed(6);
-      el('lngInput').value = parseFloat(lng).toFixed(6);
-      if (pickMarker) map.removeLayer(pickMarker);
-      pickMarker = L.marker([lat, lng]).addTo(map);
-      map.flyTo([lat, lng], 16, { duration: 0.8 });
-      if (navigator.vibrate) navigator.vibrate(15);
-    } else {
-      alert('无法从链接中解析经纬度。\n\n请在地图页面长按位置 → 复制坐标，或者改用「在地图上选点」。');
-    }
-  }
-
-  // ===== 提交 =====
   async function submitShop() {
     var name = el('shopName').value.trim();
     var address = el('shopAddress').value.trim();
@@ -518,7 +918,7 @@
     var lng = el('lngInput').value.trim();
 
     if (!name) { alert('请填店名'); return; }
-    if (!lat || !lng) { alert('请先在地图上选点，或粘贴 Google Maps 链接'); return; }
+    if (!lat || !lng) { alert('请先搜索地址，或在地图上选点'); return; }
     if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
 
     if (navigator.vibrate) navigator.vibrate(15);
@@ -528,21 +928,15 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: MY_EMAIL,
-          name: name,
-          address: address,
-          city: city,
-          category: category,
-          description: desc,
-          latitude: parseFloat(lat),
-          longitude: parseFloat(lng),
+          email: MY_EMAIL, name: name, address: address,
+          city: city, category: category, description: desc,
+          latitude: parseFloat(lat), longitude: parseFloat(lng),
           is_recommend: rec
         })
       });
       var d = await r.json();
       if (d.error) { alert('发布失败：' + d.error); return; }
 
-      // 清空表单
       el('shopName').value = '';
       el('shopAddress').value = '';
       el('shopCity').value = '';
@@ -550,7 +944,7 @@
       el('shopDesc').value = '';
       el('latInput').value = '';
       el('lngInput').value = '';
-      el('gmapsInput').value = '';
+      el('addrInput').value = '';
       if (pickMarker) { map.removeLayer(pickMarker); pickMarker = null; }
 
       togglePublish();
@@ -568,7 +962,26 @@
       .replace(/'/g, '&#39;');
   }
 
-  // ===== 启动 =====
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    var diff = Date.now() - d.getTime();
+    var m = Math.floor(diff / 60000);
+    if (m < 1) return '刚刚';
+    if (m < 60) return m + ' 分钟前';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + ' 小时前';
+    var days = Math.floor(h / 24);
+    if (days < 30) return days + ' 天前';
+    return d.toLocaleDateString('zh-CN');
+  }
+
+  document.querySelectorAll('.filter-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      setFilterMode(chip.getAttribute('data-filter'));
+    });
+  });
+
   loadShops();
 </script>
 <script src="/static/js/auth-gate.js"></script>
