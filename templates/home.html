@@ -121,7 +121,7 @@
 <body>
 
 <div id="topBar">
-<div class="title">西班牙留学生工具站</div>
+<div class="title" id="topTitle">西班牙留学生工具站</div>
 <div class="user" id="userDisplay">登录 →</div>
 </div>
 
@@ -176,6 +176,7 @@
 </div>
 
 <div class="tab-page" id="tab-user">
+<div style="font-size:13px; color:#f4b8d0; font-weight:700; margin-bottom:8px; padding-left:4px;" id="vipWelcomeText"></div>
 <div class="card" id="userStatusCard">
 <h3 id="userCardTitle">🔑 点击登录</h3>
 <p id="userCardDesc">登录后可使用个人中心、留言、社区等功能</p>
@@ -409,6 +410,49 @@ function refreshLoginUI() {
     if (localStorage.getItem('access_token')) location.href = '/profile';
     else location.href = '/login';
   });
+
+  // VIP 欢迎文字（"我的"tab）
+  const vipWelcome = document.getElementById('vipWelcomeText');
+  if (vipWelcome) {
+    if (token && email) {
+      fetch('/api/vip/status?email=' + encodeURIComponent(email) + '&t=' + Date.now())
+        .then(r => r.json())
+        .then(d => {
+          if (d.is_vip) {
+            vipWelcome.textContent = '👑 尊贵的 VIP 用户，欢迎回来';
+          } else {
+            vipWelcome.textContent = '';
+          }
+        })
+        .catch(() => { vipWelcome.textContent = ''; });
+    } else {
+      vipWelcome.textContent = '';
+    }
+  }
+
+  // 检查 VIP，改顶部标题
+  checkHomeVip();
+}
+
+async function checkHomeVip() {
+  const email = (localStorage.getItem('user_email') || '').toLowerCase();
+  const titleEl = document.getElementById('topTitle');
+  if (!titleEl) return;
+  if (!email) {
+    titleEl.textContent = '西班牙留学生工具站';
+    return;
+  }
+  try {
+    const resp = await fetch('/api/vip/status?email=' + encodeURIComponent(email) + '&t=' + Date.now());
+    const data = await resp.json();
+    if (data.is_vip) {
+      titleEl.textContent = '👑 尊贵的 VIP 用户，欢迎回来';
+    } else {
+      titleEl.textContent = '西班牙留学生工具站';
+    }
+  } catch (e) {
+    titleEl.textContent = '西班牙留学生工具站';
+  }
 }
 
 // ==================== 消息中心 ====================

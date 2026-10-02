@@ -224,9 +224,33 @@
       <div class="value" id="vipUsageText">—</div>
     </div>
   </div>
-  <div class="card" id="vipUpsellCard" onclick="location.href='/vip'">
-    <h3>👑 VIP 会员</h3>
-    <p>解锁全部高级功能，首月 €1。</p>
+    <div id="vipUpsellCard" onclick="location.href='/vip'"
+    style="
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(232,168,184,0.12);
+      border: 1px solid rgba(232,168,184,0.35);
+      cursor: pointer;
+      box-sizing: border-box;
+      width: 100%;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+    "
+    onmousedown="this.style.transform='scale(0.97)'"
+    onmouseup="this.style.transform=''"
+    onmouseleave="this.style.transform=''"
+    ontouchstart="this.style.transform='scale(0.97)'"
+    ontouchend="this.style.transform=''"
+  >
+    <div style="font-size: 26px; line-height: 1; flex-shrink: 0;">👑</div>
+    <div style="flex: 1; text-align: left; min-width: 0;">
+      <div style="font-size: 14px; font-weight: 700; color: #e8a8b8; margin-bottom: 3px; letter-spacing: -0.2px;">VIP 会员</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,0.55); line-height: 1.4;">解锁全部高级功能，首月 €1</div>
+    </div>
+    <div style="font-size: 16px; color: rgba(232,168,184,0.7); flex-shrink: 0;">→</div>
   </div>
   <div class="tip-box" id="vipTipBox">升级到会员，解锁所有功能和ai分析</div>
 </div>

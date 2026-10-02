@@ -127,60 +127,6 @@
   .subscribe-btn:active { transform: scale(0.96); }
   .subscribe-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-  /* 兑换码卡片 */
-  .redeem-card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-    padding: 18px;
-    margin-top: 20px;
-  }
-  .redeem-card .redeem-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 4px;
-  }
-  .redeem-card .redeem-sub {
-    font-size: 11px;
-    color: #888;
-    margin-bottom: 12px;
-    line-height: 1.6;
-  }
-  .redeem-row {
-    display: flex;
-    gap: 8px;
-  }
-  .redeem-row input {
-    flex: 1;
-    padding: 13px 16px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.06);
-    color: #fff;
-    font-size: 14px;
-    outline: none;
-    font-family: inherit;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    min-width: 0;
-  }
-  .redeem-row input:focus { border-color: rgba(244,184,208,0.4); }
-  .redeem-row button {
-    padding: 0 20px;
-    border-radius: 12px;
-    border: none;
-    background: rgba(244,184,208,0.18);
-    color: #f4b8d0;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-    transition: transform 0.2s;
-  }
-  .redeem-row button:active { transform: scale(0.96); }
-
   .footer-note {
     text-align: center;
     font-size: 11px;
@@ -286,14 +232,27 @@
     </div>
 
     <button class="subscribe-btn" onclick="goSubscribe()" id="subscribeBtn" disabled>立即订阅 →</button>
+    <button onclick="location.href='https://billing.stripe.com/p/login/你的专属链接'" 
+  style="width:100%;padding:14px;border-radius:999px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.06);color:#ccc;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:12px;">
+  🛠️ 管理订阅 / 取消自动续费
+</button>
 
-    <!-- 兑换码 -->
-    <div class="redeem-card">
-      <div class="redeem-title">🎫 有兑换码？</div>
-      <div class="redeem-sub">输入兑换码，立刻解锁 30 天 VIP</div>
-      <div class="redeem-row">
-        <input type="text" id="redeemCode" placeholder="BETA001" maxlength="20">
-        <button onclick="redeemCode()">兑换</button>
+    <!-- 如何取消订阅 -->
+    <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:18px;margin-top:16px;">
+      <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:12px;">❓ 如何取消自动续费？</div>
+      <div style="font-size:12px;color:#aaa;line-height:1.8;">
+        <div style="margin-bottom:10px;">
+          <b style="color:#e8a8b8;">方式一（推荐）：</b><br>
+          点下方"管理订阅"按钮 → 输入你的注册邮箱 → Stripe 会发一封登录邮件给你 → 点邮件里的链接 → 在页面里点"取消订阅"。
+        </div>
+        <div style="margin-bottom:10px;">
+          <b style="color:#e8a8b8;">方式二：</b><br>
+          发邮件到 <span style="color:#e8a8b8;">你的邮箱@xxx.com</span>，说明"我想取消 VIP"，我会手动帮你取消。
+        </div>
+        <div>
+          <b style="color:#e8a8b8;">注意：</b><br>
+          取消后，当前已付费的月份仍然有效，到期后不再扣款。不会立即断掉，也不会退款。
+        </div>
       </div>
     </div>
 
@@ -332,34 +291,8 @@
     location.href = STRIPE_PAYMENT_LINK;
   }
 
-  async function redeemCode() {
-    const code = document.getElementById('redeemCode').value.trim().toUpperCase();
-    if (!code) { alert('请输入兑换码'); return; }
-    if (!MY_EMAIL) {
-      alert('请先登录');
-      location.href = '/login';
-      return;
-    }
-    if (navigator.vibrate) navigator.vibrate(15);
-    try {
-      const resp = await fetch('/api/vip/redeem', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: MY_EMAIL, code })
-      });
-      const data = await resp.json();
-      if (data.success) {
-        alert('✅ VIP 已激活！30 天内无限使用所有功能。');
-        checkVipStatus();
-      } else {
-        alert(data.error || '兑换失败');
-      }
-    } catch (e) { alert('网络错误'); }
-  }
-
   async function checkVipStatus() {
     if (!MY_EMAIL) {
-      // 未登录
       document.getElementById('vipIntro').style.display = 'block';
       document.getElementById('vipActiveCard').style.display = 'none';
       document.getElementById('subscribeBtn').disabled = true;
@@ -369,7 +302,6 @@
       const resp = await fetch('/api/vip/status?email=' + encodeURIComponent(MY_EMAIL));
       const data = await resp.json();
       if (data.is_vip) {
-        // 已是 VIP
         document.getElementById('vipActiveCard').style.display = 'block';
         document.getElementById('vipIntro').style.display = 'none';
         let sinceText = '感谢你的支持 💗';
@@ -381,10 +313,8 @@
         }
         document.getElementById('vipSince').textContent = sinceText;
       } else {
-        // 未开通
         document.getElementById('vipActiveCard').style.display = 'none';
         document.getElementById('vipIntro').style.display = 'block';
-        // 根据 Stripe 是否激活，控制订阅按钮
         const btn = document.getElementById('subscribeBtn');
         const tip = document.getElementById('comingSoonTip');
         if (STRIPE_ENABLED) {
@@ -398,7 +328,6 @@
         }
       }
     } catch (e) {
-      // 出错时默认显示未开通
       document.getElementById('vipIntro').style.display = 'block';
     }
   }
