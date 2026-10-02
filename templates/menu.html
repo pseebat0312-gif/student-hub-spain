@@ -3,7 +3,7 @@
 <head>
 <link rel="stylesheet" href="/static/style.css">
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0f0c29">
 <title>独家菜单 · 西班牙留学生工具站</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -12,12 +12,7 @@
 html, body {
     background: #0f0c29; color: #fff;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    height: 100%;
-    overflow: hidden;
-  }
-body {
-    display: flex;
-    flex-direction: column;
+    min-height: 100%;
   }
 
 #topBar {
@@ -25,8 +20,9 @@ body {
     display: flex; align-items: center; gap: 8px;
     background: #0f0c29;
     border-bottom: 1px solid rgba(255,255,255,0.06);
-    z-index: 9999;
-    flex-shrink: 0;
+    z-index: 100;
+    position: sticky; top: 0;
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
   }
 #topBar .back-btn {
     background: rgba(255,255,255,0.08); border: none; color: #fff;
@@ -48,15 +44,16 @@ body {
 
 #menuContainer {
     display: flex;
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-    position: relative;
+    align-items: flex-start;
   }
 
 #categorySide {
     width: 88px; background: rgba(0,0,0,0.3);
-    overflow-y: auto; flex-shrink: 0; padding: 10px 0;
+    flex-shrink: 0; padding: 10px 0;
+    position: sticky; top: 56px;
+    align-self: flex-start;
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
   }
 #categorySide::-webkit-scrollbar { display: none; }
 .cat-item {
@@ -77,11 +74,10 @@ body {
 .cat-item .cat-count { display: block; font-size: 10px; color: #666; margin-top: 2px; }
 
 #dishArea {
-    flex: 1; overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 12px 12px 100px;
+    flex: 1;
+    padding: 12px 12px 120px;
+    min-width: 0;
   }
-#dishArea::-webkit-scrollbar { width: 0; }
 
 .dish-card {
     display: flex; gap: 10px;
@@ -134,10 +130,10 @@ body {
   }
 
 #cartBar {
-    position: fixed; bottom: 0; left: 0; right: 0; height: 84px;
+    position: fixed; bottom: 0; left: 0; right: 0;
     background: rgba(20, 20, 40, 0.98);
     border-top: 1px solid rgba(255,255,255,0.08);
-    padding: 12px 14px 20px;
+    padding: 12px 14px calc(20px + env(safe-area-inset-bottom, 0px));
     display: flex; align-items: center; gap: 10px;
     transform: translateY(100%); transition: transform 0.3s ease;
     z-index: 100;
@@ -168,7 +164,8 @@ body {
 #cartBar .order-btn:active { transform: scale(0.96); }
 
 #floatAddBtn {
-    position: fixed; right: 16px; bottom: 100px;
+    position: fixed; right: 16px;
+    bottom: calc(100px + env(safe-area-inset-bottom, 0px));
     width: 52px; height: 52px; border-radius: 50%; border: none;
     background: linear-gradient(135deg, #4a7c59, #2d5a3d);
     color: #fff; font-size: 24px; cursor: pointer;
@@ -292,6 +289,7 @@ body {
     cursor: pointer; font-family: inherit;
   }
 
+/* ===== 导出预览层 ===== */
 #exportOverlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.95);
@@ -300,18 +298,44 @@ body {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding: 20px 16px 30px;
+    padding-top: calc(20px + env(safe-area-inset-top, 0px));
     -webkit-touch-callout: default;
     -webkit-user-select: auto;
     user-select: auto;
   }
 #exportOverlay.show { display: flex; }
+
+/* ===== 加粗醒目的长按提示 ===== */
 #exportOverlay .export-tip {
-    color: #fff; font-size: 14px; font-weight: 700;
-    margin-bottom: 4px; text-align: center; flex-shrink: 0;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 900;
+    margin-bottom: 6px;
+    text-align: center;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 10px rgba(232,168,184,0.6);
+  }
+#exportOverlay .export-tip .finger {
+    display: inline-block;
+    animation: fingerTap 1.2s ease-in-out infinite;
+  }
+@keyframes fingerTap {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.15); }
   }
 #exportOverlay .export-sub {
-    color: rgba(255,255,255,0.55); font-size: 12px;
-    margin-bottom: 16px; text-align: center; flex-shrink: 0;
+    color: #f4b8d0;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 18px;
+    text-align: center;
+    flex-shrink: 0;
+    background: rgba(232,168,184,0.15);
+    border: 1px solid rgba(232,168,184,0.4);
+    padding: 8px 14px;
+    border-radius: 999px;
+    align-self: center;
   }
 #exportOverlay .export-img-wrap {
     width: 100%;
@@ -338,24 +362,31 @@ body {
     flex: 1; padding: 14px; border-radius: 999px; border: none;
     font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
   }
-#exportOverlay .export-actions .primary {
-    background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff;
-  }
 #exportOverlay .export-actions .ghost {
     background: rgba(255,255,255,0.1); color: #ccc;
   }
 
+/* ============================================================
+   ===== 导出卡片：所有颜色写死，不继承系统主题 =====
+   ============================================================ */
 #exportStage {
     position: fixed; left: -99999px; top: 0;
     width: 720px;
+    background: #0f0c29;
   }
   .export-card {
     width: 720px;
     padding: 48px 40px;
-    background: linear-gradient(160deg, #1a1a2e 0%, #0f0c29 100%);
-    color: #fff;
+    /* 写死深色背景 */
+    background: #1a1a2e;
+    background-image: linear-gradient(160deg, #1a1a2e 0%, #0f0c29 100%);
+    /* 写死文字颜色 */
+    color: #ffffff;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     position: relative; overflow: hidden;
+    /* 关闭 iOS 浅色模式对表单/文字的自动反色 */
+    color-scheme: only light;
+    -webkit-text-fill-color: #ffffff;
   }
   .export-card::before {
     content: ''; position: absolute; top: -100px; right: -100px;
@@ -374,13 +405,12 @@ body {
   .export-card .ec-crown { font-size: 44px; margin-bottom: 8px; }
   .export-card .ec-title {
     font-size: 30px; font-weight: 900; letter-spacing: -0.5px;
-    background: linear-gradient(135deg, #e8a8b8, #c98094);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #e8a8b8;
     margin-bottom: 6px;
   }
   .export-card .ec-sub {
-    font-size: 13px; color: rgba(255,255,255,0.5); letter-spacing: 2px;
+    font-size: 13px; color: #8a8aa0; letter-spacing: 2px;
+    -webkit-text-fill-color: #8a8aa0;
   }
   .export-card .ec-divider {
     width: 60px; height: 3px; margin: 18px auto 0;
@@ -388,8 +418,9 @@ body {
     border-radius: 3px;
   }
   .export-card .ec-date {
-    font-size: 14px; color: rgba(255,255,255,0.65);
+    font-size: 14px; color: #b8b8cc;
     text-align: center; margin-bottom: 28px; position: relative; z-index: 2;
+    -webkit-text-fill-color: #b8b8cc;
   }
   .export-card .ec-section {
     position: relative; z-index: 2;
@@ -402,11 +433,18 @@ body {
   .export-card .ec-section-title {
     font-size: 15px; font-weight: 700; color: #a0d8b3;
     margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    -webkit-text-fill-color: #a0d8b3;
+  }
+  .export-card .ec-count {
+    font-size: 12px; color: #7a7a90; font-weight: 400;
+    margin-left: auto;
+    -webkit-text-fill-color: #7a7a90;
   }
   .export-card .ec-item {
     display: flex; align-items: flex-start; gap: 10px;
     padding: 9px 0;
-    font-size: 15px; color: rgba(255,255,255,0.9);
+    font-size: 15px; color: #eaeaf5;
+    -webkit-text-fill-color: #eaeaf5;
     border-bottom: 1px dashed rgba(255,255,255,0.06);
   }
   .export-card .ec-item:last-child { border-bottom: none; }
@@ -415,16 +453,19 @@ body {
     background: #e8a8b8; margin-top: 8px; flex-shrink: 0;
   }
   .export-card .ec-item .ec-note {
-    font-size: 12px; color: rgba(255,255,255,0.5); margin-left: 4px;
+    font-size: 12px; color: #8a8aa0; margin-left: 4px;
+    -webkit-text-fill-color: #8a8aa0;
   }
   .export-card .ec-foot {
     position: relative; z-index: 2;
     text-align: center; margin-top: 30px;
-    font-size: 12px; color: rgba(255,255,255,0.4);
+    font-size: 12px; color: #7a7a90;
     letter-spacing: 1px;
+    -webkit-text-fill-color: #7a7a90;
   }
   .export-card .ec-foot .ec-brand {
     color: #e8a8b8; font-weight: 700;
+    -webkit-text-fill-color: #e8a8b8;
   }
 </style>
 </head>
@@ -438,7 +479,7 @@ body {
 <button class="icon-btn" id="btnHistory">📜 历史</button>
 </div>
 
-<div id="menuContainer" class="no-cart">
+<div id="menuContainer">
 <div id="categorySide"></div>
 <div id="dishArea"></div>
 </div>
@@ -526,15 +567,15 @@ body {
   </div>
 </div>
 
+<!-- 导出预览层（加粗长按提示，去掉下载按钮） -->
 <div id="exportOverlay">
-  <div class="export-tip">📸 长按下方图片 → 存储到照片</div>
-  <div class="export-sub">（iOS / 安卓都支持长按保存）</div>
+  <div class="export-tip"><span class="finger">👇</span> 长按图片保存 <span class="finger">👇</span></div>
+  <div class="export-sub">按住图片不动 → 选择「存储到照片」</div>
   <div class="export-img-wrap">
     <img id="exportImg" alt="菜单">
   </div>
   <div class="export-actions">
     <button class="ghost" onclick="closeExport()">关闭</button>
-    <button class="primary" id="btnDownloadImg">⬇️ 下载图片</button>
   </div>
 </div>
 
@@ -550,12 +591,11 @@ var dishes = [];
 var currentCat = '主食';
 var cart = [];
 var localImageData = '';
-var shareList = [];      // 从数据库拉的共享成员（不含自己）
-var menuOwner = '';      // 共享组 owner（组内邮箱排序后最小的那个）
+var shareList = [];
+var menuOwner = '';
 
 var MY_EMAIL = (localStorage.getItem('user_email') || 'anonymous').toLowerCase();
 
-/* ============ 从数据库拉共享组 ============ */
 async function loadShares() {
   if (!MY_EMAIL || MY_EMAIL === 'anonymous') {
     shareList = [];
@@ -579,7 +619,6 @@ function getMenuOwner() {
   return menuOwner || MY_EMAIL;
 }
 
-/* ============ VIP 判断：组内任意一人是 VIP 就放行 ============ */
 function getGroupEmails() {
   var set = {};
   set[MY_EMAIL] = true;
@@ -615,7 +654,6 @@ function closeVipLock() {
   el('vipLockOverlay').classList.remove('show');
 }
 
-/* ============ 加载菜单 ============ */
 function loadDishes() {
   return fetch('/api/dishes?owner=' + encodeURIComponent(getMenuOwner()))
     .then(function(resp) { return resp.json(); })
@@ -700,13 +738,10 @@ function addToCart(dishId) {
 function updateCartBar() {
   el('cartNum').textContent = cart.length;
   el('cartBadge').textContent = cart.length;
-  var container = el('menuContainer');
   if (cart.length > 0) {
     el('cartBar').classList.add('show');
-    container.classList.remove('no-cart');
   } else {
     el('cartBar').classList.remove('show');
-    container.classList.add('no-cart');
   }
 }
 
@@ -954,7 +989,7 @@ function buildExportCard() {
     sectionsHtml +=
       '<div class="ec-section">' +
       '<div class="ec-section-title">' + catEmoji[cat] + ' ' + cat +
-      '<span style="font-size:12px;color:rgba(255,255,255,0.4);font-weight:400;margin-left:auto;">' + list.length + ' 道</span>' +
+      '<span class="ec-count">' + list.length + ' 道</span>' +
       '</div>' + itemsHtml + '</div>';
   });
 
@@ -994,11 +1029,11 @@ async function exportMenu() {
   if (navigator.vibrate) navigator.vibrate(20);
 
   var card = buildExportCard();
-  await new Promise(function(r) { setTimeout(r, 60); });
+  await new Promise(function(r) { setTimeout(r, 80); });
 
   try {
     var canvas = await html2canvas(card, {
-      backgroundColor: null,
+      backgroundColor: '#1a1a2e',   /* 写死深色背景，避免浅色模式变白 */
       scale: 2,
       useCORS: true,
       logging: false
@@ -1013,17 +1048,6 @@ async function exportMenu() {
 
 function closeExport() {
   el('exportOverlay').classList.remove('show');
-}
-
-function downloadExportImg() {
-  var src = el('exportImg').src;
-  if (!src) return;
-  var a = document.createElement('a');
-  a.href = src;
-  a.download = '我的菜单_' + Date.now() + '.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
 }
 
 function goBack() {
@@ -1047,9 +1071,7 @@ el('btnSaveOrder').addEventListener('click', saveOrder);
 el('btnCloseHistory').addEventListener('click', closeHistory);
 el('btnAddShare').addEventListener('click', addShare);
 el('btnCloseShare').addEventListener('click', closeShare);
-el('btnDownloadImg').addEventListener('click', downloadExportImg);
 
-/* ============ 启动：先拉共享，再拉菜单 ============ */
 (async function init() {
   await loadShares();
   await loadDishes();
