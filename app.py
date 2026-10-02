@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timedelta, timezone
 import calendar
 from flask import Flask, render_template, request, jsonify
 import pytz
@@ -962,6 +962,218 @@ def api_profile_save():
 
 from werkzeug.utils import secure_filename
 import uuid
+
+
+
+# ==========================================================
+#                        VIP 系统
+# ==========================================================
+FREE_LIMIT = 3   # 免费用户每个功能试用 2 次
+
+VIP_FEATURES = {
+    "ai_detect": "AI 检测",
+    "resume": "AI 简历",
+    "contract": "合同扫描",
+    "culture_calendar": "文化日历",
+    "nearby": "附近网点",
+    "price_compare": "超市比价",
+}
+
+
+@app.route("/api/vip/status")
+def api_vip_status():
+    """查询当前用户是否是 VIP"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = supabase.table("user_profiles").select("is_vip,vip_expire_at").eq("email", email).execute()
+        if not result.data:
+            return jsonify({"is_vip": False, "expire_at": None})
+        row = result.data[0]
+        is_vip = bool(row.get("is_vip"))
+        expire_at = row.get("vip_expire_at")
+        # 过期检查
+        if is_vip and expire_at:
+            from datetime import datetime as _dt
+            exp = _dt.fromisoformat(expire_at.replace("Z", "+00:00"))
+            if exp < _dt.now(timezone.utc):
+                is_vip = False
+        return jsonify({"is_vip": is_vip, "expire_at": expire_at})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/vip/check_usage")
+def api_vip_check_usage():
+    """检查某功能剩余免费次数"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip().lower()
+    feature = request.args.get("feature", "").strip()
+    if not email or not feature:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 先查 VIP
+        prof = supabase.table("user_profiles").select("is_vip,vip_expire_at").eq("email", email).execute()
+        is_vip = False
+        if prof.data:
+            is_vip = bool(prof.data[0].get("is_vip"))
+            exp = prof.data[0].get("vip_expire_at")
+            if is_vip and exp:
+                from datetime import datetime as _dt
+                e = _dt.fromisoformat(exp.replace("Z", "+00:00"))
+                if e < _dt.now(timezone.utc):
+                    is_vip = False
+        if is_vip:
+            return jsonify({"is_vip": True, "remaining": -1})   # -1 = 无限
+
+        # 查免费次数
+        used = supabase.table("ai_usage").select("id", count="exact").eq("user_email", email).eq("feature", feature).execute()
+        used_count = used.count if hasattr(used, "count") and used.count is not None else len(used.data or [])
+        remaining = max(0, FREE_LIMIT - used_count)
+        return jsonify({"is_vip": False, "remaining": remaining, "limit": FREE_LIMIT})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/vip/consume", methods=["POST"])
+def api_vip_consume():
+    """消耗一次免费次数（或 VIP 无限制直接返回 ok）"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    feature = data.get("feature", "").strip()
+    if not email or not feature:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # VIP 直接放行
+        prof = supabase.table("user_profiles").select("is_vip,vip_expire_at").eq("email", email).execute()
+        if prof.data and prof.data[0].get("is_vip"):
+            exp = prof.data[0].get("vip_expire_at")
+            if exp:
+                from datetime import datetime as _dt
+                e = _dt.fromisoformat(exp.replace("Z", "+00:00"))
+                if e >= _dt.now(timezone.utc):
+                    return jsonify({"success": True, "is_vip": True})
+            else:
+                return jsonify({"success": True, "is_vip": True})
+
+        # 免费用户：检查剩余
+        used = supabase.table("ai_usage").select("id", count="exact").eq("user_email", email).eq("feature", feature).execute()
+        used_count = used.count if hasattr(used, "count") and used.count is not None else len(used.data or [])
+        if used_count >= FREE_LIMIT:
+            return jsonify({"error": "免费次数已用完", "need_vip": True}), 403
+
+        # 记一次
+        supabase.table("ai_usage").insert({
+            "user_email": email,
+            "feature": feature
+        }).execute()
+        return jsonify({"success": True, "is_vip": False, "remaining": FREE_LIMIT - used_count - 1})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/vip/redeem", methods=["POST"])
+def api_vip_redeem():
+    """兑换码激活 VIP（Stripe 激活前的临时方案）"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    code = data.get("code", "").strip().upper()
+    if not email or not code:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 查兑换码
+        r = supabase.table("vip_codes").select("*").eq("code", code).execute()
+        if not r.data:
+            return jsonify({"error": "兑换码无效"}), 400
+        row = r.data[0]
+        if row.get("used_by"):
+            return jsonify({"error": "兑换码已被使用"}), 400
+
+        # 激活 VIP（30 天）
+        from datetime import datetime as _dt
+        now = _dt.now(timezone.utc)
+        expire = now + timedelta(days=30)
+
+        payload = {
+            "is_vip": True,
+            "vip_expire_at": expire.isoformat(),
+            "updated_at": now.isoformat()
+        }
+        exist = supabase.table("user_profiles").select("email").eq("email", email).execute()
+        if exist.data:
+            supabase.table("user_profiles").update(payload).eq("email", email).execute()
+        else:
+            supabase.table("user_profiles").insert({"email": email, **payload}).execute()
+
+        # 标记兑换码已用
+        supabase.table("vip_codes").update({
+            "used_by": email,
+            "used_at": now.isoformat()
+        }).eq("code", code).execute()
+
+        return jsonify({"success": True, "expire_at": expire.isoformat()})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#            Stripe Webhook（激活后接）
+# ==========================================================
+@app.route("/api/stripe/webhook", methods=["POST"])
+def api_stripe_webhook():
+    """
+    Stripe 付款成功后回调
+    需要环境变量 STRIPE_WEBHOOK_SECRET
+    在 Stripe Dashboard → Developers → Webhooks 配置
+    事件：checkout.session.completed
+    """
+    import stripe
+    stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
+    webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+    payload = request.data
+    sig_header = request.headers.get("Stripe-Signature", "")
+
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+    if event["type"] == "checkout.session.completed":
+        session = event["data"]["object"]
+        customer_email = session.get("customer_details", {}).get("email", "").lower()
+        subscription_id = session.get("subscription")
+
+        if customer_email and supabase:
+            try:
+                from datetime import datetime as _dt
+                now = _dt.now(timezone.utc)
+                expire = now + timedelta(days=31)
+
+                payload = {
+                    "is_vip": True,
+                    "vip_expire_at": expire.isoformat(),
+                    "stripe_customer_id": session.get("customer", ""),
+                    "updated_at": now.isoformat()
+                }
+                exist = supabase.table("user_profiles").select("email").eq("email", customer_email).execute()
+                if exist.data:
+                    supabase.table("user_profiles").update(payload).eq("email", customer_email).execute()
+                else:
+                    supabase.table("user_profiles").insert({"email": customer_email, **payload}).execute()
+            except Exception as e:
+                print("Stripe webhook 写库失败:", e)
+
+    return jsonify({"received": True}), 200
+
 
 
 @app.route("/api/upload", methods=["POST"])
