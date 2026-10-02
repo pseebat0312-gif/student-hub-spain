@@ -1169,6 +1169,52 @@ def api_her_chats_add():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
+# ==========================================================
+#                   Girl's Room · 遇险暗号
+# ==========================================================
+@app.route("/api/her_safety")
+def api_her_safety_get():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = supabase.table("her_safety").select("*").eq("user_email", email).execute()
+        return jsonify(result.data[0] if result.data else {})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/her_safety/save", methods=["POST"])
+def api_her_safety_save():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    payload = {
+        "user_email": email,
+        "secret_code": data.get("secret_code", ""),
+        "pin_hash": data.get("pin_hash", ""),
+        "contacts": data.get("contacts", []),
+        "webauthn_enabled": bool(data.get("webauthn_enabled", False)),
+        "webauthn_credential_id": data.get("webauthn_credential_id", ""),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        exist = supabase.table("her_safety").select("id").eq("user_email", email).execute()
+        if exist.data:
+            supabase.table("her_safety").update(payload).eq("user_email", email).execute()
+        else:
+            supabase.table("her_safety").insert(payload).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # ==========================================================
 #                        足迹地图
 # ==========================================================

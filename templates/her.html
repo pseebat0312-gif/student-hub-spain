@@ -32,6 +32,20 @@
     font-size: 16px; font-weight: bold;
     color: #f4b8d0; flex: 1;
   }
+  #topBar .sos-btn {
+    background: rgba(255,107,107,0.18);
+    border: 1px solid rgba(255,107,107,0.45);
+    color: #ff8b95;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: -0.2px;
+    transition: transform 0.2s;
+  }
+  #topBar .sos-btn:active { transform: scale(0.94); }
 
   #content { padding: 10px 20px 40px; }
 
@@ -136,93 +150,67 @@
     color: #666; font-size: 13px;
   }
 
-  /* 流量按钮 */
-  .flow-row {
-    display: flex; gap: 8px;
-    margin-bottom: 10px;
-  }
+  .flow-row { display: flex; gap: 8px; margin-bottom: 10px; }
   .flow-btn {
-    flex: 1;
-    padding: 10px;
+    flex: 1; padding: 10px;
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.04);
-    color: #ccc;
-    font-size: 13px;
-    text-align: center;
-    cursor: pointer;
+    color: #ccc; font-size: 13px;
+    text-align: center; cursor: pointer;
     transition: 0.2s;
   }
   .flow-btn:active { transform: scale(0.95); }
   .flow-btn.active {
     background: rgba(244,184,208,0.2);
     border-color: #f4b8d0;
-    color: #f4b8d0;
-    font-weight: 700;
+    color: #f4b8d0; font-weight: 700;
   }
 
-  /* 症状 */
-  .symptom-grid {
-    display: flex; flex-wrap: wrap; gap: 6px;
-  }
+  .symptom-grid { display: flex; flex-wrap: wrap; gap: 6px; }
   .symptom-chip {
     padding: 7px 12px;
     border-radius: 999px;
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.04);
-    color: #ccc;
-    font-size: 12px;
-    cursor: pointer;
-    transition: 0.2s;
+    color: #ccc; font-size: 12px;
+    cursor: pointer; transition: 0.2s;
   }
   .symptom-chip:active { transform: scale(0.94); }
   .symptom-chip.active {
     background: rgba(244,184,208,0.2);
     border-color: #f4b8d0;
-    color: #f4b8d0;
-    font-weight: 600;
+    color: #f4b8d0; font-weight: 600;
   }
 
   .pain-slider-wrap { text-align: center; padding: 20px 0 8px; }
   .pain-level-big {
     font-size: 72px; font-weight: 900;
-    line-height: 1;
-    letter-spacing: -3px;
-    margin-bottom: 6px;
-    transition: color 0.3s;
+    line-height: 1; letter-spacing: -3px;
+    margin-bottom: 6px; transition: color 0.3s;
   }
   .pain-level-lbl {
     font-size: 12px; color: #888;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
+    margin-bottom: 20px; letter-spacing: 2px;
   }
   .pain-slider {
-    width: 100%;
-    -webkit-appearance: none;
-    height: 8px;
-    border-radius: 4px;
+    width: 100%; -webkit-appearance: none;
+    height: 8px; border-radius: 4px;
     background: linear-gradient(90deg, #7ad19f, #ffc400, #ff8b95, #c0392b);
-    outline: none;
-    margin-bottom: 24px;
+    outline: none; margin-bottom: 24px;
   }
   .pain-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     width: 28px; height: 28px;
-    border-radius: 50%;
-    background: #fff;
-    cursor: pointer;
-    border: 3px solid #0f0c29;
+    border-radius: 50%; background: #fff;
+    cursor: pointer; border: 3px solid #0f0c29;
     box-shadow: 0 2px 10px rgba(0,0,0,0.4);
   }
   .pain-tips {
     background: rgba(255,255,255,0.04);
-    border-radius: 16px;
-    padding: 18px;
-    font-size: 14px;
-    line-height: 1.8;
-    color: #ddd;
-    min-height: 100px;
-    text-align: left;
+    border-radius: 16px; padding: 18px;
+    font-size: 14px; line-height: 1.8;
+    color: #ddd; min-height: 100px; text-align: left;
   }
   .pain-tips b { color: #f4b8d0; }
   .pain-tips ul { padding-left: 20px; margin-top: 6px; }
@@ -248,13 +236,11 @@
   .group-tabs {
     display: flex; gap: 8px;
     overflow-x: auto;
-    padding-bottom: 6px;
-    margin-bottom: 14px;
+    padding-bottom: 6px; margin-bottom: 14px;
   }
   .group-tabs::-webkit-scrollbar { display: none; }
   .group-chip {
-    padding: 9px 16px;
-    border-radius: 999px;
+    padding: 9px 16px; border-radius: 999px;
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.04);
     color: #ccc; font-size: 13px;
@@ -263,90 +249,61 @@
   }
   .group-chip.active {
     background: linear-gradient(135deg, #f4b8d0, #e08aa8);
-    color: #1a0f14; border: none;
-    font-weight: 700;
+    color: #1a0f14; border: none; font-weight: 700;
   }
   .group-chip:active { transform: scale(0.95); }
 
   .member-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
   .member-card {
-    display: flex; flex-direction: column;
-    align-items: center;
+    display: flex; flex-direction: column; align-items: center;
     padding: 14px 8px 12px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.06);
-    border-radius: 16px;
-    cursor: pointer;
+    border-radius: 16px; cursor: pointer;
     transition: 0.2s;
   }
   .member-card:active { transform: scale(0.95); background: rgba(244,184,208,0.1); }
-  .member-card .emoji {
-    font-size: 34px; margin-bottom: 8px; line-height: 1;
-  }
-  .member-card .name {
-    font-size: 12px; font-weight: 600;
-    color: #fff; text-align: center;
-  }
+  .member-card .emoji { font-size: 34px; margin-bottom: 8px; line-height: 1; }
+  .member-card .name { font-size: 12px; font-weight: 600; color: #fff; text-align: center; }
   .member-card.added {
     border-color: rgba(244,184,208,0.4);
     background: rgba(244,184,208,0.08);
   }
-  .member-card.added .name::after {
-    content: ' ♥';
-    color: #f4b8d0;
-  }
+  .member-card.added .name::after { content: ' ♥'; color: #f4b8d0; }
 
   .my-idols-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
   .idol-card {
-    display: flex; flex-direction: column;
-    align-items: center;
+    display: flex; flex-direction: column; align-items: center;
     padding: 14px 8px 12px;
     background: rgba(244,184,208,0.06);
     border: 1px solid rgba(244,184,208,0.2);
-    border-radius: 16px;
-    cursor: pointer;
-    position: relative;
+    border-radius: 16px; cursor: pointer; position: relative;
   }
   .idol-card:active { transform: scale(0.95); }
   .idol-card .avatar {
-    width: 52px; height: 52px;
-    border-radius: 50%;
+    width: 52px; height: 52px; border-radius: 50%;
     background: rgba(244,184,208,0.15);
     display: flex; align-items: center; justify-content: center;
-    font-size: 28px;
-    margin-bottom: 8px;
+    font-size: 28px; margin-bottom: 8px;
     overflow: hidden;
     border: 2px solid rgba(244,184,208,0.4);
   }
-  .idol-card .avatar img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-  }
+  .idol-card .avatar img { width: 100%; height: 100%; object-fit: cover; }
   .idol-card .nick {
     font-size: 12px; font-weight: 700;
     color: #f4b8d0; text-align: center;
-    margin-bottom: 4px;
-    line-height: 1.3;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    margin-bottom: 4px; line-height: 1.3;
+    max-width: 100%; overflow: hidden;
+    text-overflow: ellipsis; white-space: nowrap;
   }
   .idol-card .real {
-    font-size: 10px;
-    color: #a890a0;
-    text-align: center;
+    font-size: 10px; color: #a890a0; text-align: center;
     background: rgba(244,184,208,0.12);
-    padding: 3px 8px;
-    border-radius: 8px;
+    padding: 3px 8px; border-radius: 8px;
   }
 
   .empty-idols {
@@ -354,43 +311,35 @@
     color: #666; font-size: 13px;
   }
 
-  /* 编辑/聊天弹窗 */
+  /* 通用弹窗 */
   .edit-modal {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.85);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 9999;
-    display: none;
-    justify-content: center;
-    align-items: center;
+    z-index: 9999; display: none;
+    justify-content: center; align-items: center;
     padding: 20px;
   }
   .edit-modal.show { display: flex; }
   .edit-card {
     width: 100%; max-width: 380px;
     background: #1c1c1e;
-    border-radius: 24px;
-    padding: 24px 22px;
+    border-radius: 24px; padding: 24px 22px;
     border: 1px solid rgba(244,184,208,0.2);
-    max-height: 88vh;
-    overflow-y: auto;
+    max-height: 88vh; overflow-y: auto;
   }
   .edit-card h3 {
     font-size: 17px; font-weight: 800;
-    color: #f4b8d0; margin-bottom: 20px;
-    text-align: center;
+    color: #f4b8d0; margin-bottom: 20px; text-align: center;
   }
   .edit-avatar {
-    width: 90px; height: 90px;
-    border-radius: 50%;
+    width: 90px; height: 90px; border-radius: 50%;
     background: rgba(244,184,208,0.12);
     border: 2px solid rgba(244,184,208,0.4);
     margin: 0 auto 16px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 44px;
-    overflow: hidden;
-    cursor: pointer;
+    font-size: 44px; overflow: hidden; cursor: pointer;
   }
   .edit-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .edit-label {
@@ -407,35 +356,23 @@
   }
   .edit-input:focus { border-color: rgba(244,184,208,0.4); }
 
-  /* iOS Safari 日期框修复 */
   input[type="date"] {
-    min-width: 0;
-    width: 100%;
-    box-sizing: border-box;
-    -webkit-appearance: none;
-    appearance: none;
-    line-height: 1.25;
-    overflow: hidden;
+    min-width: 0; width: 100%; box-sizing: border-box;
+    -webkit-appearance: none; appearance: none;
+    line-height: 1.25; overflow: hidden;
   }
-  input[type="date"]::-webkit-calendar-picker-indicator {
-    margin-left: 0;
-  }
+  input[type="date"]::-webkit-calendar-picker-indicator { margin-left: 0; }
 
   .emoji-picker {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 6px;
-    margin-top: 8px;
-    margin-bottom: 16px;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px;
+    margin-top: 8px; margin-bottom: 16px;
   }
   .emoji-pick {
-    aspect-ratio: 1;
-    border-radius: 10px;
+    aspect-ratio: 1; border-radius: 10px;
     background: rgba(255,255,255,0.04);
     border: 1px solid transparent;
     display: flex; align-items: center; justify-content: center;
-    font-size: 20px; cursor: pointer;
-    transition: 0.15s;
+    font-size: 20px; cursor: pointer; transition: 0.15s;
   }
   .emoji-pick:active { transform: scale(0.9); }
   .emoji-pick.selected {
@@ -443,18 +380,14 @@
     background: rgba(244,184,208,0.15);
   }
 
-  .edit-actions {
-    display: flex; gap: 10px; margin-top: 16px;
-  }
+  .edit-actions { display: flex; gap: 10px; margin-top: 16px; }
   .edit-actions button {
     flex: 1; padding: 14px;
     border-radius: 14px; border: none;
     font-size: 14px; font-weight: 700;
     cursor: pointer; font-family: inherit;
   }
-  .edit-actions .cancel {
-    background: rgba(255,255,255,0.08); color: #ccc;
-  }
+  .edit-actions .cancel { background: rgba(255,255,255,0.08); color: #ccc; }
   .edit-actions .save {
     background: linear-gradient(135deg, #f4b8d0, #e08aa8);
     color: #1a0f14;
@@ -468,6 +401,138 @@
     background: linear-gradient(135deg, #a0d8b3, #7ab890);
     color: #0f0c29;
   }
+
+  /* ===== 暗号专用 ===== */
+  .sos-contact-row {
+    display: flex; gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .sos-contact-row input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 13px;
+    outline: none; font-family: inherit;
+    min-width: 0;
+  }
+  .sos-contact-row input:focus { border-color: rgba(244,184,208,0.4); }
+  .sos-contact-row .rm-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,107,107,0.15);
+    color: #ff6b6b;
+    font-size: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .sos-add-btn {
+    width: 100%;
+    padding: 11px;
+    border-radius: 12px;
+    border: 1px dashed rgba(244,184,208,0.4);
+    background: transparent;
+    color: #f4b8d0;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 4px;
+  }
+  .sos-add-btn:active { transform: scale(0.98); }
+
+  .sos-code-big {
+    font-size: 26px;
+    font-weight: 900;
+    color: #f4b8d0;
+    text-align: center;
+    padding: 24px 16px;
+    background: rgba(244,184,208,0.08);
+    border: 1px solid rgba(244,184,208,0.3);
+    border-radius: 18px;
+    letter-spacing: -0.5px;
+    line-height: 1.4;
+    margin-bottom: 16px;
+    word-break: break-word;
+  }
+
+  .sos-call-btn {
+    width: 100%;
+    padding: 16px 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(244,184,208,0.35);
+    background: linear-gradient(135deg, rgba(244,184,208,0.15), rgba(224,138,168,0.08));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.2s;
+  }
+  .sos-call-btn:active { transform: scale(0.98); }
+  .sos-call-btn .icon {
+    font-size: 22px; flex-shrink: 0;
+  }
+  .sos-call-btn .info { flex: 1; min-width: 0; }
+  .sos-call-btn .info .name {
+    font-size: 15px; font-weight: 700;
+    color: #f4b8d0; margin-bottom: 2px;
+  }
+  .sos-call-btn .info .phone {
+    font-size: 12px; color: #888;
+  }
+
+  .sos-location-box {
+    background: rgba(160,216,179,0.08);
+    border: 1px solid rgba(160,216,179,0.25);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .sos-location-box .label {
+    font-size: 11px; color: #a0d8b3;
+    font-weight: 600; margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .sos-location-box .coords {
+    font-size: 14px; color: #fff;
+    font-family: ui-monospace, monospace;
+    margin-bottom: 8px;
+    word-break: break-all;
+  }
+  .sos-location-box .copy-btn {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: rgba(160,216,179,0.2);
+    color: #a0d8b3;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .sos-location-box .copy-btn:active { transform: scale(0.97); }
+
+  .verify-icon {
+    font-size: 56px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .verify-text {
+    text-align: center;
+    font-size: 14px;
+    color: #ccc;
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
 </style>
 </head>
 <body>
@@ -475,6 +540,7 @@
 <div id="topBar">
   <button class="back-btn" onclick="goBack()">←</button>
   <div class="title">Girl's Room</div>
+  <button class="sos-btn" onclick="openSafety()">🆘 遇险暗号</button>
 </div>
 
 <div id="content">
@@ -554,14 +620,14 @@
   <div class="panel" id="panel-idols">
 
     <div class="section-card">
-  <div class="section-title">💗 我的心肝们</div>
-  <div style="font-size:11px; color:rgba(255,255,255,0.4); line-height:1.6; margin-bottom:12px; letter-spacing:-0.1px;">
-    选你的心肝，点卡片可以改昵称、换头像，或和 ta 说句话
-  </div>
-  <div class="my-idols-grid" id="myIdolsGrid">
-    <div class="empty-idols" style="grid-column: 1 / -1;">还没有心肝，去下面选一个吧</div>
-  </div>
-</div>
+      <div class="section-title">💗 我的心肝们</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.4); line-height:1.6; margin-bottom:12px; letter-spacing:-0.1px;">
+        选你的心肝，点卡片可以改昵称、换头像，或和 ta 说句话
+      </div>
+      <div class="my-idols-grid" id="myIdolsGrid">
+        <div class="empty-idols" style="grid-column: 1 / -1;">还没有心肝，去下面选一个吧</div>
+      </div>
+    </div>
 
     <div class="group-switch">
       <button class="sw-btn active" data-gender="boy" onclick="switchGender('boy', this)">👦 男团</button>
@@ -616,6 +682,77 @@
     </div>
     <div class="edit-actions" style="margin-top:12px;">
       <button class="cancel" onclick="closeChat()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 遇险暗号 · 设置面板 ============ -->
+<div class="edit-modal" id="safetySetupModal">
+  <div class="edit-card">
+    <h3>🆘 设置遇险暗号</h3>
+
+    <div class="edit-label">暗号词（说给朋友听的）</div>
+    <input type="text" class="edit-input" id="sosSecretCode" placeholder="比如：我今天想喝奶茶" maxlength="30">
+
+    <div class="edit-label" style="margin-top:18px;">紧急联系人</div>
+    <div id="sosContactsWrap"></div>
+    <button class="sos-add-btn" onclick="addSosContact()">＋ 添加联系人</button>
+
+    <div class="edit-label" style="margin-top:18px;">4 位 PIN 码（Face ID 失败时用）</div>
+    <input type="tel" class="edit-input" id="sosPin" placeholder="4 位数字" maxlength="4" inputmode="numeric">
+
+    <div class="edit-label" style="margin-top:18px;">Face ID / 指纹保护</div>
+    <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:12px;">
+      <input type="checkbox" id="sosWebauthnEnabled" style="width:auto;accent-color:#f4b8d0;">
+      <label for="sosWebauthnEnabled" style="flex:1;font-size:13px;color:#ccc;cursor:pointer;">启用（强烈建议）</label>
+    </div>
+
+    <div class="edit-actions" style="margin-top:20px;">
+      <button class="cancel" onclick="closeSosSetup()">取消</button>
+      <button class="save" onclick="saveSosSetup()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 遇险暗号 · 验证面板 ============ -->
+<div class="edit-modal" id="safetyVerifyModal">
+  <div class="edit-card">
+    <div class="verify-icon">🔒</div>
+    <div class="verify-text" id="sosVerifyText">需要验证身份<br>才能查看暗号</div>
+
+    <button class="btn-pink primary" onclick="verifyBiometric()" id="sosBioBtn" style="margin-bottom:10px;">🔓 使用 Face ID / 指纹</button>
+
+    <div class="edit-label" style="margin-top:14px;">或者输入 PIN 码</div>
+    <input type="tel" class="edit-input" id="sosPinInput" placeholder="4 位数字" maxlength="4" inputmode="numeric">
+    <div id="sosPinError" style="font-size:12px;color:#ff6b6b;text-align:center;min-height:16px;margin-top:8px;"></div>
+
+    <div class="edit-actions" style="margin-top:16px;">
+      <button class="cancel" onclick="closeSosVerify()">取消</button>
+      <button class="save" onclick="verifyPin()">验证</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 遇险暗号 · 展示面板 ============ -->
+<div class="edit-modal" id="safetyPanelModal">
+  <div class="edit-card" style="max-height:90vh;">
+    <h3>🆘 遇险暗号</h3>
+
+    <div class="sos-code-big" id="sosCodeDisplay">--</div>
+
+    <div class="edit-label">紧急联系人（点一下拨打）</div>
+    <div id="sosCallList"></div>
+
+    <div class="edit-label" style="margin-top:18px;">当前位置</div>
+    <div class="sos-location-box" id="sosLocationBox">
+      <div class="label">📍 正在获取位置...</div>
+      <div class="coords" id="sosCoords">--</div>
+      <button class="copy-btn" onclick="copyCoords()">📋 复制坐标</button>
+    </div>
+
+    <div class="edit-actions" style="margin-top:18px;">
+      <button class="cancel" onclick="closeSosPanel()">关闭</button>
+      <button class="save" onclick="openSosSetup()" style="background:rgba(255,255,255,0.1);color:#ccc;">编辑设置</button>
     </div>
   </div>
 </div>
@@ -863,7 +1000,6 @@
         { name: 'Giselle', emoji: '🐶' },
         { name: 'Ningning', emoji: '🐱' }
       ],
-
       ITZY: [
         { name: 'Yeji', emoji: '🐱' },
         { name: 'Lia', emoji: '🐰' },
@@ -1180,6 +1316,332 @@
   // ==========================================================
   function escapeHtml(s) {
     return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  async function sha256(str) {
+    const buf = new TextEncoder().encode(str);
+    const hashBuf = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // ==========================================================
+  //                        遇险暗号
+  // ==========================================================
+  let sosData = null;            // { secret_code, contacts, webauthn_enabled, webauthn_credential_id }
+  let sosPinHashInput = '';      // 保存时输入框的 PIN
+
+  // 打开入口
+  async function openSafety() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!MY_EMAIL) {
+      alert('请先登录');
+      location.href = '/login';
+      return;
+    }
+    // 拉数据
+    try {
+      const resp = await fetch('/api/her_safety?email=' + encodeURIComponent(MY_EMAIL));
+      sosData = await resp.json();
+      if (!sosData || !sosData.secret_code) {
+        // 没设置过 → 打开设置
+        openSosSetup();
+        return;
+      }
+      // 设置过 → 打开验证
+      openSosVerify();
+    } catch (e) {
+      alert('网络错误');
+    }
+  }
+
+  // ---------- 设置面板 ----------
+  function openSosSetup() {
+    document.getElementById('safetyPanelModal').classList.remove('show');
+    document.getElementById('safetyVerifyModal').classList.remove('show');
+
+    // 填充已有数据
+    document.getElementById('sosSecretCode').value = (sosData && sosData.secret_code) || '';
+    document.getElementById('sosWebauthnEnabled').checked = !!(sosData && sosData.webauthn_enabled);
+    document.getElementById('sosPin').value = '';
+
+    // 渲染联系人
+    const wrap = document.getElementById('sosContactsWrap');
+    wrap.innerHTML = '';
+    let contacts = (sosData && Array.isArray(sosData.contacts)) ? sosData.contacts : [];
+    if (contacts.length === 0) contacts = [{ name: '', phone: '' }];
+    contacts.forEach((c, i) => {
+      addSosContactRow(c.name || '', c.phone || '', i);
+    });
+
+    document.getElementById('safetySetupModal').classList.add('show');
+  }
+
+  function addSosContact(name, phone, idx) {
+    const wrap = document.getElementById('sosContactsWrap');
+    const currentCount = wrap.children.length;
+    addSosContactRow(name || '', phone || '', currentCount);
+  }
+
+  function addSosContactRow(name, phone, idx) {
+    const wrap = document.getElementById('sosContactsWrap');
+    const defaultName = '紧急联系人' + (idx + 1);
+    const row = document.createElement('div');
+    row.className = 'sos-contact-row';
+    row.innerHTML = `
+      <input type="text" placeholder="${defaultName}" value="${escapeHtml(name)}" data-role="name" maxlength="20" style="flex:0 0 40%;">
+      <input type="tel" placeholder="电话" value="${escapeHtml(phone)}" data-role="phone" style="flex:1;">
+      <button class="rm-btn" type="button">✕</button>
+    `;
+    row.querySelector('.rm-btn').onclick = () => {
+      row.remove();
+      // 重命名剩余的默认名
+      const rows = wrap.querySelectorAll('.sos-contact-row');
+      rows.forEach((r, i) => {
+        const nameInput = r.querySelector('input[data-role="name"]');
+        if (!nameInput.value) nameInput.placeholder = '紧急联系人' + (i + 1);
+      });
+    };
+    wrap.appendChild(row);
+  }
+
+  function closeSosSetup() {
+    document.getElementById('safetySetupModal').classList.remove('show');
+  }
+
+  async function saveSosSetup() {
+    const code = document.getElementById('sosSecretCode').value.trim();
+    const pin = document.getElementById('sosPin').value.trim();
+    const webauthnEnabled = document.getElementById('sosWebauthnEnabled').checked;
+
+    if (!code) { alert('请输入暗号词'); return; }
+
+    // 收集联系人
+    const rows = document.querySelectorAll('#sosContactsWrap .sos-contact-row');
+    const contacts = [];
+    rows.forEach((r, i) => {
+      const name = r.querySelector('input[data-role="name"]').value.trim() || ('紧急联系人' + (i + 1));
+      const phone = r.querySelector('input[data-role="phone"]').value.trim();
+      if (phone) contacts.push({ name, phone });
+    });
+    if (contacts.length === 0) { alert('至少填一个联系人电话'); return; }
+
+    // PIN
+    let pin_hash = (sosData && sosData.pin_hash) || '';
+    if (pin) {
+      if (!/^\d{4}$/.test(pin)) { alert('PIN 必须是 4 位数字'); return; }
+      pin_hash = await sha256(pin);
+    }
+    if (!pin_hash) { alert('请设置 4 位 PIN 码'); return; }
+
+    // WebAuthn 注册
+    let webauthn_credential_id = (sosData && sosData.webauthn_credential_id) || '';
+    if (webauthnEnabled && !webauthn_credential_id) {
+      // 首次注册
+      if (!window.PublicKeyCredential) {
+        alert('此设备不支持 Face ID / 指纹，将只使用 PIN 码');
+      } else {
+        try {
+          const challenge = new Uint8Array(32);
+          crypto.getRandomValues(challenge);
+          const cred = await navigator.credentials.create({
+            publicKey: {
+              challenge: challenge,
+              rp: { name: "Girl's Room" },
+              user: {
+                id: new TextEncoder().encode(MY_EMAIL.slice(0, 16)),
+                name: MY_EMAIL,
+                displayName: MY_EMAIL.split('@')[0]
+              },
+              pubKeyCredParams: [
+                { alg: -7, type: "public-key" },
+                { alg: -257, type: "public-key" }
+              ],
+              authenticatorSelection: {
+                authenticatorAttachment: "platform",
+                userVerification: "required"
+              },
+              timeout: 60000,
+              attestation: "none"
+            }
+          });
+          if (cred) {
+            webauthn_credential_id = btoa(String.fromCharCode(...new Uint8Array(cred.rawId)));
+          }
+        } catch (e) {
+          console.warn('Face ID 注册失败：', e);
+          alert('Face ID / 指纹注册失败，可先用 PIN 码。');
+        }
+      }
+    }
+
+    // 保存
+    if (navigator.vibrate) navigator.vibrate(15);
+    try {
+      const resp = await fetch('/api/her_safety/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          secret_code: code,
+          pin_hash,
+          contacts,
+          webauthn_enabled: webauthnEnabled,
+          webauthn_credential_id
+        })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('保存失败：' + data.error); return; }
+    } catch (e) { alert('网络错误'); return; }
+
+    closeSosSetup();
+    alert('✅ 设置已保存');
+    // 重新拉一次数据
+    const resp2 = await fetch('/api/her_safety?email=' + encodeURIComponent(MY_EMAIL));
+    sosData = await resp2.json();
+  }
+
+  // ---------- 验证面板 ----------
+  function openSosVerify() {
+    document.getElementById('safetySetupModal').classList.remove('show');
+    document.getElementById('safetyPanelModal').classList.remove('show');
+    document.getElementById('sosPinInput').value = '';
+    document.getElementById('sosPinError').textContent = '';
+
+    const bioBtn = document.getElementById('sosBioBtn');
+    if (sosData && sosData.webauthn_enabled && sosData.webauthn_credential_id) {
+      bioBtn.style.display = 'block';
+    } else {
+      bioBtn.style.display = 'none';
+    }
+
+    document.getElementById('safetyVerifyModal').classList.add('show');
+  }
+
+  function closeSosVerify() {
+    document.getElementById('safetyVerifyModal').classList.remove('show');
+  }
+
+  async function verifyBiometric() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!window.PublicKeyCredential) {
+      document.getElementById('sosPinError').textContent = '此设备不支持 Face ID / 指纹';
+      return;
+    }
+    try {
+      const challenge = new Uint8Array(32);
+      crypto.getRandomValues(challenge);
+      // 因为注册时 credential 是随机的，这里只用 get 触发系统验证
+      // 简化做法：调 navigator.credentials.get 只提供 challenge，不限定 credential
+      // 大多数系统会弹出验证
+      await navigator.credentials.get({
+        publicKey: {
+          challenge: challenge,
+          timeout: 60000,
+          userVerification: "required"
+        }
+      });
+      // 系统验证通过（没有抛错）
+      onVerified();
+    } catch (e) {
+      document.getElementById('sosPinError').textContent = '验证未通过，请用 PIN 码';
+    }
+  }
+
+  async function verifyPin() {
+    const pin = document.getElementById('sosPinInput').value.trim();
+    if (!/^\d{4}$/.test(pin)) {
+      document.getElementById('sosPinError').textContent = '请输入 4 位数字';
+      return;
+    }
+    const hash = await sha256(pin);
+    if (hash === sosData.pin_hash) {
+      onVerified();
+    } else {
+      document.getElementById('sosPinError').textContent = 'PIN 码错误';
+      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+    }
+  }
+
+  function onVerified() {
+    document.getElementById('safetyVerifyModal').classList.remove('show');
+    document.getElementById('safetyPanelModal').classList.add('show');
+    renderSosPanel();
+  }
+
+  // ---------- 展示面板 ----------
+  function closeSosPanel() {
+    document.getElementById('safetyPanelModal').classList.remove('show');
+  }
+
+  function renderSosPanel() {
+    document.getElementById('sosCodeDisplay').textContent = sosData.secret_code || '--';
+
+    const list = document.getElementById('sosCallList');
+    list.innerHTML = '';
+    const contacts = (sosData && Array.isArray(sosData.contacts)) ? sosData.contacts : [];
+    if (contacts.length === 0) {
+      list.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:14px;">还没有联系人</div>';
+    } else {
+      contacts.forEach((c, i) => {
+        const name = c.name || ('紧急联系人' + (i + 1));
+        const btn = document.createElement('button');
+        btn.className = 'sos-call-btn';
+        btn.innerHTML = `
+          <span class="icon">📞</span>
+          <div class="info">
+            <div class="name">${escapeHtml(name)}</div>
+            <div class="phone">${escapeHtml(c.phone)}</div>
+          </div>
+        `;
+        btn.onclick = () => {
+          if (navigator.vibrate) navigator.vibrate(15);
+          if (confirm('拨打 ' + name + ' ' + c.phone + ' ？')) {
+            location.href = 'tel:' + c.phone;
+          }
+        };
+        list.appendChild(btn);
+      });
+    }
+
+    // 位置
+    loadSosLocation();
+  }
+
+  function loadSosLocation() {
+    const coordsEl = document.getElementById('sosCoords');
+    coordsEl.textContent = '定位中...';
+    if (!navigator.geolocation) {
+      coordsEl.textContent = '设备不支持定位';
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        coordsEl.textContent = lat + ', ' + lng;
+        coordsEl.dataset.lat = lat;
+        coordsEl.dataset.lng = lng;
+      },
+      err => {
+        coordsEl.textContent = '定位失败（可忽略）';
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  function copyCoords() {
+    const el = document.getElementById('sosCoords');
+    const lat = el.dataset.lat;
+    const lng = el.dataset.lng;
+    if (!lat || !lng) { alert('定位还没完成'); return; }
+    const text = lat + ', ' + lng;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ 坐标已复制：' + text);
+      });
+    } else {
+      alert('坐标：' + text);
+    }
   }
 
   // ==========================================================
