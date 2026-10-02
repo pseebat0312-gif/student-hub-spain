@@ -554,14 +554,14 @@
   <div class="panel" id="panel-idols">
 
     <div class="section-card">
-      <div class="section-title">💗 我的心肝们</div>
-      <div class="hint" style="margin-bottom:12px;">
-      选择你的心肝，点击卡片可以编辑昵称和头像，或者和ta说句话~
-    </div>
-      <div class="my-idols-grid" id="myIdolsGrid">
-        <div class="empty-idols" style="grid-column: 1 / -1;">还没有心肝，去下面选一个吧</div>
-      </div>
-    </div>
+  <div class="section-title">💗 我的心肝们</div>
+  <div style="font-size:11px; color:rgba(255,255,255,0.4); line-height:1.6; margin-bottom:12px; letter-spacing:-0.1px;">
+    选你的心肝，点卡片可以改昵称、换头像，或和 ta 说句话
+  </div>
+  <div class="my-idols-grid" id="myIdolsGrid">
+    <div class="empty-idols" style="grid-column: 1 / -1;">还没有心肝，去下面选一个吧</div>
+  </div>
+</div>
 
     <div class="group-switch">
       <button class="sw-btn active" data-gender="boy" onclick="switchGender('boy', this)">👦 男团</button>
@@ -847,9 +847,23 @@
         { name: 'Sunghoon', emoji: '🍙' },
         { name: 'Sunoo', emoji: '🦊' },
         { name: 'Ni-ki', emoji: '🦆' }
+      ],
+      TXT: [
+        { name: 'Yeonjun', emoji: '🐱' },
+        { name: 'Soobin', emoji: '🐰‍' },
+        { name: 'Beomgyu', emoji: '🐶' },
+        { name: 'Taehyun', emoji: '🐱' },
+        { name: 'HueningKai', emoji: '🐧' }
       ]
     },
     girl: {
+      aespa: [
+        { name: 'Karina', emoji: '🐍' },
+        { name: 'Winter', emoji: '🐶' },
+        { name: 'Giselle', emoji: '🐶' },
+        { name: 'Ningning', emoji: '🐱' }
+      ],
+
       ITZY: [
         { name: 'Yeji', emoji: '🐱' },
         { name: 'Lia', emoji: '🐰' },
@@ -872,7 +886,7 @@
     '🐱','🐶','🦊','🐼','🦆','🦁','🐯','🐨',
     '🐰','🐹','🐻','🐺','🦌','🐿️','🐥','🐧',
     '🌸','🌈','⭐','🌙','☀️','🍀','🎵','🍕',
-    '🍙','🐈‍⬛','🐭','🪨','💂'
+    '🍙','🐈‍⬛','🐭','🪨','💂','🐍'
   ];
 
   let currentGender = 'boy';
