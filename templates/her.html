@@ -311,7 +311,6 @@
     color: #666; font-size: 13px;
   }
 
-  /* 通用弹窗 */
   .edit-modal {
     position: fixed; inset: 0;
     background: rgba(0,0,0,0.85);
@@ -402,7 +401,6 @@
     color: #0f0c29;
   }
 
-  /* ===== 暗号专用 ===== */
   .sos-contact-row {
     display: flex; gap: 8px;
     margin-bottom: 8px;
@@ -540,6 +538,7 @@
 <div id="topBar">
   <button class="back-btn" onclick="goBack()">←</button>
   <div class="title">Girl's Room</div>
+  <button class="sos-btn" id="idolToggleBtn" onclick="toggleIdolTab()" style="margin-right:6px;background:rgba(244,184,208,0.15);border-color:rgba(244,184,208,0.4);color:#f4b8d0;">⭐</button>
   <button class="sos-btn" onclick="openSafety()">🆘 遇险暗号</button>
 </div>
 
@@ -548,10 +547,9 @@
   <div class="top-tabs">
     <button class="top-tab active" data-tab="cycle" onclick="switchTop('cycle', this)">🩸 经期</button>
     <button class="top-tab" data-tab="pain" onclick="switchTop('pain', this)">💊 急救</button>
-    <button class="top-tab" data-tab="idols" onclick="switchTop('idols', this)">⭐追星专区</button>
+    <button class="top-tab" id="idolTabBtn" data-tab="idols" onclick="switchTop('idols', this)">⭐追星专区</button>
   </div>
 
-  <!-- ============ 经期 ============ -->
   <div class="panel active" id="panel-cycle">
 
     <div class="cycle-hero">
@@ -593,7 +591,6 @@
 
   </div>
 
-  <!-- ============ 急救 ============ -->
   <div class="panel" id="panel-pain">
     <div class="section-card">
       <div class="section-title">💊 你现在有多疼？</div>
@@ -616,7 +613,6 @@
     </div>
   </div>
 
-  <!-- ============ 心肝 ============ -->
   <div class="panel" id="panel-idols">
 
     <div class="section-card">
@@ -641,7 +637,6 @@
 
 </div>
 
-<!-- ============ 编辑心肝弹窗 ============ -->
 <div class="edit-modal" id="editModal">
   <div class="edit-card">
     <h3 id="editTitle">编辑心肝</h3>
@@ -671,7 +666,6 @@
   </div>
 </div>
 
-<!-- ============ 和心肝说话 ============ -->
 <div class="edit-modal" id="chatModal">
   <div class="edit-card" style="max-height:80vh;display:flex;flex-direction:column;">
     <h3 id="chatTitle" style="margin-bottom:12px;">💬</h3>
@@ -686,7 +680,6 @@
   </div>
 </div>
 
-<!-- ============ 遇险暗号 · 设置面板 ============ -->
 <div class="edit-modal" id="safetySetupModal">
   <div class="edit-card">
     <h3>🆘 设置遇险暗号</h3>
@@ -714,7 +707,6 @@
   </div>
 </div>
 
-<!-- ============ 遇险暗号 · 验证面板 ============ -->
 <div class="edit-modal" id="safetyVerifyModal">
   <div class="edit-card">
     <div class="verify-icon">🔒</div>
@@ -733,22 +725,35 @@
   </div>
 </div>
 
-<!-- ============ 遇险暗号 · 展示面板 ============ -->
 <div class="edit-modal" id="safetyPanelModal">
   <div class="edit-card" style="max-height:90vh;">
     <h3>🆘 遇险暗号</h3>
 
     <div class="sos-code-big" id="sosCodeDisplay">--</div>
 
-    <div class="edit-label">紧急联系人（点一下拨打）</div>
+    <div class="edit-label">我的紧急联系人（点一下拨打）</div>
     <div id="sosCallList"></div>
 
-    <div class="edit-label" style="margin-top:18px;">当前位置</div>
+    <div class="edit-label" style="margin-top:18px;">📍 当前位置</div>
     <div class="sos-location-box" id="sosLocationBox">
       <div class="label">📍 正在获取位置...</div>
       <div class="coords" id="sosCoords">--</div>
       <button class="copy-btn" onclick="copyCoords()">📋 复制坐标</button>
     </div>
+
+    <div class="edit-label" style="margin-top:24px;">🛡️ 我守护的人</div>
+    <div id="sosWatchingList" style="margin-bottom:8px;">
+      <div style="text-align:center;color:#666;font-size:12px;padding:14px;">还没有守护的人</div>
+    </div>
+
+    <div class="edit-label" style="margin-top:18px;">📤 共享给好友（输入对方邮箱）</div>
+    <div class="sos-contact-row">
+      <input type="email" id="sosShareEmail" placeholder="好友的注册邮箱" style="flex:1;">
+      <button class="btn-pink primary" onclick="sendSafetyInvite()" style="width:auto;padding:0 16px;flex:none;">邀请</button>
+    </div>
+    <div id="sosSentList" style="margin-top:10px;"></div>
+
+    <div id="sosReceivedList" style="margin-top:10px;"></div>
 
     <div class="edit-actions" style="margin-top:18px;">
       <button class="cancel" onclick="closeSosPanel()">关闭</button>
@@ -776,6 +781,7 @@
     el.classList.add('active');
     if (tab === 'idols') loadMyIdols();
   }
+
 
   // ==========================================================
   //                        经期追踪
@@ -1327,10 +1333,9 @@
   // ==========================================================
   //                        遇险暗号
   // ==========================================================
-  let sosData = null;            // { secret_code, contacts, webauthn_enabled, webauthn_credential_id }
-  let sosPinHashInput = '';      // 保存时输入框的 PIN
+  let sosData = null;
+  let sosPinHashInput = '';
 
-  // 打开入口
   async function openSafety() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (!MY_EMAIL) {
@@ -1338,33 +1343,27 @@
       location.href = '/login';
       return;
     }
-    // 拉数据
     try {
       const resp = await fetch('/api/her_safety?email=' + encodeURIComponent(MY_EMAIL));
       sosData = await resp.json();
       if (!sosData || !sosData.secret_code) {
-        // 没设置过 → 打开设置
         openSosSetup();
         return;
       }
-      // 设置过 → 打开验证
       openSosVerify();
     } catch (e) {
       alert('网络错误');
     }
   }
 
-  // ---------- 设置面板 ----------
   function openSosSetup() {
     document.getElementById('safetyPanelModal').classList.remove('show');
     document.getElementById('safetyVerifyModal').classList.remove('show');
 
-    // 填充已有数据
     document.getElementById('sosSecretCode').value = (sosData && sosData.secret_code) || '';
     document.getElementById('sosWebauthnEnabled').checked = !!(sosData && sosData.webauthn_enabled);
     document.getElementById('sosPin').value = '';
 
-    // 渲染联系人
     const wrap = document.getElementById('sosContactsWrap');
     wrap.innerHTML = '';
     let contacts = (sosData && Array.isArray(sosData.contacts)) ? sosData.contacts : [];
@@ -1394,7 +1393,6 @@
     `;
     row.querySelector('.rm-btn').onclick = () => {
       row.remove();
-      // 重命名剩余的默认名
       const rows = wrap.querySelectorAll('.sos-contact-row');
       rows.forEach((r, i) => {
         const nameInput = r.querySelector('input[data-role="name"]');
@@ -1415,7 +1413,6 @@
 
     if (!code) { alert('请输入暗号词'); return; }
 
-    // 收集联系人
     const rows = document.querySelectorAll('#sosContactsWrap .sos-contact-row');
     const contacts = [];
     rows.forEach((r, i) => {
@@ -1425,7 +1422,6 @@
     });
     if (contacts.length === 0) { alert('至少填一个联系人电话'); return; }
 
-    // PIN
     let pin_hash = (sosData && sosData.pin_hash) || '';
     if (pin) {
       if (!/^\d{4}$/.test(pin)) { alert('PIN 必须是 4 位数字'); return; }
@@ -1433,10 +1429,8 @@
     }
     if (!pin_hash) { alert('请设置 4 位 PIN 码'); return; }
 
-    // WebAuthn 注册
     let webauthn_credential_id = (sosData && sosData.webauthn_credential_id) || '';
     if (webauthnEnabled && !webauthn_credential_id) {
-      // 首次注册
       if (!window.PublicKeyCredential) {
         alert('此设备不支持 Face ID / 指纹，将只使用 PIN 码');
       } else {
@@ -1474,7 +1468,6 @@
       }
     }
 
-    // 保存
     if (navigator.vibrate) navigator.vibrate(15);
     try {
       const resp = await fetch('/api/her_safety/save', {
@@ -1495,12 +1488,10 @@
 
     closeSosSetup();
     alert('✅ 设置已保存');
-    // 重新拉一次数据
     const resp2 = await fetch('/api/her_safety?email=' + encodeURIComponent(MY_EMAIL));
     sosData = await resp2.json();
   }
 
-  // ---------- 验证面板 ----------
   function openSosVerify() {
     document.getElementById('safetySetupModal').classList.remove('show');
     document.getElementById('safetyPanelModal').classList.remove('show');
@@ -1530,9 +1521,6 @@
     try {
       const challenge = new Uint8Array(32);
       crypto.getRandomValues(challenge);
-      // 因为注册时 credential 是随机的，这里只用 get 触发系统验证
-      // 简化做法：调 navigator.credentials.get 只提供 challenge，不限定 credential
-      // 大多数系统会弹出验证
       await navigator.credentials.get({
         publicKey: {
           challenge: challenge,
@@ -1540,7 +1528,6 @@
           userVerification: "required"
         }
       });
-      // 系统验证通过（没有抛错）
       onVerified();
     } catch (e) {
       document.getElementById('sosPinError').textContent = '验证未通过，请用 PIN 码';
@@ -1568,7 +1555,6 @@
     renderSosPanel();
   }
 
-  // ---------- 展示面板 ----------
   function closeSosPanel() {
     document.getElementById('safetyPanelModal').classList.remove('show');
   }
@@ -1603,8 +1589,9 @@
       });
     }
 
-    // 位置
     loadSosLocation();
+    loadSafetyShares();
+    loadWatchingList();
   }
 
   function loadSosLocation() {
@@ -1644,6 +1631,170 @@
     }
   }
 
+
+  // ==================== 追星开关 ====================
+  const IDOL_TAB_KEY = 'her_show_idol_tab';
+
+  function isIdolTabShown() {
+    return localStorage.getItem(IDOL_TAB_KEY) !== '0';
+  }
+
+  function applyIdolTabVisibility() {
+    const btn = document.getElementById('idolTabBtn');
+    const toggleBtn = document.getElementById('idolToggleBtn');
+    const panel = document.getElementById('panel-idols');
+
+    if (isIdolTabShown()) {
+      if (btn) btn.style.display = '';
+      if (toggleBtn) {
+        toggleBtn.style.background = 'rgba(244,184,208,0.15)';
+        toggleBtn.style.borderColor = 'rgba(244,184,208,0.4)';
+        toggleBtn.style.color = '#f4b8d0';
+        toggleBtn.textContent = '⭐';
+      }
+    } else {
+      if (btn) btn.style.display = 'none';
+      if (toggleBtn) {
+        toggleBtn.style.background = 'rgba(255,255,255,0.06)';
+        toggleBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+        toggleBtn.style.color = '#666';
+        toggleBtn.textContent = '☆';
+      }
+      if (panel && panel.classList.contains('active')) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-cycle').classList.add('active');
+        document.querySelectorAll('.top-tab').forEach(b => b.classList.remove('active'));
+        const cycleTab = document.querySelector('.top-tab[data-tab="cycle"]');
+        if (cycleTab) cycleTab.classList.add('active');
+      }
+    }
+  }
+
+  function toggleIdolTab() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const next = isIdolTabShown() ? '0' : '1';
+    localStorage.setItem(IDOL_TAB_KEY, next);
+    applyIdolTabVisibility();
+  }
+
+
+  // ==================== 暗号共享 ====================
+  async function loadSafetyShares() {
+    try {
+      const resp = await fetch('/api/her_safety/shares?email=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      renderSafetyShares(data.sent || [], data.received || []);
+    } catch (e) {}
+  }
+
+  function renderSafetyShares(sent, received) {
+    const recvBox = document.getElementById('sosReceivedList');
+    recvBox.innerHTML = '';
+    const pending = received.filter(r => r.status === 'pending');
+    pending.forEach(r => {
+      const div = document.createElement('div');
+      div.className = 'sos-contact-row';
+      div.style.cssText = 'background:rgba(244,184,208,0.08);border-radius:12px;padding:12px;';
+      div.innerHTML = `
+        <div style="flex:1;font-size:13px;color:#fff;">📩 ${escapeHtml(r.owner_email)} 想共享暗号给你</div>
+        <button class="btn-pink primary" onclick="respondSafetyShare(${r.id},'accept')" style="width:auto;padding:0 14px;flex:none;font-size:12px;">接受</button>
+        <button class="btn-pink" onclick="respondSafetyShare(${r.id},'reject')" style="width:auto;padding:0 14px;flex:none;font-size:12px;margin-left:6px;">拒绝</button>
+      `;
+      recvBox.appendChild(div);
+    });
+
+    const sentBox = document.getElementById('sosSentList');
+    sentBox.innerHTML = '';
+    sent.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'sos-contact-row';
+      div.style.cssText = 'background:rgba(255,255,255,0.04);border-radius:12px;padding:10px 12px;';
+      let statusText = s.status === 'accepted' ? '已接受' : (s.status === 'rejected' ? '已拒绝' : '等待接受');
+      let statusColor = s.status === 'accepted' ? '#a0d8b3' : (s.status === 'rejected' ? '#ff6b6b' : '#ffc400');
+      div.innerHTML = `
+        <div style="flex:1;font-size:13px;color:#fff;">📤 ${escapeHtml(s.viewer_email)}</div>
+        <span style="font-size:11px;color:${statusColor};margin-right:8px;">${statusText}</span>
+        <button class="rm-btn" onclick="respondSafetyShare(${s.id},'remove')" style="background:rgba(255,107,107,0.15);color:#ff6b6b;border:none;width:30px;height:30px;border-radius:50%;cursor:pointer;">✕</button>
+      `;
+      sentBox.appendChild(div);
+    });
+  }
+
+  async function sendSafetyInvite() {
+    const viewer = document.getElementById('sosShareEmail').value.trim().toLowerCase();
+    if (!viewer) { alert('请输入好友邮箱'); return; }
+    if (viewer === MY_EMAIL) { alert('不能邀请自己'); return; }
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      const resp = await fetch('/api/her_safety/share/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ owner: MY_EMAIL, viewer })
+      });
+      const data = await resp.json();
+      if (data.error) { alert(data.error); return; }
+      document.getElementById('sosShareEmail').value = '';
+      alert('✅ 邀请已发送');
+      await loadSafetyShares();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function respondSafetyShare(id, action) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      const resp = await fetch('/api/her_safety/share/respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, action, email: MY_EMAIL })
+      });
+      const data = await resp.json();
+      if (data.error) { alert(data.error); return; }
+      await loadSafetyShares();
+      await loadWatchingList();
+    } catch (e) {}
+  }
+
+  async function loadWatchingList() {
+    const box = document.getElementById('sosWatchingList');
+    box.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:14px;">加载中...</div>';
+    try {
+      const resp = await fetch('/api/her_safety/shared_with_me?email=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        box.innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:14px;">还没有守护的人</div>';
+        return;
+      }
+      box.innerHTML = '';
+      data.forEach(owner => {
+        const card = document.createElement('div');
+        card.style.cssText = 'background:rgba(160,216,179,0.08);border:1px solid rgba(160,216,179,0.25);border-radius:14px;padding:14px;margin-bottom:10px;';
+        const contacts = Array.isArray(owner.contacts) ? owner.contacts : [];
+        let contactsHtml = contacts.map((c, i) => `
+          <button onclick="callOwner('${escapeHtml(c.phone)}','${escapeHtml(c.name || ('紧急联系人' + (i+1)))}')"
+            style="width:100%;padding:10px;margin-top:6px;border-radius:10px;border:1px solid rgba(160,216,179,0.3);background:rgba(160,216,179,0.1);color:#a0d8b3;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;text-align:left;">
+            📞 ${escapeHtml(c.name || ('紧急联系人' + (i+1)))} · ${escapeHtml(c.phone)}
+          </button>
+        `).join('');
+        card.innerHTML = `
+          <div style="font-size:12px;color:#a0d8b3;font-weight:700;margin-bottom:8px;">🛡️ ${escapeHtml(owner.user_email)}</div>
+          <div style="font-size:15px;font-weight:800;color:#f4b8d0;background:rgba(244,184,208,0.08);padding:12px;border-radius:12px;text-align:center;margin-bottom:8px;">${escapeHtml(owner.secret_code || '--')}</div>
+          ${contactsHtml || '<div style="color:#666;font-size:12px;">（对方没有联系人）</div>'}
+        `;
+        box.appendChild(card);
+      });
+    } catch (e) {
+      box.innerHTML = '<div style="text-align:center;color:#ff6b6b;font-size:12px;padding:14px;">加载失败</div>';
+    }
+  }
+
+  function callOwner(phone, name) {
+    if (navigator.vibrate) navigator.vibrate(15);
+    if (confirm('拨打 ' + name + ' ' + phone + ' ？')) {
+      location.href = 'tel:' + phone;
+    }
+  }
+
+
   // ==========================================================
   //                        初始化
   // ==========================================================
@@ -1665,6 +1816,7 @@
     renderMembers();
     if (MY_EMAIL) await loadMyIdols();
     await renderCycles();
+    applyIdolTabVisibility();
   })();
 </script>
 </body>

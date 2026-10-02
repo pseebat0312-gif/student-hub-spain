@@ -1215,6 +1215,111 @@ def api_her_safety_save():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
+# ==========================================================
+#               Girl's Room · 暗号共享
+# ==========================================================
+@app.route("/api/her_safety/shares")
+def api_her_safety_shares():
+    """返回我发出去的 + 别人发给我的"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        sent = supabase.table("her_safety_shares").select("*").eq("owner_email", email).execute()
+        received = supabase.table("her_safety_shares").select("*").eq("viewer_email", email).execute()
+        return jsonify({
+            "sent": sent.data or [],
+            "received": received.data or []
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/her_safety/share/invite", methods=["POST"])
+def api_her_safety_share_invite():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    owner = data.get("owner", "").strip().lower()
+    viewer = data.get("viewer", "").strip().lower()
+    if not owner or not viewer:
+        return jsonify({"error": "缺少参数"}), 400
+    if owner == viewer:
+        return jsonify({"error": "不能共享给自己"}), 400
+    try:
+        exist = supabase.table("her_safety_shares").select("id,status").eq("owner_email", owner).eq("viewer_email", viewer).execute()
+        if exist.data:
+            return jsonify({"error": "已经邀请过了"}), 400
+        supabase.table("her_safety_shares").insert({
+            "owner_email": owner,
+            "viewer_email": viewer,
+            "status": "pending"
+        }).execute()
+        try:
+            supabase.table("notifications").insert({
+                "user_email": viewer,
+                "type": "safety_share_invite",
+                "content": owner + " 想和你共享遇险暗号",
+                "link": "/her"
+            }).execute()
+        except Exception:
+            pass
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/her_safety/share/respond", methods=["POST"])
+def api_her_safety_share_respond():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    share_id = data.get("id")
+    action = data.get("action")  # accept / reject / remove
+    email = data.get("email", "").strip().lower()
+    if not share_id or action not in ("accept", "reject", "remove") or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        row = supabase.table("her_safety_shares").select("*").eq("id", share_id).execute()
+        if not row.data:
+            return jsonify({"error": "记录不存在"}), 404
+        r = row.data[0]
+        if email not in (r["owner_email"], r["viewer_email"]):
+            return jsonify({"error": "无权限"}), 403
+        if action == "remove":
+            supabase.table("her_safety_shares").delete().eq("id", share_id).execute()
+        else:
+            new_status = "accepted" if action == "accept" else "rejected"
+            supabase.table("her_safety_shares").update({"status": new_status}).eq("id", share_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/her_safety/shared_with_me")
+def api_her_safety_shared_with_me():
+    """我守护的人（已接受共享的）的暗号+联系人"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        shares = supabase.table("her_safety_shares").select("owner_email").eq("viewer_email", email).eq("status", "accepted").execute()
+        owners = [s["owner_email"] for s in (shares.data or [])]
+        if not owners:
+            return jsonify([])
+        safeties = supabase.table("her_safety").select("user_email,secret_code,contacts").in_("user_email", owners).execute()
+        return jsonify(safeties.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
 # ==========================================================
 #                        足迹地图
 # ==========================================================
