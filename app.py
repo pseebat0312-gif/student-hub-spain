@@ -1030,6 +1030,8 @@ def api_her_cycles_add():
             "user_email": email,
             "start_date": start_date,
             "end_date": end_date,
+            "flow": data.get("flow", ""),
+            "symptoms": data.get("symptoms", []),
             "note": data.get("note", ""),
         }).execute()
         return jsonify({"success": True})
@@ -1132,7 +1134,40 @@ def api_her_idols_delete():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/her_chats")
+def api_her_chats_list():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip()
+    idol_id = request.args.get("idol_id", "").strip()
+    if not email or not idol_id:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        result = supabase.table("her_chats").select("*").eq("user_email", email).eq("idol_id", idol_id).order("created_at", desc=False).limit(200).execute()
+        return jsonify(result.data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/her_chats/add", methods=["POST"])
+def api_her_chats_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    idol_id = data.get("idol_id")
+    content = data.get("content", "").strip()
+    if not email or not idol_id or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("her_chats").insert({
+            "user_email": email,
+            "idol_id": idol_id,
+            "content": content
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # ==========================================================
 #                        足迹地图
