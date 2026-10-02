@@ -104,6 +104,13 @@
     line-height: 1.6;
     margin-top: 20px;
   }
+
+  #vipBadge {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 8px;
+    text-align: right;
+  }
 </style>
 </head>
 <body>
@@ -118,6 +125,8 @@
   <p style="color: #888; font-size: 14px; margin-bottom: 20px; line-height: 1.6;">
     粘贴一段文本，判断它是人类写的还是 AI 生成的。基于数学统计法，秒级出结果。
   </p>
+
+  <div id="vipBadge"></div>
 
   <textarea class="input-box" id="textInput" placeholder="在这里粘贴要检测的文本..."></textarea>
 
@@ -146,6 +155,9 @@
 
 </div>
 
+<!-- 引入通用 VIP 门控 -->
+<script src="/static/js/vip-gate.js"></script>
+
 <script>
   // ===== 智能返回 =====
   function goBack() {
@@ -155,89 +167,6 @@
     } else {
       location.href = '/';
     }
-  }
-
-  // ===== VIP / 试用检查 =====
-  async function checkVipOrTrial(featureKey) {
-    const email = (localStorage.getItem('user_email') || '').toLowerCase();
-    if (!email) {
-      alert('请先登录');
-      location.href = '/login';
-      return false;
-    }
-    try {
-      const resp = await fetch('/api/vip/check_usage?email=' + encodeURIComponent(email) + '&feature=' + featureKey);
-      const data = await resp.json();
-      if (data.error) { alert(data.error); return false; }
-      if (data.is_vip) return true;
-      if (data.remaining > 0) {
-        const consumeResp = await fetch('/api/vip/consume', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, feature: featureKey })
-        });
-        const consumeData = await consumeResp.json();
-        if (consumeData.success) {
-          if (consumeData.remaining !== undefined && consumeData.remaining >= 0) {
-            showTrialToast(consumeData.remaining);
-          }
-          return true;
-        }
-        if (consumeData.need_vip) {
-          showVipUpsell();
-          return false;
-        }
-        alert(consumeData.error || '操作失败');
-        return false;
-      }
-      showVipUpsell();
-      return false;
-    } catch (e) {
-      alert('网络错误');
-      return false;
-    }
-  }
-
-  function showTrialToast(remaining) {
-    const old = document.getElementById('__trialToast');
-    if (old) old.remove();
-    const tip = document.createElement('div');
-    tip.id = '__trialToast';
-    tip.style.cssText = `
-      position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%);
-      background: rgba(244,184,208,0.18); border: 1px solid rgba(244,184,208,0.4);
-      color: #f4b8d0; padding: 10px 18px; border-radius: 999px;
-      font-size: 13px; font-weight: 600; z-index: 99999;
-      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-      white-space: nowrap;
-    `;
-    tip.textContent = '✨ 免费试用，还剩 ' + remaining + ' 次';
-    document.body.appendChild(tip);
-    setTimeout(() => tip.remove(), 2500);
-  }
-
-  function showVipUpsell() {
-    if (document.getElementById('__vipUpsell')) return;
-    const overlay = document.createElement('div');
-    overlay.id = '__vipUpsell';
-    overlay.style.cssText = `
-      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      z-index: 99999; display: flex; justify-content: center; align-items: center;
-      padding: 20px;
-    `;
-    overlay.innerHTML = `
-      <div style="width:100%;max-width:340px;background:#1c1c1e;border-radius:24px;padding:28px 24px;border:1px solid rgba(244,184,208,0.25);text-align:center;">
-        <div style="font-size:48px;margin-bottom:12px;">👑</div>
-        <div style="font-size:18px;font-weight:800;color:#f4b8d0;margin-bottom:8px;">免费次数用完了</div>
-        <div style="font-size:13px;color:#888;line-height:1.7;margin-bottom:20px;">
-          升级 VIP 后，所有功能无限使用。<br>首月只要 €1
-        </div>
-        <button onclick="location.href='/vip'" style="width:100%;padding:14px;border-radius:999px;border:none;background:linear-gradient(135deg,#f4b8d0,#e08aa8);color:#1a0f14;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:10px;">查看 VIP →</button>
-        <button onclick="document.getElementById('__vipUpsell').remove()" style="width:100%;padding:12px;border-radius:999px;border:none;background:transparent;color:#666;font-size:13px;cursor:pointer;font-family:inherit;">再想想</button>
-      </div>
-    `;
-    document.body.appendChild(overlay);
   }
 
   // ===== 核心算法 =====
@@ -275,18 +204,8 @@
     return { aiScore, burstiness, diversity };
   }
 
-  // ===== 检测动作 =====
-  async function detect() {
-    const text = document.getElementById('textInput').value.trim();
-    if (!text) {
-      alert('请先输入一些文本');
-      return;
-    }
-
-    // 先检查 VIP 或试用
-    const ok = await checkVipOrTrial('ai_detect');
-    if (!ok) return;
-
+  // ===== 真正的检测逻辑 =====
+  function runDetect(text) {
     if (navigator.vibrate) navigator.vibrate(15);
 
     const { aiScore, burstiness, diversity } = simpleAIScore(text);
@@ -318,6 +237,29 @@
     document.getElementById('burstVal').textContent = burstiness.toFixed(3);
     document.getElementById('diverVal').textContent = diversity.toFixed(3);
   }
+
+  // ===== 检测动作（用 VipGate 包一层） =====
+  async function detect() {
+    const text = document.getElementById('textInput').value.trim();
+    if (!text) {
+      alert('请先输入一些文本');
+      return;
+    }
+
+    // VipGate 会自动处理：
+    // - 未登录 → 跳登录
+    // - VIP → 直接放行
+    // - 免费用户还有次数 → 扣一次放行
+    // - 用完 → 弹锁，引导去 /vip
+    await VipGate.run('ai_detect', 'AI 检测', () => {
+      runDetect(text);
+    });
+  }
+
+  // ===== 页面加载时显示剩余次数 =====
+  window.addEventListener('load', () => {
+    VipGate.updateBadge(document.getElementById('vipBadge'), 'ai_detect');
+  });
 </script>
 </body>
 </html>

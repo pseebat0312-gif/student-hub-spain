@@ -6,220 +6,225 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f0c29">
 <title>独家菜单 · 西班牙留学生工具站</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
-body {
+html, body {
     background: #0f0c29; color: #fff;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
-    height: 100vh;
+    height: 100%;
     overflow: hidden;
   }
+body {
+    display: flex;
+    flex-direction: column;
+  }
+
+/* ===== 顶栏：sticky 占文档流 ===== */
 #topBar {
-padding: 12px 14px; display: flex; align-items: center; gap: 8px;
-background: #0f0c29; border-bottom: 1px solid rgba(255,255,255,0.06);
-z-index: 9999; height: 56px; position:fixed;
-top: 0; left: 0; right: 0;
-}
+    padding: 12px 14px; display: flex; align-items: center; gap: 8px;
+    background: #0f0c29; border-bottom: 1px solid rgba(255,255,255,0.06);
+    z-index: 9999; height: 56px; flex-shrink: 0;
+  }
 #topBar .back-btn {
-background: rgba(255,255,255,0.08); border: none; color: #fff;
-font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
-cursor: pointer; flex-shrink: 0;
-}
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer; flex-shrink: 0;
+  }
 #topBar .back-btn:active { transform: scale(0.9); }
 #topBar .title {
-font-size: 15px; font-weight: bold; color: #a0d8b3; flex: 1;
-overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+    font-size: 15px; font-weight: bold; color: #a0d8b3; flex: 1;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
 #topBar .icon-btn {
-background: rgba(160,216,179,0.15); border: none; color: #a0d8b3;
-font-size: 12px; padding: 8px 10px; border-radius: 10px;
-cursor: pointer; flex-shrink: 0; min-width: 44px;
-}
+    background: rgba(160,216,179,0.15); border: none; color: #a0d8b3;
+    font-size: 12px; padding: 8px 10px; border-radius: 10px;
+    cursor: pointer; flex-shrink: 0; min-width: 44px;
+  }
 #topBar .icon-btn:active { transform: scale(0.95); }
 
+/* ===== 主体：flex 自适应剩余高度 ===== */
 #menuContainer {
     display: flex;
-    height: calc(100vh - 56px);
-    margin-top: 56px;
+    flex: 1;
+    min-height: 0;             /* ← 关键：允许 flex 子项内部滚动 */
+    overflow: hidden;
   }
-  #menuContainer.no-cart { height: calc(100vh - 56px); }
-
 
 #categorySide {
-width: 88px; background: rgba(0,0,0,0.3);
-overflow-y: auto; flex-shrink: 0; padding: 10px 0;
-}
+    width: 88px; background: rgba(0,0,0,0.3);
+    overflow-y: auto; flex-shrink: 0; padding: 10px 0;
+  }
 #categorySide::-webkit-scrollbar { display: none; }
 .cat-item {
-padding: 14px 6px; text-align: center;
-font-size: 12px; color: #aaa; cursor: pointer;
-position: relative; transition: 0.15s; line-height: 1.4;
-}
+    padding: 14px 6px; text-align: center;
+    font-size: 12px; color: #aaa; cursor: pointer;
+    position: relative; transition: 0.15s; line-height: 1.4;
+  }
 .cat-item:active { background: rgba(255,255,255,0.05); }
 .cat-item.active {
-background: rgba(160, 216, 179, 0.12);
-color: #a0d8b3; font-weight: bold;
-}
+    background: rgba(160, 216, 179, 0.12);
+    color: #a0d8b3; font-weight: bold;
+  }
 .cat-item.active::before {
-content: ''; position: absolute; left: 0; top: 50%;
-transform: translateY(-50%); width: 3px; height: 22px;
-background: #a0d8b3; border-radius: 0 3px 3px 0;
-}
+    content: ''; position: absolute; left: 0; top: 50%;
+    transform: translateY(-50%); width: 3px; height: 22px;
+    background: #a0d8b3; border-radius: 0 3px 3px 0;
+  }
 .cat-item .cat-count { display: block; font-size: 10px; color: #666; margin-top: 2px; }
 
 #dishArea {
-flex: 1; overflow-y: auto;
--webkit-overflow-scrolling: touch;
-padding: 12px 12px 12px;
-padding-bottom: 100px
-}
+    flex: 1; overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 12px 100px;   /* 底部留白避免被 cartBar 挡住 */
+  }
 #dishArea::-webkit-scrollbar { width: 0; }
 
 .dish-card {
-display: flex; gap: 10px;
-background: rgba(255,255,255,0.04);
-border: 1px solid rgba(255,255,255,0.06);
-border-radius: 14px; padding: 10px; margin-bottom: 10px;
-position: relative; align-items: center;
-}
+    display: flex; gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px; padding: 10px; margin-bottom: 10px;
+    position: relative; align-items: center;
+  }
 .dish-card .dish-img {
-width: 76px; height: 76px; border-radius: 10px; flex-shrink: 0;
-background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
-display: flex; align-items: center; justify-content: center;
-font-size: 32px; overflow: hidden;
-}
+    width: 76px; height: 76px; border-radius: 10px; flex-shrink: 0;
+    background: linear-gradient(135deg, #2a2a3e, #1a1a2e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; overflow: hidden;
+  }
 .dish-card .dish-img img { width: 100%; height: 100%; object-fit: cover; }
 .dish-card .dish-info { flex: 1; min-width: 0; padding-right: 36px; }
 .dish-card .dish-name {
-font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px;
-overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+    font-size: 14px; font-weight: bold; color: #fff; margin-bottom: 4px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
 .dish-card .dish-note {
-font-size: 11px; color: #999; line-height: 1.5; margin-bottom: 4px;
-display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-overflow: hidden;
-}
+    font-size: 11px; color: #999; line-height: 1.5; margin-bottom: 4px;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 .dish-card .dish-cat-tag {
-display: inline-block; font-size: 10px; color: #a0d8b3;
-background: rgba(160, 216, 179, 0.12);
-padding: 2px 6px; border-radius: 6px;
-}
+    display: inline-block; font-size: 10px; color: #a0d8b3;
+    background: rgba(160, 216, 179, 0.12);
+    padding: 2px 6px; border-radius: 6px;
+  }
 .dish-card .add-cart-btn {
-position: absolute; right: 10px; bottom: 10px;
-width: 34px; height: 34px; border-radius: 50%; border: none;
-background: linear-gradient(135deg, #ff6b9d, #a54a7c);
-color: #fff; font-size: 20px; font-weight: bold;
-cursor: pointer; display: flex; align-items: center; justify-content: center;
-box-shadow: 0 4px 12px rgba(165, 74, 124, 0.4);
-}
+    position: absolute; right: 10px; bottom: 10px;
+    width: 34px; height: 34px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, #ff6b9d, #a54a7c);
+    color: #fff; font-size: 20px; font-weight: bold;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 12px rgba(165, 74, 124, 0.4);
+  }
 .add-cart-btn:active { transform: scale(0.9); }
 .dish-card .remove-dish {
-position: absolute; top: 6px; right: 6px;
-background: rgba(0,0,0,0.4); border: none; color: #fff;
-width: 20px; height: 20px; border-radius: 50%;
-font-size: 11px; cursor: pointer;
-display: flex; align-items: center; justify-content: center;
-}
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.4); border: none; color: #fff;
+    width: 20px; height: 20px; border-radius: 50%;
+    font-size: 11px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
 .empty-state {
-text-align: center; padding: 60px 20px;
-color: #666; font-size: 13px;
-}
+    text-align: center; padding: 60px 20px;
+    color: #666; font-size: 13px;
+  }
 
 #cartBar {
-position: fixed; bottom: 0; left: 0; right: 0; height: 84px;
-background: rgba(20, 20, 40, 0.98);
-border-top: 1px solid rgba(255,255,255,0.08);
-padding: 12px 14px 20px;
-display: flex; align-items: center; gap: 10px;
-transform: translateY(100%); transition: transform 0.3s ease;
-z-index: 100;
-}
+    position: fixed; bottom: 0; left: 0; right: 0; height: 84px;
+    background: rgba(20, 20, 40, 0.98);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 14px 20px;
+    display: flex; align-items: center; gap: 10px;
+    transform: translateY(100%); transition: transform 0.3s ease;
+    z-index: 100;
+  }
 #cartBar.show { transform: translateY(0); }
 #cartBar .cart-icon {
-position: relative; width: 46px; height: 46px;
-border-radius: 50%; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-display: flex; align-items: center; justify-content: center;
-font-size: 20px; flex-shrink: 0;
-}
+    position: relative; width: 46px; height: 46px;
+    border-radius: 50%; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
 #cartBar .cart-icon .badge {
-position: absolute; top: -4px; right: -4px;
-background: #ff6b9d; color: #fff;
-font-size: 10px; font-weight: bold;
-min-width: 18px; height: 18px; border-radius: 9px;
-display: flex; align-items: center; justify-content: center;
-padding: 0 5px;
-}
+    position: absolute; top: -4px; right: -4px;
+    background: #ff6b9d; color: #fff;
+    font-size: 10px; font-weight: bold;
+    min-width: 18px; height: 18px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0 5px;
+  }
 #cartBar .cart-info { flex: 1; font-size: 12px; color: #ddd; }
 #cartBar .cart-info .total { font-size: 10px; color: #888; }
 #cartBar .order-btn {
-padding: 12px 20px; border-radius: 12px; border: none;
-background: linear-gradient(135deg, #ff6b9d, #a54a7c);
-color: #fff; font-size: 14px; font-weight: bold;
-cursor: pointer; flex-shrink: 0;
-}
+    padding: 12px 20px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #ff6b9d, #a54a7c);
+    color: #fff; font-size: 14px; font-weight: bold;
+    cursor: pointer; flex-shrink: 0;
+  }
 #cartBar .order-btn:active { transform: scale(0.96); }
 
 #floatAddBtn {
-position: fixed; right: 16px; bottom: 100px;
-width: 52px; height: 52px; border-radius: 50%; border: none;
-background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-color: #fff; font-size: 24px; cursor: pointer;
-box-shadow: 0 8px 24px rgba(74, 124, 89, 0.5);
-z-index: 50; display: flex; align-items: center; justify-content: center;
-}
+    position: fixed; right: 16px; bottom: 100px;
+    width: 52px; height: 52px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 24px; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(74, 124, 89, 0.5);
+    z-index: 50; display: flex; align-items: center; justify-content: center;
+  }
 #floatAddBtn:active { transform: scale(0.9); }
 
 .modal {
-position: fixed; inset: 0; background: rgba(0,0,0,0.8);
-display: none; justify-content: center; align-items: flex-end;
-z-index: 200;
-padding-top: 60px
-}
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    display: none; justify-content: center; align-items: flex-end;
+    z-index: 200;
+    padding-top: 60px
+  }
 .modal.show { display: flex; }
 .modal-content {
-background: #1a1a2e; width: 100%; max-width: 500px;
-border-radius: 25px 25px 0 0; padding: 20px 18px 30px;
-max-height: 70vh; overflow-y: auto;
-animation: slideUp 0.3s ease;
-}
+    background: #1a1a2e; width: 100%; max-width: 500px;
+    border-radius: 25px 25px 0 0; padding: 20px 18px 30px;
+    max-height: 70vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .modal-content h3 {
-font-size: 17px; margin-bottom: 14px;
-color: #a0d8b3; text-align: center;
-}
+    font-size: 17px; margin-bottom: 14px;
+    color: #a0d8b3; text-align: center;
+  }
 .modal-content input, .modal-content textarea, .modal-content select {
-width: 100%; padding: 12px 14px; border-radius: 12px;
-border: 1px solid rgba(255,255,255,0.1);
-background: rgba(255,255,255,0.06);
-color: #fff; font-size: 14px; outline: none;
-margin-bottom: 10px; font-family: inherit;
-}
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 10px; font-family: inherit;
+  }
 .modal-content textarea { height: 60px; resize: none; }
 .modal-content select option { background: #1a1a2e; }
 .modal-content input:focus, .modal-content textarea:focus { border-color: #a0d8b3; }
 
 .upload-img-btn {
-width: 100%; padding: 12px; border-radius: 12px;
-border: 1px dashed rgba(160,216,179,0.4);
-background: rgba(160,216,179,0.08);
-color: #a0d8b3; font-size: 14px;
-cursor: pointer; margin-bottom: 10px;
-}
+    width: 100%; padding: 12px; border-radius: 12px;
+    border: 1px dashed rgba(160,216,179,0.4);
+    background: rgba(160,216,179,0.08);
+    color: #a0d8b3; font-size: 14px;
+    cursor: pointer; margin-bottom: 10px;
+  }
 .upload-img-btn:active { transform: scale(0.98); }
 
 .form-actions { display: flex; gap: 10px; margin-top: 8px; }
 .form-actions button {
-flex: 1; padding: 14px; border-radius: 12px; border: none;
-font-size: 15px; font-weight: bold; cursor: pointer;
-}
+    flex: 1; padding: 14px; border-radius: 12px; border: none;
+    font-size: 15px; font-weight: bold; cursor: pointer;
+  }
 .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
 .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
 
 .order-card {
-background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-border-radius: 20px; padding: 22px; margin-bottom: 16px;
-box-shadow: 0 8px 30px rgba(74, 124, 89, 0.4);
-}
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    border-radius: 20px; padding: 22px; margin-bottom: 16px;
+    box-shadow: 0 8px 30px rgba(74, 124, 89, 0.4);
+  }
 .order-card .order-date { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
 .order-card .order-title { font-size: 20px; font-weight: bold; margin-bottom: 14px; }
 .order-card .order-item { font-size: 14px; padding: 6px 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
@@ -228,28 +233,181 @@ box-shadow: 0 8px 30px rgba(74, 124, 89, 0.4);
 
 .modal-btns { display: flex; gap: 10px; }
 .modal-btns button {
-flex: 1; padding: 14px; border-radius: 14px; border: none;
-font-size: 14px; font-weight: bold; cursor: pointer;
-}
+    flex: 1; padding: 14px; border-radius: 14px; border: none;
+    font-size: 14px; font-weight: bold; cursor: pointer;
+  }
 .modal-btns .close-btn { background: rgba(255,255,255,0.1); color: #fff; }
 .modal-btns .save-btn { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
 
 .share-list { margin-top: 8px; }
 .share-item {
-padding: 12px 14px; border-radius: 12px;
-background: rgba(255,255,255,0.05);
-border: 1px solid rgba(255,255,255,0.08);
-margin-bottom: 8px;
-display: flex; justify-content: space-between; align-items: center;
-font-size: 13px;
-}
+    padding: 12px 14px; border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px;
+  }
 .share-item .share-email { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .share-item .share-btn {
-padding: 6px 12px; border-radius: 8px; border: none;
-background: rgba(255,107,157,0.15);
-color: #ff6b9d; font-size: 12px; cursor: pointer;
-}
+    padding: 6px 12px; border-radius: 8px; border: none;
+    background: rgba(255,107,157,0.15);
+    color: #ff6b9d; font-size: 12px; cursor: pointer;
+  }
 .share-item .share-btn:active { transform: scale(0.95); }
+
+/* ===== VIP 引导弹层 ===== */
+#vipLockOverlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    z-index: 99999; justify-content: center; align-items: center;
+    padding: 20px;
+  }
+#vipLockOverlay.show { display: flex; }
+#vipLockOverlay .lock-card {
+    width: 100%; max-width: 340px;
+    background: #1c1c1e; border-radius: 24px;
+    padding: 28px 24px; border: 1px solid rgba(244,184,208,0.25);
+    text-align: center;
+  }
+#vipLockOverlay .lock-icon { font-size: 48px; margin-bottom: 12px; }
+#vipLockOverlay .lock-title {
+    font-size: 18px; font-weight: 800; color: #f4b8d0; margin-bottom: 8px;
+  }
+#vipLockOverlay .lock-sub {
+    font-size: 13px; color: #888; line-height: 1.7; margin-bottom: 20px;
+  }
+#vipLockOverlay .lock-btn {
+    width: 100%; padding: 14px; border-radius: 999px; border: none;
+    background: linear-gradient(135deg, #f4b8d0, #e08aa8);
+    color: #1a0f14; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit; margin-bottom: 10px;
+  }
+#vipLockOverlay .lock-cancel {
+    width: 100%; padding: 12px; border-radius: 999px; border: none;
+    background: transparent; color: #666; font-size: 13px;
+    cursor: pointer; font-family: inherit;
+  }
+
+/* ===== 导出预览层 ===== */
+#exportOverlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 99998; justify-content: center; align-items: center;
+    padding: 20px; flex-direction: column;
+  }
+#exportOverlay.show { display: flex; }
+#exportOverlay .export-tip {
+    color: #ccc; font-size: 13px; margin-bottom: 14px; text-align: center;
+    line-height: 1.6;
+  }
+#exportOverlay .export-img-wrap {
+    max-width: 100%; max-height: 65vh;
+    overflow: auto; border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    background: #000;
+  }
+#exportOverlay .export-img-wrap img {
+    display: block; max-width: 100%;
+    border-radius: 16px;
+  }
+#exportOverlay .export-actions {
+    display: flex; gap: 10px; margin-top: 16px; width: 100%; max-width: 360px;
+  }
+#exportOverlay .export-actions button {
+    flex: 1; padding: 13px; border-radius: 999px; border: none;
+    font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+#exportOverlay .export-actions .primary {
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff;
+  }
+#exportOverlay .export-actions .ghost {
+    background: rgba(255,255,255,0.1); color: #ccc;
+  }
+
+/* ===== 导出用的精美卡片（离屏渲染） ===== */
+#exportStage {
+    position: fixed; left: -99999px; top: 0;
+    width: 720px;
+  }
+  .export-card {
+    width: 720px;
+    padding: 48px 40px;
+    background: linear-gradient(160deg, #1a1a2e 0%, #0f0c29 100%);
+    color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    position: relative; overflow: hidden;
+  }
+  .export-card::before {
+    content: ''; position: absolute; top: -100px; right: -100px;
+    width: 300px; height: 300px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,168,184,0.25), transparent 70%);
+  }
+  .export-card::after {
+    content: ''; position: absolute; bottom: -80px; left: -80px;
+    width: 260px; height: 260px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(160,216,179,0.18), transparent 70%);
+  }
+  .export-card .ec-head {
+    position: relative; z-index: 2;
+    text-align: center; margin-bottom: 32px;
+  }
+  .export-card .ec-crown { font-size: 44px; margin-bottom: 8px; }
+  .export-card .ec-title {
+    font-size: 30px; font-weight: 900; letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #e8a8b8, #c98094);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+  .export-card .ec-sub {
+    font-size: 13px; color: rgba(255,255,255,0.5); letter-spacing: 2px;
+  }
+  .export-card .ec-divider {
+    width: 60px; height: 3px; margin: 18px auto 0;
+    background: linear-gradient(90deg, transparent, #e8a8b8, transparent);
+    border-radius: 3px;
+  }
+  .export-card .ec-date {
+    font-size: 14px; color: rgba(255,255,255,0.65);
+    text-align: center; margin-bottom: 28px; position: relative; z-index: 2;
+  }
+  .export-card .ec-section {
+    position: relative; z-index: 2;
+    margin-bottom: 22px;
+    padding: 18px 22px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+  }
+  .export-card .ec-section-title {
+    font-size: 15px; font-weight: 700; color: #a0d8b3;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .export-card .ec-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 0;
+    font-size: 15px; color: rgba(255,255,255,0.9);
+    border-bottom: 1px dashed rgba(255,255,255,0.06);
+  }
+  .export-card .ec-item:last-child { border-bottom: none; }
+  .export-card .ec-item .ec-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #e8a8b8; margin-top: 8px; flex-shrink: 0;
+  }
+  .export-card .ec-item .ec-note {
+    font-size: 12px; color: rgba(255,255,255,0.5); margin-left: 4px;
+  }
+  .export-card .ec-foot {
+    position: relative; z-index: 2;
+    text-align: center; margin-top: 30px;
+    font-size: 12px; color: rgba(255,255,255,0.4);
+    letter-spacing: 1px;
+  }
+  .export-card .ec-foot .ec-brand {
+    color: #e8a8b8; font-weight: 700;
+  }
 </style>
 </head>
 <body>
@@ -257,6 +415,7 @@ color: #ff6b9d; font-size: 12px; cursor: pointer;
 <div id="topBar">
 <button class="back-btn" id="btnBack">←</button>
 <div class="title" id="menuTitle">🍽️ 独家菜单</div>
+<button class="icon-btn" id="btnExport">📤 导出</button>
 <button class="icon-btn" id="btnShare">👥 共享</button>
 <button class="icon-btn" id="btnHistory">📜 历史</button>
 </div>
@@ -324,7 +483,8 @@ color: #ff6b9d; font-size: 12px; cursor: pointer;
 <div class="modal-content">
 <h3>👥 共享菜单</h3>
 <div style="font-size:12px; color:#888; margin-bottom:14px; line-height:1.6;">
-输入你想共享的账号邮箱，你们将共用同一份菜单。
+输入你想共享的账号邮箱，你们将共用同一份菜单。<br>
+💡 组内任意一人开通 VIP，全组解锁无限添加。
 </div>
 <input type="email" id="shareEmail" placeholder="对方的邮箱">
 <button class="upload-img-btn" id="btnAddShare">➕ 添加共享</button>
@@ -334,6 +494,38 @@ color: #ff6b9d; font-size: 12px; cursor: pointer;
 </div>
 </div>
 </div>
+
+<!-- VIP 引导弹层 -->
+<div id="vipLockOverlay">
+  <div class="lock-card">
+    <div class="lock-icon">👑</div>
+    <div class="lock-title">菜单已加满 8 道菜</div>
+    <div class="lock-sub" id="vipLockSub">
+      免费用户最多添加 8 道菜。<br>
+      开通 VIP 后可无限添加，还能导出精美菜单。
+    </div>
+    <button class="lock-btn" onclick="location.href='/vip'">立即开通 VIP →</button>
+    <button class="lock-cancel" onclick="closeVipLock()">再想想</button>
+  </div>
+</div>
+
+<!-- 导出预览层 -->
+<div id="exportOverlay">
+  <div class="export-tip">
+    长按图片 → 存储到相册<br>
+    <span style="font-size:11px;opacity:0.6;">（安卓也可点下方「下载图片」）</span>
+  </div>
+  <div class="export-img-wrap">
+    <img id="exportImg" alt="菜单">
+  </div>
+  <div class="export-actions">
+    <button class="ghost" onclick="closeExport()">关闭</button>
+    <button class="primary" id="btnDownloadImg">⬇️ 下载图片</button>
+  </div>
+</div>
+
+<!-- 离屏渲染舞台 -->
+<div id="exportStage"></div>
 
 <script>
 var el = function(id) { return document.getElementById(id); };
@@ -346,315 +538,470 @@ var currentCat = '主食';
 var cart = [];
 var localImageData = '';
 var shareList = [];
+var freeLimitHit = false;   // 缓存“是否已超免费限制”，避免重复查
 
 try {
-var savedShare = localStorage.getItem('menu_share_list');
-if (savedShare) shareList = JSON.parse(savedShare);
+  var savedShare = localStorage.getItem('menu_share_list');
+  if (savedShare) shareList = JSON.parse(savedShare);
 } catch (e) { shareList = []; }
 
 var MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
 
 function getMenuOwner() {
-if (shareList.length > 0) {
-var all = [MY_EMAIL].concat(shareList).sort();
-return all[0];
-}
-return MY_EMAIL;
+  if (shareList.length > 0) {
+    var all = [MY_EMAIL].concat(shareList).sort();
+    return all[0];
+  }
+  return MY_EMAIL;
 }
 
+/* ============ VIP 判断：组内任意一人是 VIP 就放行 ============ */
+function getGroupEmails() {
+  var set = {};
+  set[MY_EMAIL] = true;
+  shareList.forEach(function(e) { set[e] = true; });
+  return Object.keys(set);
+}
+
+async function groupHasVip() {
+  var emails = getGroupEmails();
+  for (var i = 0; i < emails.length; i++) {
+    try {
+      var r = await fetch('/api/vip/status?email=' + encodeURIComponent(emails[i]) + '&t=' + Date.now());
+      var d = await r.json();
+      if (d && d.is_vip) return true;
+    } catch (e) {}
+  }
+  return false;
+}
+
+async function canAddDish() {
+  // 1. 组内任意一人 VIP → 无限
+  var vip = await groupHasVip();
+  if (vip) return { ok: true, vip: true, count: dishes.length };
+  // 2. 免费用户：当前 owner 下已有的菜数
+  if (dishes.length >= 8) {
+    return { ok: false, vip: false, count: dishes.length };
+  }
+  return { ok: true, vip: false, count: dishes.length };
+}
+
+function showVipLock() {
+  el('vipLockOverlay').classList.add('show');
+}
+function closeVipLock() {
+  el('vipLockOverlay').classList.remove('show');
+}
+
+/* ============ 加载菜单 ============ */
 function loadDishes() {
-return fetch('/api/dishes?owner=' + encodeURIComponent(getMenuOwner()))
-.then(function(resp) { return resp.json(); })
-.then(function(data) {
-dishes = Array.isArray(data) ? data : [];
-renderCategories();
-renderDishes();
-})
-.catch(function() {
-dishes = [];
-renderCategories();
-renderDishes();
-});
+  return fetch('/api/dishes?owner=' + encodeURIComponent(getMenuOwner()))
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      dishes = Array.isArray(data) ? data : [];
+      renderCategories();
+      renderDishes();
+    })
+    .catch(function() {
+      dishes = [];
+      renderCategories();
+      renderDishes();
+    });
 }
 
 function renderCategories() {
-var side = el('categorySide');
-side.innerHTML = '';
-categories.forEach(function(cat) {
-var count = dishes.filter(function(d) { return d.category === cat; }).length;
-var div = document.createElement('div');
-div.className = 'cat-item' + (cat === currentCat ? ' active' : '');
-div.innerHTML = catEmoji[cat] + '<br>' + cat + '<span class="cat-count">' + count + ' 道</span>';
-div.addEventListener('click', function() {
-if (navigator.vibrate) navigator.vibrate(8);
-currentCat = cat;
-renderCategories();
-renderDishes();
-});
-side.appendChild(div);
-});
+  var side = el('categorySide');
+  side.innerHTML = '';
+  categories.forEach(function(cat) {
+    var count = dishes.filter(function(d) { return d.category === cat; }).length;
+    var div = document.createElement('div');
+    div.className = 'cat-item' + (cat === currentCat ? ' active' : '');
+    div.innerHTML = catEmoji[cat] + '<br>' + cat + '<span class="cat-count">' + count + ' 道</span>';
+    div.addEventListener('click', function() {
+      if (navigator.vibrate) navigator.vibrate(8);
+      currentCat = cat;
+      renderCategories();
+      renderDishes();
+    });
+    side.appendChild(div);
+  });
 }
 
 function renderDishes() {
-var area = el('dishArea');
-var filtered = dishes.filter(function(d) { return d.category === currentCat; });
+  var area = el('dishArea');
+  var filtered = dishes.filter(function(d) { return d.category === currentCat; });
 
-if (filtered.length === 0) {
-area.innerHTML = '<div class="empty-state">这个分类下还没有菜～<br>点右下角 ➕ 添加吧</div>';
-return;
-}
+  if (filtered.length === 0) {
+    area.innerHTML = '<div class="empty-state">这个分类下还没有菜～<br>点右下角 ➕ 添加吧</div>';
+    return;
+  }
 
-area.innerHTML = '';
-filtered.forEach(function(dish) {
-var card = document.createElement('div');
-card.className = 'dish-card';
+  area.innerHTML = '';
+  filtered.forEach(function(dish) {
+    var card = document.createElement('div');
+    card.className = 'dish-card';
 
-var imgHtml = dish.image_url ? '<img src="' + dish.image_url + '" alt="' + dish.name + '">' : '🍽️';
+    var imgHtml = dish.image_url ? '<img src="' + dish.image_url + '" alt="' + dish.name + '">' : '🍽️';
 
-card.innerHTML = '<div class="dish-img">' + imgHtml + '</div>' +
-'<div class="dish-info">' +
-'<div class="dish-name">' + dish.name + '</div>' +
-'<div class="dish-note">' + (dish.note || '') + '</div>' +
-'<div class="dish-cat-tag">' + catEmoji[dish.category] + ' ' + dish.category + '</div>' +
-'</div>';
+    card.innerHTML = '<div class="dish-img">' + imgHtml + '</div>' +
+      '<div class="dish-info">' +
+      '<div class="dish-name">' + dish.name + '</div>' +
+      '<div class="dish-note">' + (dish.note || '') + '</div>' +
+      '<div class="dish-cat-tag">' + catEmoji[dish.category] + ' ' + dish.category + '</div>' +
+      '</div>';
 
-var addBtn = document.createElement('button');
-addBtn.className = 'add-cart-btn';
-addBtn.textContent = '+';
-addBtn.addEventListener('click', function() { addToCart(dish.id); });
-card.appendChild(addBtn);
+    var addBtn = document.createElement('button');
+    addBtn.className = 'add-cart-btn';
+    addBtn.textContent = '+';
+    addBtn.addEventListener('click', function() { addToCart(dish.id); });
+    card.appendChild(addBtn);
 
-var removeBtn = document.createElement('button');
-removeBtn.className = 'remove-dish';
-removeBtn.textContent = '✕';
-removeBtn.addEventListener('click', function() { removeDish(dish.id); });
-card.appendChild(removeBtn);
+    var removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-dish';
+    removeBtn.textContent = '✕';
+    removeBtn.addEventListener('click', function() { removeDish(dish.id); });
+    card.appendChild(removeBtn);
 
-area.appendChild(card);
-});
+    area.appendChild(card);
+  });
 }
 
 function addToCart(dishId) {
-if (navigator.vibrate) navigator.vibrate(8);
-var dish = dishes.filter(function(d) { return d.id === dishId; })[0];
-if (dish) {
-cart.push(dish);
-updateCartBar();
-}
+  if (navigator.vibrate) navigator.vibrate(8);
+  var dish = dishes.filter(function(d) { return d.id === dishId; })[0];
+  if (dish) {
+    cart.push(dish);
+    updateCartBar();
+  }
 }
 
 function updateCartBar() {
-el('cartNum').textContent = cart.length;
-el('cartBadge').textContent = cart.length;
-var container = el('menuContainer');
-if (cart.length > 0) {
-el('cartBar').classList.add('show');
-container.classList.remove('no-cart');
-} else {
-el('cartBar').classList.remove('show');
-container.classList.add('no-cart');
-}
+  el('cartNum').textContent = cart.length;
+  el('cartBadge').textContent = cart.length;
+  var container = el('menuContainer');
+  if (cart.length > 0) {
+    el('cartBar').classList.add('show');
+    container.classList.remove('no-cart');
+  } else {
+    el('cartBar').classList.remove('show');
+    container.classList.add('no-cart');
+  }
 }
 
 function openAddForm() { el('addModal').classList.add('show'); }
 function closeAddForm() { el('addModal').classList.remove('show'); }
 
 function previewLocalImage(event) {
-var file = event.target.files[0];
-if (!file) return;
-if (!file.type.startsWith('image/')) { alert('请选择图片文件'); return; }
-if (file.size > 2 * 1024 * 1024) { alert('图片太大了，请选 2MB 以内的'); return; }
-var reader = new FileReader();
-reader.onload = function(e) {
-localImageData = e.target.result;
-el('imgPreview').innerHTML = '<img src="' + localImageData + '" style="width:80px;height:80px;border-radius:10px;object-fit:cover;">';
-};
-reader.readAsDataURL(file);
+  var file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { alert('请选择图片文件'); return; }
+  if (file.size > 2 * 1024 * 1024) { alert('图片太大了，请选 2MB 以内的'); return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    localImageData = e.target.result;
+    el('imgPreview').innerHTML = '<img src="' + localImageData + '" style="width:80px;height:80px;border-radius:10px;object-fit:cover;">';
+  };
+  reader.readAsDataURL(file);
 }
 
-function submitAddDish() {
-var name = el('dishName').value.trim();
-var note = el('dishNote').value.trim();
-var category = el('dishCat').value;
+/* ============ 添加菜品：加入 VIP 限制 ============ */
+async function submitAddDish() {
+  var name = el('dishName').value.trim();
+  var note = el('dishNote').value.trim();
+  var category = el('dishCat').value;
 
-if (!name) { alert('菜名不能为空'); return; }
-if (navigator.vibrate) navigator.vibrate(15);
+  if (!name) { alert('菜名不能为空'); return; }
+  if (navigator.vibrate) navigator.vibrate(15);
 
-var image_url = localImageData;
+  // 1. 检查能不能加
+  var check = await canAddDish();
+  if (!check.ok) {
+    closeAddForm();
+    el('vipLockSub').innerHTML =
+      '你们共享组已加满 <b style="color:#f4b8d0;">8 道菜</b>。<br>' +
+      '开通 VIP 后可无限添加，还能导出精美菜单。';
+    showVipLock();
+    return;
+  }
 
-fetch('/api/dishes/add', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-email: getMenuOwner(),
-name: name,
-note: note,
-category: category,
-image_url: image_url
-})
-})
-.then(function(resp) { return resp.json(); })
-.then(function(data) {
-if (data.error) { alert('添加失败：' + data.error); return; }
-el('dishName').value = '';
-el('dishNote').value = '';
-el('imgPreview').innerHTML = '';
-localImageData = '';
-closeAddForm();
-currentCat = category;
-loadDishes();
-})
-.catch(function() {
-alert('网络错误，请稍后重试');
-});
+  // 2. 真正添加
+  var image_url = localImageData;
+
+  fetch('/api/dishes/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: getMenuOwner(),
+      name: name,
+      note: note,
+      category: category,
+      image_url: image_url
+    })
+  })
+  .then(function(resp) { return resp.json(); })
+  .then(function(data) {
+    if (data.error) { alert('添加失败：' + data.error); return; }
+    el('dishName').value = '';
+    el('dishNote').value = '';
+    el('imgPreview').innerHTML = '';
+    localImageData = '';
+    closeAddForm();
+    currentCat = category;
+    loadDishes();
+  })
+  .catch(function() {
+    alert('网络错误，请稍后重试');
+  });
 }
 
 function removeDish(dishId) {
-if (navigator.vibrate) navigator.vibrate(10);
-if (!confirm('确定删除这道菜吗？')) return;
-fetch('/api/dishes/delete', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ id: dishId })
-}).then(function() {
-cart = [];
-updateCartBar();
-loadDishes();
-});
+  if (navigator.vibrate) navigator.vibrate(10);
+  if (!confirm('确定删除这道菜吗？')) return;
+  fetch('/api/dishes/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: dishId })
+  }).then(function() {
+    cart = [];
+    updateCartBar();
+    loadDishes();
+  });
 }
 
 function submitOrder() {
-if (cart.length === 0) return;
-if (navigator.vibrate) navigator.vibrate(20);
+  if (cart.length === 0) return;
+  if (navigator.vibrate) navigator.vibrate(20);
 
-var now = new Date();
-var dateStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+  var now = new Date();
+  var dateStr = now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
 
-var itemsHtml = '';
-cart.forEach(function(d) {
-itemsHtml += '<div class="order-item">· ' + d.name + (d.note ? ' <span style="opacity:0.7;">（' + d.note + '）</span>' : '') + '</div>';
-});
+  var itemsHtml = '';
+  cart.forEach(function(d) {
+    itemsHtml += '<div class="order-item">· ' + d.name + (d.note ? ' <span style="opacity:0.7;">（' + d.note + '）</span>' : '') + '</div>';
+  });
 
-var cardHtml = '<div class="order-card">' +
-'<div class="order-date">' + dateStr + '</div>' +
-'<div class="order-title">🍽️ 今日菜单</div>' +
-'<div>' + itemsHtml + '</div>' +
-'<div class="order-footer">来自「独家菜单」</div>' +
-'</div>';
+  var cardHtml = '<div class="order-card">' +
+    '<div class="order-date">' + dateStr + '</div>' +
+    '<div class="order-title">🍽️ 今日菜单</div>' +
+    '<div>' + itemsHtml + '</div>' +
+    '<div class="order-footer">来自「独家菜单」</div>' +
+    '</div>';
 
-el('orderCardContainer').innerHTML = cardHtml;
-el('orderModal').classList.add('show');
+  el('orderCardContainer').innerHTML = cardHtml;
+  el('orderModal').classList.add('show');
 }
 
 function closeOrderModal() {
-el('orderModal').classList.remove('show');
-cart = [];
-updateCartBar();
+  el('orderModal').classList.remove('show');
+  cart = [];
+  updateCartBar();
 }
 
 function saveOrder() {
-var dishNames = cart.map(function(d) { return d.name; });
-fetch('/api/orders/add', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ email: getMenuOwner(), dishes: dishNames })
-})
-.then(function() {
-alert('✅ 订单已保存');
-closeOrderModal();
-})
-.catch(function() {
-alert('保存失败，请稍后重试');
-});
+  var dishNames = cart.map(function(d) { return d.name; });
+  fetch('/api/orders/add', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: getMenuOwner(), dishes: dishNames })
+  })
+  .then(function() {
+    alert('✅ 订单已保存');
+    closeOrderModal();
+  })
+  .catch(function() {
+    alert('保存失败，请稍后重试');
+  });
 }
 
 function showHistory() {
-var list = el('historyList');
-list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
-fetch('/api/orders?owner=' + encodeURIComponent(getMenuOwner()))
-.then(function(resp) { return resp.json(); })
-.then(function(data) {
-if (!Array.isArray(data) || data.length === 0) {
-list.innerHTML = '<div class="empty-state">还没有历史订单</div>';
-return;
-}
-list.innerHTML = '';
-data.forEach(function(o) {
-var dishNames = [];
-try { dishNames = JSON.parse(o.dishes); } catch(e) { dishNames = [o.dishes]; }
-var div = document.createElement('div');
-div.style.cssText = 'background: rgba(255,255,255,0.05); border-radius: 14px; padding: 14px; margin-bottom: 10px;';
-div.innerHTML = '<div style="font-size:12px; color:#888; margin-bottom:6px;">' + (o.created_at ? o.created_at.slice(0, 16).replace('T', ' ') : '') + '</div>' +
-'<div style="font-size:13px; line-height:1.8; color:#ddd;">' +
-dishNames.map(function(d) { return '· ' + d; }).join('<br>') +
-'</div>';
-list.appendChild(div);
-});
-})
-.catch(function() {
-list.innerHTML = '<div class="empty-state">加载失败</div>';
-});
-el('historyModal').classList.add('show');
+  var list = el('historyList');
+  list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
+  fetch('/api/orders?owner=' + encodeURIComponent(getMenuOwner()))
+    .then(function(resp) { return resp.json(); })
+    .then(function(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        list.innerHTML = '<div class="empty-state">还没有历史订单</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.forEach(function(o) {
+        var dishNames = [];
+        try { dishNames = JSON.parse(o.dishes); } catch(e) { dishNames = [o.dishes]; }
+        var div = document.createElement('div');
+        div.style.cssText = 'background: rgba(255,255,255,0.05); border-radius: 14px; padding: 14px; margin-bottom: 10px;';
+        div.innerHTML = '<div style="font-size:12px; color:#888; margin-bottom:6px;">' + (o.created_at ? o.created_at.slice(0, 16).replace('T', ' ') : '') + '</div>' +
+          '<div style="font-size:13px; line-height:1.8; color:#ddd;">' +
+          dishNames.map(function(d) { return '· ' + d; }).join('<br>') +
+          '</div>';
+        list.appendChild(div);
+      });
+    })
+    .catch(function() {
+      list.innerHTML = '<div class="empty-state">加载失败</div>';
+    });
+  el('historyModal').classList.add('show');
 }
 
 function closeHistory() { el('historyModal').classList.remove('show'); }
 
 function showShare() {
-renderShareList();
-el('shareModal').classList.add('show');
+  renderShareList();
+  el('shareModal').classList.add('show');
 }
 
 function closeShare() { el('shareModal').classList.remove('show'); }
 
 function renderShareList() {
-var list = el('shareList');
-list.innerHTML = '';
-if (shareList.length === 0) {
-list.innerHTML = '<div style="color:#666; font-size:12px; text-align:center; padding:10px;">还没有共享账号</div>';
-return;
-}
-shareList.forEach(function(email, i) {
-var div = document.createElement('div');
-div.className = 'share-item';
-div.innerHTML = '<div class="share-email">' + email + '</div>';
-var btn = document.createElement('button');
-btn.className = 'share-btn';
-btn.textContent = '移除';
-btn.addEventListener('click', function() { removeShare(i); });
-div.appendChild(btn);
-list.appendChild(div);
-});
+  var list = el('shareList');
+  list.innerHTML = '';
+  if (shareList.length === 0) {
+    list.innerHTML = '<div style="color:#666; font-size:12px; text-align:center; padding:10px;">还没有共享账号</div>';
+    return;
+  }
+  shareList.forEach(function(email, i) {
+    var div = document.createElement('div');
+    div.className = 'share-item';
+    div.innerHTML = '<div class="share-email">' + email + '</div>';
+    var btn = document.createElement('button');
+    btn.className = 'share-btn';
+    btn.textContent = '移除';
+    btn.addEventListener('click', function() { removeShare(i); });
+    div.appendChild(btn);
+    list.appendChild(div);
+  });
 }
 
 function addShare() {
-var email = el('shareEmail').value.trim();
-if (!email) { alert('请输入邮箱'); return; }
-if (email === MY_EMAIL) { alert('不能和自己共享'); return; }
-if (shareList.indexOf(email) !== -1) { alert('已经在共享列表里了'); return; }
-shareList.push(email);
-localStorage.setItem('menu_share_list', JSON.stringify(shareList));
-el('shareEmail').value = '';
-renderShareList();
-loadDishes();
+  var email = el('shareEmail').value.trim();
+  if (!email) { alert('请输入邮箱'); return; }
+  if (email === MY_EMAIL) { alert('不能和自己共享'); return; }
+  if (shareList.indexOf(email) !== -1) { alert('已经在共享列表里了'); return; }
+  shareList.push(email);
+  localStorage.setItem('menu_share_list', JSON.stringify(shareList));
+  el('shareEmail').value = '';
+  renderShareList();
+  loadDishes();
 }
 
 function removeShare(i) {
-if (!confirm('确定移除这个共享账号吗？')) return;
-shareList.splice(i, 1);
-localStorage.setItem('menu_share_list', JSON.stringify(shareList));
-renderShareList();
-loadDishes();
+  if (!confirm('确定移除这个共享账号吗？')) return;
+  shareList.splice(i, 1);
+  localStorage.setItem('menu_share_list', JSON.stringify(shareList));
+  renderShareList();
+  loadDishes();
+}
+
+/* ============ 导出精美菜单 ============ */
+function buildExportCard() {
+  var stage = el('exportStage');
+  stage.innerHTML = '';
+
+  // 按分类分组
+  var grouped = {};
+  categories.forEach(function(c) { grouped[c] = []; });
+  dishes.forEach(function(d) {
+    if (!grouped[d.category]) grouped[d.category] = [];
+    grouped[d.category].push(d);
+  });
+
+  var sectionsHtml = '';
+  categories.forEach(function(cat) {
+    var list = grouped[cat];
+    if (!list || list.length === 0) return;
+    var itemsHtml = list.map(function(d) {
+      return '<div class="ec-item">' +
+        '<div class="ec-dot"></div>' +
+        '<div>' + d.name +
+        (d.note ? '<span class="ec-note">（' + d.note + '）</span>' : '') +
+        '</div></div>';
+    }).join('');
+    sectionsHtml +=
+      '<div class="ec-section">' +
+      '<div class="ec-section-title">' + catEmoji[cat] + ' ' + cat +
+      '<span style="font-size:12px;color:rgba(255,255,255,0.4);font-weight:400;margin-left:auto;">' + list.length + ' 道</span>' +
+      '</div>' + itemsHtml + '</div>';
+  });
+
+  var now = new Date();
+  var dateStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+
+  var card = document.createElement('div');
+  card.className = 'export-card';
+  card.innerHTML =
+    '<div class="ec-head">' +
+    '<div class="ec-crown">👑</div>' +
+    '<div class="ec-title">我的独家菜单</div>' +
+    '<div class="ec-sub">EXCLUSIVE MENU</div>' +
+    '<div class="ec-divider"></div>' +
+    '</div>' +
+    '<div class="ec-date">' + dateStr + ' · 共 ' + dishes.length + ' 道菜</div>' +
+    sectionsHtml +
+    '<div class="ec-foot">来自 <span class="ec-brand">西班牙留学生工具站</span></div>';
+
+  stage.appendChild(card);
+  return card;
+}
+
+async function exportMenu() {
+  if (dishes.length === 0) {
+    alert('菜单还是空的，先加几道菜吧～');
+    return;
+  }
+  // 导出属于 VIP 功能：非 VIP 弹锁
+  var vip = await groupHasVip();
+  if (!vip) {
+    el('vipLockSub').innerHTML =
+      '导出精美菜单是 <b style="color:#f4b8d0;">VIP 专属功能</b>。<br>' +
+      '开通后可无限添加菜品，并生成精美卡片保存到相册。';
+    showVipLock();
+    return;
+  }
+  if (navigator.vibrate) navigator.vibrate(20);
+
+  var card = buildExportCard();
+  // 等一帧确保布局完成
+  await new Promise(function(r) { setTimeout(r, 60); });
+
+  try {
+    var canvas = await html2canvas(card, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    var dataUrl = canvas.toDataURL('image/png');
+    el('exportImg').src = dataUrl;
+    el('exportOverlay').classList.add('show');
+  } catch (e) {
+    alert('生成图片失败，请重试');
+  }
+}
+
+function closeExport() {
+  el('exportOverlay').classList.remove('show');
+}
+
+function downloadExportImg() {
+  var src = el('exportImg').src;
+  if (!src) return;
+  var a = document.createElement('a');
+  a.href = src;
+  a.download = '我的菜单_' + Date.now() + '.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 function goBack() {
-if (navigator.vibrate) navigator.vibrate(10);
-if (window.history.length > 1) window.history.back();
-else location.href = '/?tab=tools';
+  if (navigator.vibrate) navigator.vibrate(10);
+  if (window.history.length > 1) window.history.back();
+  else location.href = '/?tab=tools';
 }
 
 el('btnBack').addEventListener('click', goBack);
 el('btnShare').addEventListener('click', showShare);
 el('btnHistory').addEventListener('click', showHistory);
+el('btnExport').addEventListener('click', exportMenu);
 el('floatAddBtn').addEventListener('click', openAddForm);
 el('btnSubmitOrder').addEventListener('click', submitOrder);
 el('btnUploadImg').addEventListener('click', function() { el('dishImage').click(); });
@@ -666,6 +1013,7 @@ el('btnSaveOrder').addEventListener('click', saveOrder);
 el('btnCloseHistory').addEventListener('click', closeHistory);
 el('btnAddShare').addEventListener('click', addShare);
 el('btnCloseShare').addEventListener('click', closeShare);
+el('btnDownloadImg').addEventListener('click', downloadExportImg);
 
 loadDishes();
 updateCartBar();
