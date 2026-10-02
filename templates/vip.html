@@ -127,6 +127,60 @@
   .subscribe-btn:active { transform: scale(0.96); }
   .subscribe-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
+  /* 兑换码卡片 */
+  .redeem-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 18px;
+    margin-top: 20px;
+  }
+  .redeem-card .redeem-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 4px;
+  }
+  .redeem-card .redeem-sub {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+  .redeem-row {
+    display: flex;
+    gap: 8px;
+  }
+  .redeem-row input {
+    flex: 1;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-width: 0;
+  }
+  .redeem-row input:focus { border-color: rgba(244,184,208,0.4); }
+  .redeem-row button {
+    padding: 0 20px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(244,184,208,0.18);
+    color: #f4b8d0;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: transform 0.2s;
+  }
+  .redeem-row button:active { transform: scale(0.96); }
+
   .footer-note {
     text-align: center;
     font-size: 11px;
@@ -244,10 +298,11 @@
         <div style="margin-bottom:10px;">
           <b style="color:#e8a8b8;">方式一（推荐）：</b><br>
           点下方"管理订阅"按钮 → 输入你的注册邮箱 → Stripe 会发一封登录邮件给你 → 点邮件里的链接 → 在页面里点"取消订阅"。
+          邮件是 Stripe 官方发送的，主题类似 ‘Your login link to manage your subscription’，直接进去操作即可。
         </div>
         <div style="margin-bottom:10px;">
           <b style="color:#e8a8b8;">方式二：</b><br>
-          发邮件到 <span style="color:#e8a8b8;">你的邮箱@xxx.com</span>，说明"我想取消 VIP"，我会手动帮你取消。
+          发邮件到 <span style="color:#e8a8b8;">你的邮箱pseebat0312@gmail.com</span>，备注您你的账户绑定邮箱，说明"我想取消 VIP"，我会手动帮你取消。
         </div>
         <div>
           <b style="color:#e8a8b8;">注意：</b><br>
@@ -256,8 +311,18 @@
       </div>
     </div>
 
+    <!-- 兑换码 -->
+    <div class="redeem-card">
+      <div class="redeem-title">🎫 有兑换码？</div>
+      <div class="redeem-sub">输入兑换码，立刻解锁 30 天 VIP</div>
+      <div class="redeem-row">
+        <input type="text" id="redeemCode" placeholder="BETA001" maxlength="20">
+        <button onclick="redeemCode()">兑换</button>
+      </div>
+    </div>
+
     <div class="footer-note">
-      支持信用卡、Apple Pay、Google Pay<br>
+      支持信用卡、Apple Pay、支付宝、微信支付、Google Pay<br>
       随时可以在 Stripe 后台取消订阅
     </div>
   </div>
@@ -289,6 +354,31 @@
       return;
     }
     location.href = STRIPE_PAYMENT_LINK;
+  }
+
+  async function redeemCode() {
+    const code = document.getElementById('redeemCode').value.trim().toUpperCase();
+    if (!code) { alert('请输入兑换码'); return; }
+    if (!MY_EMAIL) {
+      alert('请先登录');
+      location.href = '/login';
+      return;
+    }
+    if (navigator.vibrate) navigator.vibrate(15);
+    try {
+      const resp = await fetch('/api/vip/redeem', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, code })
+      });
+      const data = await resp.json();
+      if (data.success) {
+        alert('✅ VIP 已激活！30 天内无限使用所有功能。');
+        checkVipStatus();
+      } else {
+        alert(data.error || '兑换失败');
+      }
+    } catch (e) { alert('网络错误'); }
   }
 
   async function checkVipStatus() {
