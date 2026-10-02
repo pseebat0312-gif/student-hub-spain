@@ -752,7 +752,7 @@ function previewLocalImage(event) {
   var file = event.target.files[0];
   if (!file) return;
   if (!file.type.startsWith('image/')) { alert('请选择图片文件'); return; }
-  if (file.size > 2 * 1024 * 1024) { alert('图片太大了，请选 2MB 以内的'); return; }
+  if (file.size > 10 * 1024 * 1024) { alert('图片太大了，请选 10MB 以内的'); return; }
   var reader = new FileReader();
   reader.onload = function(e) {
     localImageData = e.target.result;
