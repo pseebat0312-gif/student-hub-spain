@@ -472,6 +472,76 @@ def api_orders_add():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================================
+#                        菜单共享
+# ==========================================================
+@app.route("/api/menu/shares")
+def api_menu_shares():
+    """返回当前用户所在的共享组的所有成员邮箱"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        # 我发起的 + 别人发给我的
+        sent = supabase.table("menu_shares").select("member_email").eq("owner_email", email).execute()
+        received = supabase.table("menu_shares").select("owner_email").eq("member_email", email).execute()
+        group = set()
+        group.add(email)
+        for r in (sent.data or []):
+            group.add(r["member_email"])
+        for r in (received.data or []):
+            group.add(r["owner_email"])
+        members = sorted(list(group))
+        # 组的 owner = 排序后第一个
+        owner = members[0] if members else email
+        return jsonify({"members": members, "owner": owner})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/menu/share/add", methods=["POST"])
+def api_menu_share_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    owner = data.get("owner", "").strip().lower()
+    member = data.get("member", "").strip().lower()
+    if not owner or not member:
+        return jsonify({"error": "缺少参数"}), 400
+    if owner == member:
+        return jsonify({"error": "不能和自己共享"}), 400
+    try:
+        exist = supabase.table("menu_shares").select("id").eq("owner_email", owner).eq("member_email", member).execute()
+        if exist.data:
+            return jsonify({"error": "已经共享过了"}), 400
+        supabase.table("menu_shares").insert({
+            "owner_email": owner,
+            "member_email": member
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/menu/share/remove", methods=["POST"])
+def api_menu_share_remove():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    owner = data.get("owner", "").strip().lower()
+    member = data.get("member", "").strip().lower()
+    if not owner or not member:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("menu_shares").delete().eq("owner_email", owner).eq("member_email", member).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    
+
 @app.route("/api/countdowns")
 def api_countdowns():
     if not supabase:
@@ -1848,8 +1918,6 @@ def api_rates_refresh():
         return jsonify({"error": str(e)}), 500
 
 
-if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
 
 
 # ==========================================================
@@ -1900,3 +1968,9 @@ def api_rate_alerts_save():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+
+
+if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)

@@ -8,7 +8,7 @@
 <title>独家菜单 · 西班牙留学生工具站</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
 html, body {
     background: #0f0c29; color: #fff;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -20,11 +20,13 @@ body {
     flex-direction: column;
   }
 
-/* ===== 顶栏：sticky 占文档流 ===== */
 #topBar {
-    padding: 12px 14px; display: flex; align-items: center; gap: 8px;
-    background: #0f0c29; border-bottom: 1px solid rgba(255,255,255,0.06);
-    z-index: 9999; height: 56px; flex-shrink: 0;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 8px;
+    background: #0f0c29;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    z-index: 9999;
+    flex-shrink: 0;
   }
 #topBar .back-btn {
     background: rgba(255,255,255,0.08); border: none; color: #fff;
@@ -35,20 +37,21 @@ body {
 #topBar .title {
     font-size: 15px; font-weight: bold; color: #a0d8b3; flex: 1;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    min-width: 0;
   }
 #topBar .icon-btn {
     background: rgba(160,216,179,0.15); border: none; color: #a0d8b3;
-    font-size: 12px; padding: 8px 10px; border-radius: 10px;
-    cursor: pointer; flex-shrink: 0; min-width: 44px;
+    font-size: 11px; padding: 7px 8px; border-radius: 9px;
+    cursor: pointer; flex-shrink: 0;
   }
 #topBar .icon-btn:active { transform: scale(0.95); }
 
-/* ===== 主体：flex 自适应剩余高度 ===== */
 #menuContainer {
     display: flex;
     flex: 1;
-    min-height: 0;             /* ← 关键：允许 flex 子项内部滚动 */
+    min-height: 0;
     overflow: hidden;
+    position: relative;
   }
 
 #categorySide {
@@ -76,7 +79,7 @@ body {
 #dishArea {
     flex: 1; overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 12px 12px 100px;   /* 底部留白避免被 cartBar 挡住 */
+    padding: 12px 12px 100px;
   }
 #dishArea::-webkit-scrollbar { width: 0; }
 
@@ -256,7 +259,6 @@ body {
   }
 .share-item .share-btn:active { transform: scale(0.95); }
 
-/* ===== VIP 引导弹层 ===== */
 #vipLockOverlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.85);
@@ -290,33 +292,50 @@ body {
     cursor: pointer; font-family: inherit;
   }
 
-/* ===== 导出预览层 ===== */
 #exportOverlay {
     display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.9);
-    z-index: 99998; justify-content: center; align-items: center;
-    padding: 20px; flex-direction: column;
+    background: rgba(0,0,0,0.95);
+    z-index: 99998;
+    flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 16px 30px;
+    -webkit-touch-callout: default;
+    -webkit-user-select: auto;
+    user-select: auto;
   }
 #exportOverlay.show { display: flex; }
 #exportOverlay .export-tip {
-    color: #ccc; font-size: 13px; margin-bottom: 14px; text-align: center;
-    line-height: 1.6;
+    color: #fff; font-size: 14px; font-weight: 700;
+    margin-bottom: 4px; text-align: center; flex-shrink: 0;
+  }
+#exportOverlay .export-sub {
+    color: rgba(255,255,255,0.55); font-size: 12px;
+    margin-bottom: 16px; text-align: center; flex-shrink: 0;
   }
 #exportOverlay .export-img-wrap {
-    max-width: 100%; max-height: 65vh;
-    overflow: auto; border-radius: 16px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
     background: #000;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    flex-shrink: 0;
+    -webkit-touch-callout: default;
+    -webkit-user-select: auto;
+    user-select: auto;
   }
 #exportOverlay .export-img-wrap img {
-    display: block; max-width: 100%;
-    border-radius: 16px;
+    display: block; width: 100%; height: auto;
+    -webkit-touch-callout: default;
+    -webkit-user-select: auto;
+    user-select: auto;
   }
 #exportOverlay .export-actions {
-    display: flex; gap: 10px; margin-top: 16px; width: 100%; max-width: 360px;
+    display: flex; gap: 10px; margin-top: 18px;
+    width: 100%; flex-shrink: 0;
   }
 #exportOverlay .export-actions button {
-    flex: 1; padding: 13px; border-radius: 999px; border: none;
+    flex: 1; padding: 14px; border-radius: 999px; border: none;
     font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit;
   }
 #exportOverlay .export-actions .primary {
@@ -326,7 +345,6 @@ body {
     background: rgba(255,255,255,0.1); color: #ccc;
   }
 
-/* ===== 导出用的精美卡片（离屏渲染） ===== */
 #exportStage {
     position: fixed; left: -99999px; top: 0;
     width: 720px;
@@ -495,7 +513,6 @@ body {
 </div>
 </div>
 
-<!-- VIP 引导弹层 -->
 <div id="vipLockOverlay">
   <div class="lock-card">
     <div class="lock-icon">👑</div>
@@ -509,12 +526,9 @@ body {
   </div>
 </div>
 
-<!-- 导出预览层 -->
 <div id="exportOverlay">
-  <div class="export-tip">
-    长按图片 → 存储到相册<br>
-    <span style="font-size:11px;opacity:0.6;">（安卓也可点下方「下载图片」）</span>
-  </div>
+  <div class="export-tip">📸 长按下方图片 → 存储到照片</div>
+  <div class="export-sub">（iOS / 安卓都支持长按保存）</div>
   <div class="export-img-wrap">
     <img id="exportImg" alt="菜单">
   </div>
@@ -524,7 +538,6 @@ body {
   </div>
 </div>
 
-<!-- 离屏渲染舞台 -->
 <div id="exportStage"></div>
 
 <script>
@@ -537,22 +550,33 @@ var dishes = [];
 var currentCat = '主食';
 var cart = [];
 var localImageData = '';
-var shareList = [];
-var freeLimitHit = false;   // 缓存“是否已超免费限制”，避免重复查
+var shareList = [];      // 从数据库拉的共享成员（不含自己）
+var menuOwner = '';      // 共享组 owner（组内邮箱排序后最小的那个）
 
-try {
-  var savedShare = localStorage.getItem('menu_share_list');
-  if (savedShare) shareList = JSON.parse(savedShare);
-} catch (e) { shareList = []; }
+var MY_EMAIL = (localStorage.getItem('user_email') || 'anonymous').toLowerCase();
 
-var MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
+/* ============ 从数据库拉共享组 ============ */
+async function loadShares() {
+  if (!MY_EMAIL || MY_EMAIL === 'anonymous') {
+    shareList = [];
+    menuOwner = MY_EMAIL;
+    return;
+  }
+  try {
+    var r = await fetch('/api/menu/shares?email=' + encodeURIComponent(MY_EMAIL));
+    var d = await r.json();
+    if (d && Array.isArray(d.members)) {
+      menuOwner = d.owner || MY_EMAIL;
+      shareList = d.members.filter(function(e) { return e !== MY_EMAIL; });
+    }
+  } catch (e) {
+    shareList = [];
+    menuOwner = MY_EMAIL;
+  }
+}
 
 function getMenuOwner() {
-  if (shareList.length > 0) {
-    var all = [MY_EMAIL].concat(shareList).sort();
-    return all[0];
-  }
-  return MY_EMAIL;
+  return menuOwner || MY_EMAIL;
 }
 
 /* ============ VIP 判断：组内任意一人是 VIP 就放行 ============ */
@@ -576,14 +600,12 @@ async function groupHasVip() {
 }
 
 async function canAddDish() {
-  // 1. 组内任意一人 VIP → 无限
   var vip = await groupHasVip();
-  if (vip) return { ok: true, vip: true, count: dishes.length };
-  // 2. 免费用户：当前 owner 下已有的菜数
+  if (vip) return { ok: true, vip: true };
   if (dishes.length >= 8) {
-    return { ok: false, vip: false, count: dishes.length };
+    return { ok: false, vip: false };
   }
-  return { ok: true, vip: false, count: dishes.length };
+  return { ok: true, vip: false };
 }
 
 function showVipLock() {
@@ -704,7 +726,6 @@ function previewLocalImage(event) {
   reader.readAsDataURL(file);
 }
 
-/* ============ 添加菜品：加入 VIP 限制 ============ */
 async function submitAddDish() {
   var name = el('dishName').value.trim();
   var note = el('dishNote').value.trim();
@@ -713,7 +734,6 @@ async function submitAddDish() {
   if (!name) { alert('菜名不能为空'); return; }
   if (navigator.vibrate) navigator.vibrate(15);
 
-  // 1. 检查能不能加
   var check = await canAddDish();
   if (!check.ok) {
     closeAddForm();
@@ -724,7 +744,6 @@ async function submitAddDish() {
     return;
   }
 
-  // 2. 真正添加
   var image_url = localImageData;
 
   fetch('/api/dishes/add', {
@@ -858,37 +877,55 @@ function renderShareList() {
     list.innerHTML = '<div style="color:#666; font-size:12px; text-align:center; padding:10px;">还没有共享账号</div>';
     return;
   }
-  shareList.forEach(function(email, i) {
+  shareList.forEach(function(email) {
     var div = document.createElement('div');
     div.className = 'share-item';
     div.innerHTML = '<div class="share-email">' + email + '</div>';
     var btn = document.createElement('button');
     btn.className = 'share-btn';
     btn.textContent = '移除';
-    btn.addEventListener('click', function() { removeShare(i); });
+    btn.addEventListener('click', function() { removeShare(email); });
     div.appendChild(btn);
     list.appendChild(div);
   });
 }
 
-function addShare() {
-  var email = el('shareEmail').value.trim();
+async function addShare() {
+  var email = el('shareEmail').value.trim().toLowerCase();
   if (!email) { alert('请输入邮箱'); return; }
   if (email === MY_EMAIL) { alert('不能和自己共享'); return; }
   if (shareList.indexOf(email) !== -1) { alert('已经在共享列表里了'); return; }
-  shareList.push(email);
-  localStorage.setItem('menu_share_list', JSON.stringify(shareList));
-  el('shareEmail').value = '';
-  renderShareList();
-  loadDishes();
+  try {
+    var r = await fetch('/api/menu/share/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ owner: MY_EMAIL, member: email })
+    });
+    var d = await r.json();
+    if (d.error) { alert(d.error); return; }
+    el('shareEmail').value = '';
+    await loadShares();
+    renderShareList();
+    await loadDishes();
+  } catch (e) {
+    alert('网络错误');
+  }
 }
 
-function removeShare(i) {
+async function removeShare(email) {
   if (!confirm('确定移除这个共享账号吗？')) return;
-  shareList.splice(i, 1);
-  localStorage.setItem('menu_share_list', JSON.stringify(shareList));
-  renderShareList();
-  loadDishes();
+  try {
+    await fetch('/api/menu/share/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ owner: MY_EMAIL, member: email })
+    });
+    await loadShares();
+    renderShareList();
+    await loadDishes();
+  } catch (e) {
+    alert('网络错误');
+  }
 }
 
 /* ============ 导出精美菜单 ============ */
@@ -896,7 +933,6 @@ function buildExportCard() {
   var stage = el('exportStage');
   stage.innerHTML = '';
 
-  // 按分类分组
   var grouped = {};
   categories.forEach(function(c) { grouped[c] = []; });
   dishes.forEach(function(d) {
@@ -947,7 +983,6 @@ async function exportMenu() {
     alert('菜单还是空的，先加几道菜吧～');
     return;
   }
-  // 导出属于 VIP 功能：非 VIP 弹锁
   var vip = await groupHasVip();
   if (!vip) {
     el('vipLockSub').innerHTML =
@@ -959,7 +994,6 @@ async function exportMenu() {
   if (navigator.vibrate) navigator.vibrate(20);
 
   var card = buildExportCard();
-  // 等一帧确保布局完成
   await new Promise(function(r) { setTimeout(r, 60); });
 
   try {
@@ -1015,8 +1049,12 @@ el('btnAddShare').addEventListener('click', addShare);
 el('btnCloseShare').addEventListener('click', closeShare);
 el('btnDownloadImg').addEventListener('click', downloadExportImg);
 
-loadDishes();
-updateCartBar();
+/* ============ 启动：先拉共享，再拉菜单 ============ */
+(async function init() {
+  await loadShares();
+  await loadDishes();
+  updateCartBar();
+})();
 </script>
 <script src="/static/js/auth-gate.js"></script>
 </body>
