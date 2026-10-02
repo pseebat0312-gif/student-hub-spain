@@ -7,12 +7,11 @@
 <meta name="theme-color" content="#0f0c29">
 <title>探店地图 · 西班牙留学生工具站</title>
 
-<!-- Leaflet 地图库 -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body {
     background: #0f0c29; color: #fff;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -27,7 +26,7 @@
   #topBar .back-btn {
     background: rgba(255,255,255,0.08); border: none; color: #fff;
     font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
-    cursor: pointer; transition: 0.1s;
+    cursor: pointer;
     position: relative; z-index: 10000;
   }
   #topBar .back-btn:active { transform: scale(0.9); }
@@ -35,9 +34,8 @@
 
   #content { padding: 0 20px 40px; }
 
-  /* 地图容器 */
   #map {
-    width: 100%; height: 380px;
+    width: 100%; height: 400px;
     border-radius: 16px;
     overflow: hidden;
     margin-bottom: 16px;
@@ -45,7 +43,6 @@
     z-index: 1;
   }
 
-  /* 按钮 */
   .publish-btn {
     width: 100%; padding: 16px; border-radius: 16px;
     border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
@@ -81,8 +78,29 @@
     border: 2px solid transparent;
   }
   .radio-row input { display: none; }
-  .radio-row input:checked + span { color: #a0d8b3; font-weight: bold; }
   .radio-row label:has(input:checked) { border-color: #a0d8b3; background: rgba(160,216,179,0.15); }
+  .radio-row label:has(input:checked) span { color: #a0d8b3; font-weight: bold; }
+
+  /* 选点模式 */
+  .pick-hint {
+    background: rgba(160,216,179,0.1);
+    border: 1px solid rgba(160,216,179,0.3);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #a0d8b3;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .pick-hint b { color: #fff; }
+
+  .coord-row {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .coord-row input {
+    flex: 1; margin-bottom: 0 !important;
+    font-size: 12px !important;
+  }
 
   .form-actions { display: flex; gap: 10px; margin-top: 6px; }
   .form-actions button {
@@ -92,18 +110,64 @@
   .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
   .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
 
-  /* 店铺列表 */
+  /* 店铺卡片 */
   .shop-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px; padding: 16px; margin-bottom: 12px;
-    cursor: pointer; transition: 0.15s;
+    transition: 0.15s;
   }
   .shop-card:active { transform: scale(0.98); }
-  .shop-card .shop-name { font-size: 15px; font-weight: bold; color: #fff; margin-bottom: 4px; }
-  .shop-card .shop-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
-  .shop-card .shop-desc { font-size: 13px; color: #bbb; line-height: 1.5; }
-  .shop-card .shop-reactions { font-size: 12px; color: #888; margin-top: 8px; }
+  .shop-card .shop-header {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .shop-card .shop-cat-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(160,216,179,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .shop-card .shop-title-wrap { flex: 1; min-width: 0; }
+  .shop-card .shop-name {
+    font-size: 15px; font-weight: bold; color: #fff;
+    margin-bottom: 3px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .shop-card .shop-meta { font-size: 12px; color: #888; }
+  .shop-card .shop-badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    font-weight: 600; flex-shrink: 0;
+  }
+  .shop-card .shop-badge.rec { background: rgba(46,204,113,0.15); color: #2ecc71; }
+  .shop-card .shop-badge.avoid { background: rgba(231,76,60,0.15); color: #e74c3c; }
+  .shop-card .shop-desc {
+    font-size: 13px; color: #bbb; line-height: 1.6;
+    margin-bottom: 12px;
+  }
+  .shop-card .shop-actions {
+    display: flex; gap: 8px;
+  }
+  .shop-card .shop-actions button {
+    flex: 1; padding: 10px; border-radius: 10px;
+    border: none; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .shop-card .btn-nav {
+    background: rgba(160,216,179,0.15);
+    color: #a0d8b3;
+  }
+  .shop-card .btn-nav:active { background: rgba(160,216,179,0.25); }
+  .shop-card .btn-del {
+    background: rgba(231,76,60,0.12);
+    color: #e74c3c;
+    flex: 0 0 60px;
+  }
+
+  .empty-state {
+    text-align: center; color: #666; font-size: 13px;
+    padding: 40px 20px; line-height: 1.8;
+  }
 
   .tip-box {
     background: rgba(160, 216, 179, 0.08);
@@ -112,13 +176,14 @@
     font-size: 13px; color: #ccc; line-height: 1.6; margin-top: 20px;
   }
 
-  /* Leaflet 弹窗深色模式微调 */
   .leaflet-popup-content-wrapper {
     background: #1a1a2e; color: #fff;
     border-radius: 12px;
   }
   .leaflet-popup-content { margin: 12px; }
   .leaflet-popup-tip { background: #1a1a2e; }
+
+  .leaflet-container { background: #0f0c29; }
 </style>
 </head>
 <body>
@@ -130,24 +195,24 @@
 
 <div id="content">
 
-  <!-- 地图 -->
   <div id="map"></div>
 
-  <!-- 发布按钮 -->
   <button class="publish-btn" onclick="togglePublish()">➕ 推荐一家店</button>
 
-  <!-- 发布表单 -->
   <div class="form-card" id="publishForm">
     <input type="text" id="shopName" placeholder="店名 *">
-    <input type="text" id="shopAddress" placeholder="地址（例如：Madrid, Calle Gran Vía 1）*">
+    <input type="text" id="shopAddress" placeholder="地址（可写中文，例：Gran Vía 1, Madrid）">
+
     <select id="shopCity">
       <option value="">选择城市</option>
       <option>马德里</option>
       <option>巴塞罗那</option>
       <option>瓦伦西亚</option>
       <option>塞维利亚</option>
+      <option>萨拉曼卡</option>
       <option>其他</option>
     </select>
+
     <select id="shopCategory">
       <option value="">选择类别</option>
       <option>中餐</option>
@@ -155,13 +220,36 @@
       <option>咖啡</option>
       <option>西餐</option>
       <option>甜品</option>
+      <option>超市</option>
       <option>其他</option>
     </select>
-    <textarea id="shopDesc" placeholder="推荐理由"></textarea>
+
+    <textarea id="shopDesc" placeholder="推荐理由 / 避雷原因"></textarea>
 
     <div class="radio-row">
       <label><input type="radio" name="rec" value="recommend" checked><span>👍 推荐</span></label>
       <label><input type="radio" name="rec" value="avoid"><span>👎 避雷</span></label>
+    </div>
+
+    <!-- 选点方式 -->
+    <div class="pick-hint">
+      📍 <b>怎么定位？</b><br>
+      1. 点下面「在地图上选点」→ 在地图上点一下<br>
+      2. 或者粘贴 Google Maps 链接自动解析
+    </div>
+
+    <button type="button" onclick="enterPickMode()" style="width:100%;padding:12px;border-radius:12px;border:1px dashed rgba(160,216,179,0.4);background:rgba(160,216,179,0.08);color:#a0d8b3;font-size:14px;cursor:pointer;margin-bottom:10px;font-family:inherit;" id="pickBtn">
+      🎯 在地图上选点
+    </button>
+
+    <input type="text" id="gmapsInput" placeholder="或粘贴 Google Maps 链接（可选）" style="margin-bottom:10px;">
+    <button type="button" onclick="parseGmapsLink()" style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:#ccc;font-size:13px;cursor:pointer;margin-bottom:10px;font-family:inherit;">
+      🔗 解析链接
+    </button>
+
+    <div class="coord-row">
+      <input type="text" id="latInput" placeholder="纬度" readonly>
+      <input type="text" id="lngInput" placeholder="经度" readonly>
     </div>
 
     <div class="form-actions">
@@ -170,73 +258,67 @@
     </div>
   </div>
 
-  <!-- 店铺列表 -->
-  <div id="shopList"></div>
+  <div id="shopList"><div class="empty-state">加载中...</div></div>
 
   <div class="tip-box">
-    💡 提示：地址栏尽量写得详细（街道 + 城市），系统会自动帮你在地图上定位。地址越准，定位越准。
+    💡 地图上的 🟢 绿点是推荐，🔴 红点是避雷。点卡片可以在地图上定位，点「导航」直接打开 Google Maps。
   </div>
 
 </div>
 
 <script>
-  // ===== 智能返回 =====
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      location.href = '/?tab=tools';
-    }
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/?tab=tools';
   }
 
-  // ===== 初始化地图 =====
-  const map = L.map('map').setView([40.4168, -3.7038], 12);
+  var el = function(id) { return document.getElementById(id); };
+
+  var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  var CAT_ICON = {
+    '中餐': '🥢', '奶茶': '🧋', '咖啡': '☕', '西餐': '🍝',
+    '甜品': '🍰', '超市': '🛒', '其他': '🍽️'
+  };
+
+  // ===== 地图初始化 =====
+  var map = L.map('map').setView([40.4168, -3.7038], 12);
 
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap',
     maxZoom: 19
   }).addTo(map);
 
-  // 存储所有店铺（现在是本地数组，等接数据库时替换）
-  let shops = [
-    {
-      id: 1,
-      name: '小四川中餐馆',
-      address: 'Calle Gran Vía 1, Madrid',
-      city: '马德里',
-      category: '中餐',
-      description: '味道很正，老板娘热情。',
-      latitude: 40.4200,
-      longitude: -3.7050,
-      isRecommend: true,
-      reviews: []
-    },
-    {
-      id: 2,
-      name: '某奶茶店',
-      address: 'Calle Fuencarral 50, Madrid',
-      city: '马德里',
-      category: '奶茶',
-      description: '太贵了，味道一般。',
-      latitude: 40.4220,
-      longitude: -3.7020,
-      isRecommend: false,
-      reviews: []
+  var shops = [];
+  var markers = [];
+  var pickMode = false;
+  var pickMarker = null;
+
+  // ===== 加载店铺 =====
+  async function loadShops() {
+    try {
+      var r = await fetch('/api/shops?t=' + Date.now());
+      var d = await r.json();
+      if (Array.isArray(d)) {
+        shops = d;
+      } else {
+        shops = [];
+      }
+    } catch (e) {
+      shops = [];
     }
-  ];
+    renderShops();
+  }
 
-  let markers = [];
-
-  // ===== 渲染店铺 =====
+  // ===== 渲染 =====
   function renderShops() {
-    markers.forEach(m => map.removeLayer(m));
+    markers.forEach(function(m) { map.removeLayer(m); });
     markers = [];
 
-    shops.forEach(s => {
-      const color = s.isRecommend ? 'green' : 'red';
-
-      const marker = L.circleMarker([s.latitude, s.longitude], {
+    shops.forEach(function(s) {
+      var color = s.is_recommend ? '#2ecc71' : '#e74c3c';
+      var marker = L.circleMarker([s.latitude, s.longitude], {
         radius: 9,
         color: color,
         fillColor: color,
@@ -244,99 +326,250 @@
         weight: 2
       }).addTo(map);
 
-      const popupHtml = `
-        <div style="font-family: sans-serif; min-width: 180px;">
-          <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">${s.name}</div>
-          <div style="font-size: 12px; color: #888; margin-bottom: 6px;">${s.city} · ${s.category}</div>
-          <div style="font-size: 13px; margin-bottom: 6px;">${s.description}</div>
-          <div style="font-size: 12px; color: ${s.isRecommend ? '#2ecc71' : '#e74c3c'};">
-            ${s.isRecommend ? '👍 推荐' : '👎 避雷'}
-          </div>
-        </div>
-      `;
+      var popupHtml =
+        '<div style="font-family: sans-serif; min-width: 180px;">' +
+        '<div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">' + escapeHtml(s.name) + '</div>' +
+        '<div style="font-size: 12px; color: #888; margin-bottom: 6px;">' + escapeHtml(s.city || '') + ' · ' + escapeHtml(s.category || '') + '</div>' +
+        '<div style="font-size: 13px; margin-bottom: 6px;">' + escapeHtml(s.description || '') + '</div>' +
+        '<div style="font-size: 12px; color: ' + (s.is_recommend ? '#2ecc71' : '#e74c3c') + ';">' +
+        (s.is_recommend ? '👍 推荐' : '👎 避雷') +
+        '</div></div>';
       marker.bindPopup(popupHtml);
       markers.push(marker);
     });
 
-    const list = document.getElementById('shopList');
+    var list = el('shopList');
+    if (shops.length === 0) {
+      list.innerHTML = '<div class="empty-state">还没有人推荐店铺<br>点上面「➕ 推荐一家店」开始吧</div>';
+      return;
+    }
+
     list.innerHTML = '';
-    shops.forEach(s => {
-      const card = document.createElement('div');
+    shops.forEach(function(s) {
+      var icon = CAT_ICON[s.category] || '🍽️';
+      var badgeClass = s.is_recommend ? 'rec' : 'avoid';
+      var badgeText = s.is_recommend ? '👍 推荐' : '👎 避雷';
+      var canDelete = (s.user_email || '').toLowerCase() === MY_EMAIL;
+
+      var card = document.createElement('div');
       card.className = 'shop-card';
-      card.innerHTML = `
-        <div class="shop-name">${s.name}</div>
-        <div class="shop-meta">${s.city} · ${s.category}</div>
-        <div class="shop-desc">${s.description}</div>
-        <div class="shop-reactions">${s.isRecommend ? '👍 推荐' : '👎 避雷'}</div>
-      `;
-      card.onclick = () => {
+
+      card.innerHTML =
+        '<div class="shop-header">' +
+          '<div class="shop-cat-icon">' + icon + '</div>' +
+          '<div class="shop-title-wrap">' +
+            '<div class="shop-name">' + escapeHtml(s.name) + '</div>' +
+            '<div class="shop-meta">' + escapeHtml(s.city || '') + ' · ' + escapeHtml(s.category || '') + '</div>' +
+          '</div>' +
+          '<div class="shop-badge ' + badgeClass + '">' + badgeText + '</div>' +
+        '</div>' +
+        (s.description ? '<div class="shop-desc">' + escapeHtml(s.description) + '</div>' : '') +
+        '<div class="shop-actions">' +
+          '<button class="btn-nav" data-nav="' + s.id + '">🧭 导航</button>' +
+          (canDelete ? '<button class="btn-del" data-del="' + s.id + '">删除</button>' : '') +
+        '</div>';
+
+      // 点卡片 → 地图定位
+      card.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON') return;
         if (navigator.vibrate) navigator.vibrate(10);
         map.flyTo([s.latitude, s.longitude], 16, { duration: 0.8 });
-      };
+      });
+
       list.appendChild(card);
+    });
+
+    // 绑定导航 / 删除
+    list.querySelectorAll('[data-nav]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var id = btn.getAttribute('data-nav');
+        var s = shops.filter(function(x) { return String(x.id) === String(id); })[0];
+        if (!s) return;
+        if (navigator.vibrate) navigator.vibrate(10);
+        openGoogleMaps(s.latitude, s.longitude, s.name);
+      });
+    });
+    list.querySelectorAll('[data-del]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var id = btn.getAttribute('data-del');
+        deleteShop(id);
+      });
     });
   }
 
-  renderShops();
+  // ===== Google Maps 导航 =====
+  function openGoogleMaps(lat, lng, name) {
+    var url = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng;
+    if (name) url += '&destination_place_id=&travelmode=walking';
+    window.open(url, '_blank');
+  }
+
+  // ===== 删除 =====
+  async function deleteShop(id) {
+    if (!MY_EMAIL) { alert('请先登录'); return; }
+    if (!confirm('确定删除这家店吗？')) return;
+    try {
+      var r = await fetch('/api/shops/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, email: MY_EMAIL })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      await loadShops();
+    } catch (e) { alert('网络错误'); }
+  }
 
   // ===== 发布表单 =====
   function togglePublish() {
     if (navigator.vibrate) navigator.vibrate(10);
-    document.getElementById('publishForm').classList.toggle('show');
+    el('publishForm').classList.toggle('show');
+    if (!el('publishForm').classList.contains('show')) {
+      exitPickMode();
+    }
   }
 
-  // ===== 提交店铺（调 Nominatim 拿经纬度） =====
-  async function submitShop() {
-    const name = document.getElementById('shopName').value.trim();
-    const address = document.getElementById('shopAddress').value.trim();
-    const city = document.getElementById('shopCity').value;
-    const category = document.getElementById('shopCategory').value;
-    const desc = document.getElementById('shopDesc').value.trim();
-    const rec = document.querySelector('input[name="rec"]:checked').value === 'recommend';
+  // ===== 地图选点模式 =====
+  function enterPickMode() {
+    pickMode = true;
+    el('pickBtn').textContent = '🎯 点击地图选点中...（再点取消）';
+    el('pickBtn').style.background = 'rgba(160,216,179,0.2)';
+    map.getContainer().style.cursor = 'crosshair';
 
-    if (!name || !address) {
-      alert('店名和地址不能为空');
-      return;
+    // 把地图移到用户当前位置附近（不强求）
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        map.flyTo([pos.coords.latitude, pos.coords.longitude], 15, { duration: 0.6 });
+      }, function() {}, { timeout: 3000 });
     }
+
+    // 只在选点模式时响应地图点击
+    map.off('click', onMapClick);
+    map.on('click', onMapClick);
+  }
+
+  function exitPickMode() {
+    pickMode = false;
+    el('pickBtn').textContent = '🎯 在地图上选点';
+    el('pickBtn').style.background = 'rgba(160,216,179,0.08)';
+    map.getContainer().style.cursor = '';
+    map.off('click', onMapClick);
+  }
+
+  function onMapClick(e) {
+    if (!pickMode) return;
+    var lat = e.latlng.lat.toFixed(6);
+    var lng = e.latlng.lng.toFixed(6);
+    el('latInput').value = lat;
+    el('lngInput').value = lng;
+
+    if (pickMarker) map.removeLayer(pickMarker);
+    pickMarker = L.marker([lat, lng]).addTo(map);
+
+    if (navigator.vibrate) navigator.vibrate(15);
+    exitPickMode();
+  }
+
+  // ===== 解析 Google Maps 链接 =====
+  function parseGmapsLink() {
+    var url = el('gmapsInput').value.trim();
+    if (!url) { alert('请粘贴 Google Maps 链接'); return; }
+
+    // 常见格式：
+    // https://www.google.com/maps/@40.4168,-3.7038,15z
+    // https://www.google.com/maps/place/xxx/@40.4168,-3.7038,17z
+    // https://maps.google.com/?q=40.4168,-3.7038
+    // https://www.google.com/maps/search/?api=1&query=40.4168,-3.7038
+    var lat = null, lng = null;
+
+    // 格式 1：@lat,lng
+    var m1 = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+    if (m1) { lat = m1[1]; lng = m1[2]; }
+
+    // 格式 2：?q=lat,lng 或 query=lat,lng
+    if (!lat) {
+      var m2 = url.match(/[?&](?:q|query)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+      if (m2) { lat = m2[1]; lng = m2[2]; }
+    }
+
+    if (lat && lng) {
+      el('latInput').value = parseFloat(lat).toFixed(6);
+      el('lngInput').value = parseFloat(lng).toFixed(6);
+      if (pickMarker) map.removeLayer(pickMarker);
+      pickMarker = L.marker([lat, lng]).addTo(map);
+      map.flyTo([lat, lng], 16, { duration: 0.8 });
+      if (navigator.vibrate) navigator.vibrate(15);
+    } else {
+      alert('无法从链接中解析经纬度。\n\n请在地图页面长按位置 → 复制坐标，或者改用「在地图上选点」。');
+    }
+  }
+
+  // ===== 提交 =====
+  async function submitShop() {
+    var name = el('shopName').value.trim();
+    var address = el('shopAddress').value.trim();
+    var city = el('shopCity').value;
+    var category = el('shopCategory').value;
+    var desc = el('shopDesc').value.trim();
+    var rec = document.querySelector('input[name="rec"]:checked').value === 'recommend';
+    var lat = el('latInput').value.trim();
+    var lng = el('lngInput').value.trim();
+
+    if (!name) { alert('请填店名'); return; }
+    if (!lat || !lng) { alert('请先在地图上选点，或粘贴 Google Maps 链接'); return; }
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
 
     if (navigator.vibrate) navigator.vibrate(15);
 
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
     try {
-      const resp = await fetch(url, {
-        headers: { 'User-Agent': 'spain-student-hub' }
+      var r = await fetch('/api/shops/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          name: name,
+          address: address,
+          city: city,
+          category: category,
+          description: desc,
+          latitude: parseFloat(lat),
+          longitude: parseFloat(lng),
+          is_recommend: rec
+        })
       });
-      const data = await resp.json();
+      var d = await r.json();
+      if (d.error) { alert('发布失败：' + d.error); return; }
 
-      if (!data || data.length === 0) {
-        alert('找不到这个地址，请写得更详细');
-        return;
-      }
+      // 清空表单
+      el('shopName').value = '';
+      el('shopAddress').value = '';
+      el('shopCity').value = '';
+      el('shopCategory').value = '';
+      el('shopDesc').value = '';
+      el('latInput').value = '';
+      el('lngInput').value = '';
+      el('gmapsInput').value = '';
+      if (pickMarker) { map.removeLayer(pickMarker); pickMarker = null; }
 
-      const lat = parseFloat(data[0].lat);
-      const lng = parseFloat(data[0].lon);
-
-      shops.push({
-        id: Date.now(),
-        name: name,
-        address: address,
-        city: city,
-        category: category,
-        description: desc,
-        latitude: lat,
-        longitude: lng,
-        isRecommend: rec,
-        reviews: []
-      });
-
-      renderShops();
       togglePublish();
-      map.flyTo([lat, lng], 16, { duration: 0.8 });
-      alert('✅ 已添加。\n\n等接上 Supabase 后，这里会真的写入 shops 表。');
+      await loadShops();
+      map.flyTo([parseFloat(lat), parseFloat(lng)], 16, { duration: 0.8 });
     } catch (e) {
-      alert('查询地址失败，请检查网络或稍后重试');
+      alert('网络错误，请稍后重试');
     }
   }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ===== 启动 =====
+  loadShops();
 </script>
 <script src="/static/js/auth-gate.js"></script>
 </body>

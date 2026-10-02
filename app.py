@@ -911,7 +911,70 @@ def api_market_view():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================================
+#                        探店地图
+# ==========================================================
+@app.route("/api/shops")
+def api_shops_list():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    try:
+        result = (
+            supabase.table("shops")
+            .select("*")
+            .order("created_at", desc=True)
+            .limit(500)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+
+@app.route("/api/shops/add", methods=["POST"])
+def api_shops_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip()
+    name = data.get("name", "").strip()
+    lat = data.get("latitude")
+    lng = data.get("longitude")
+    if not email or not name or lat is None or lng is None:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("shops").insert({
+            "user_email": email,
+            "name": name,
+            "address": data.get("address", ""),
+            "city": data.get("city", ""),
+            "category": data.get("category", ""),
+            "description": data.get("description", ""),
+            "latitude": float(lat),
+            "longitude": float(lng),
+            "is_recommend": bool(data.get("is_recommend", True)),
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/shops/delete", methods=["POST"])
+def api_shops_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    shop_id = data.get("id")
+    email = data.get("email", "").strip()
+    if not shop_id or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 只能删自己的
+        supabase.table("shops").delete().eq("id", shop_id).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 # ==========================================================
 #                        社区
 # ==========================================================
