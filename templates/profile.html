@@ -212,30 +212,24 @@
     <button class="primary-btn" onclick="saveProfile()">💾 保存资料</button>
   </div>
 
-  <div class="section-card">
-    <div class="section-title">💎 会员状态</div>
-    <div class="member-row">
-      <div class="member-box">
-        <div class="label">当前等级</div>
-        <div class="value">免费用户</div>
-      </div>
-      <div class="member-box">
-        <div class="label">AI 分析次数</div>
-        <div class="value">0 / 3</div>
-      </div>
+<div class="section-card">
+  <div class="section-title">💎 会员状态</div>
+  <div class="member-row">
+    <div class="member-box">
+      <div class="label">当前等级</div>
+      <div class="value" id="vipLevelText">加载中...</div>
     </div>
-
-    <div class="vip-mini-card" onclick="location.href='/vip'">
-      <div class="vip-icon">👑</div>
-      <div class="vip-text">
-        <div class="vip-title">VIP 会员</div>
-        <div class="vip-sub">解锁全部高级功能，首月 €1</div>
-      </div>
-      <div class="vip-arrow">→</div>
+    <div class="member-box">
+      <div class="label">AI 分析次数</div>
+      <div class="value" id="vipUsageText">—</div>
     </div>
-
-    <div class="tip-box">升级到会员，解锁无限次 AI 分析和历史记录保存功能。</div>
   </div>
+  <div class="card" id="vipUpsellCard" onclick="location.href='/vip'">
+    <h3>👑 VIP 会员</h3>
+    <p>解锁全部高级功能，首月 €1。</p>
+  </div>
+  <div class="tip-box" id="vipTipBox">升级到会员，解锁所有功能和ai分析</div>
+</div>
 
 </div>
 
@@ -373,6 +367,70 @@
     } catch (e) {}
   }
 
+
+  async function loadVipStatus() {
+  const email = localStorage.getItem('user_email') || '';
+  if (!email) return;
+
+  try {
+    // 1. 查 VIP 状态
+    const resp = await fetch('/api/vip/status?email=' + encodeURIComponent(email) + '&t=' + Date.now());
+    const data = await resp.json();
+
+    const levelEl = document.getElementById('vipLevelText');
+    const upsellCard = document.getElementById('vipUpsellCard');
+    const tipBox = document.getElementById('vipTipBox');
+    const usageEl = document.getElementById('vipUsageText');
+
+    if (data.is_vip) {
+      // 是 VIP
+      levelEl.textContent = '👑 VIP';
+      levelEl.style.color = '#f4b8d0';
+      usageEl.textContent = '无限';
+      usageEl.style.color = '#f4b8d0';
+      // 隐藏升级引导
+      if (upsellCard) upsellCard.style.display = 'none';
+      if (tipBox) {
+        let expireText = 'VIP 有效中';
+        if (data.expire_at) {
+          try {
+            const d = new Date(data.expire_at);
+            expireText = '有效期至 ' + d.toLocaleDateString('zh-CN');
+          } catch (e) {}
+        }
+        tipBox.textContent = '✅ ' + expireText;
+        tipBox.style.color = '#a0d8b3';
+      }
+    } else {
+      // 不是 VIP
+      levelEl.textContent = '免费用户';
+      levelEl.style.color = '';
+      if (upsellCard) upsellCard.style.display = '';
+      if (tipBox) {
+        tipBox.textContent = '升级到会员，解锁无限次 AI 分析和历史记录保存功能。';
+        tipBox.style.color = '';
+      }
+      // 查 AI 检测剩余次数
+      try {
+        const uResp = await fetch('/api/vip/check_usage?email=' + encodeURIComponent(email) + '&feature=ai_detect');
+        const uData = await uResp.json();
+        if (uData.is_vip) {
+          usageEl.textContent = '无限';
+        } else if (uData.remaining !== undefined) {
+          usageEl.textContent = uData.remaining + ' / ' + uData.limit;
+        } else {
+          usageEl.textContent = '0 / 3';
+        }
+      } catch (e) {
+        usageEl.textContent = '0 / 3';
+      }
+    }
+  } catch (e) {
+    console.error('查询 VIP 状态失败', e);
+  }
+}
+
+
   // ===== 保存资料 =====
   async function saveProfile() {
     const nickname = document.getElementById('nicknameInput').value.trim();
@@ -406,6 +464,7 @@
   }
 
   loadProfile();
+  loadVipStatus();
 </script>
 <script src="/static/js/user-info.js"></script>
 </body>
