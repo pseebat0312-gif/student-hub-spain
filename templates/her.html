@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Girl's Room</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  #topBar {
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08);
+    border: none; color: #fff; font-size: 18px;
+    width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title {
+    font-size: 16px; font-weight: bold;
+    color: #f4b8d0; flex: 1;
+  }
+
+  #content { padding: 10px 20px 40px; }
+
+  .top-tabs {
+    display: flex; gap: 6px; margin-bottom: 18px;
+    background: rgba(255,255,255,0.04);
+    padding: 5px; border-radius: 999px;
+  }
+  .top-tab {
+    flex: 1; padding: 11px;
+    border-radius: 999px;
+    border: none; background: transparent;
+    color: #888; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .top-tab.active {
+    background: linear-gradient(135deg, #f4b8d0, #e08aa8);
+    color: #1a0f14;
+    font-weight: 700;
+  }
+  .top-tab:active { transform: scale(0.96); }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 14px;
+  }
+  .section-title {
+    font-size: 15px; font-weight: 700;
+    color: #f4b8d0;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .cycle-hero {
+    text-align: center;
+    padding: 24px 20px;
+    background: linear-gradient(135deg, rgba(244,184,208,0.14), rgba(224,138,168,0.06));
+    border: 1px solid rgba(244,184,208,0.28);
+    border-radius: 22px;
+    margin-bottom: 16px;
+  }
+  .cycle-hero .big {
+    font-size: 44px; font-weight: 900;
+    color: #f4b8d0;
+    line-height: 1;
+    letter-spacing: -1.5px;
+  }
+  .cycle-hero .lbl {
+    font-size: 12px; color: #a890a0;
+    margin-top: 8px;
+  }
+  .cycle-hero .sub {
+    font-size: 13px; color: #ccc;
+    margin-top: 12px; line-height: 1.6;
+  }
+
+  .btn-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .btn-pink {
+    flex: 1; padding: 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(244,184,208,0.3);
+    background: rgba(244,184,208,0.12);
+    color: #f4b8d0;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .btn-pink:active { transform: scale(0.96); }
+  .btn-pink.primary {
+    background: linear-gradient(135deg, #f4b8d0, #e08aa8);
+    color: #1a0f14; border: none;
+  }
+
+  .cycle-list { margin-top: 8px; }
+  .cycle-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .cycle-row .dates { color: #fff; }
+  .cycle-row .days { color: #888; font-size: 12px; }
+  .cycle-row .del {
+    background: none; border: none;
+    color: #666; font-size: 15px;
+    cursor: pointer; padding: 4px 8px;
+  }
+  .cycle-row .del:active { color: #ff6b6b; }
+
+  .cycle-empty {
+    text-align: center; padding: 30px;
+    color: #666; font-size: 13px;
+  }
+
+  .pain-slider-wrap { text-align: center; padding: 20px 0 8px; }
+  .pain-level-big {
+    font-size: 72px; font-weight: 900;
+    line-height: 1;
+    letter-spacing: -3px;
+    margin-bottom: 6px;
+    transition: color 0.3s;
+  }
+  .pain-level-lbl {
+    font-size: 12px; color: #888;
+    margin-bottom: 20px;
+    letter-spacing: 2px;
+  }
+  .pain-slider {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #7ad19f, #ffc400, #ff8b95, #c0392b);
+    outline: none;
+    margin-bottom: 24px;
+  }
+  .pain-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 3px solid #0f0c29;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  }
+  .pain-tips {
+    background: rgba(255,255,255,0.04);
+    border-radius: 16px;
+    padding: 18px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #ddd;
+    min-height: 100px;
+    text-align: left;
+  }
+  .pain-tips b { color: #f4b8d0; }
+  .pain-tips ul { padding-left: 20px; margin-top: 6px; }
+  .pain-tips li { margin-bottom: 4px; }
+
+  .group-switch {
+    display: flex; gap: 6px; margin-bottom: 14px;
+    background: rgba(255,255,255,0.04);
+    padding: 4px; border-radius: 999px;
+  }
+  .group-switch .sw-btn {
+    flex: 1; padding: 10px;
+    border-radius: 999px; border: none;
+    background: transparent; color: #888;
+    font-size: 13px; font-weight: 600; cursor: pointer;
+    font-family: inherit;
+  }
+  .group-switch .sw-btn.active {
+    background: rgba(244,184,208,0.18);
+    color: #f4b8d0;
+  }
+
+  .group-tabs {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    margin-bottom: 14px;
+  }
+  .group-tabs::-webkit-scrollbar { display: none; }
+  .group-chip {
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: #ccc; font-size: 13px;
+    white-space: nowrap; cursor: pointer;
+    font-family: inherit;
+  }
+  .group-chip.active {
+    background: linear-gradient(135deg, #f4b8d0, #e08aa8);
+    color: #1a0f14; border: none;
+    font-weight: 700;
+  }
+  .group-chip:active { transform: scale(0.95); }
+
+  .member-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .member-card {
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 14px 8px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .member-card:active { transform: scale(0.95); background: rgba(244,184,208,0.1); }
+  .member-card .emoji {
+    font-size: 34px; margin-bottom: 8px; line-height: 1;
+  }
+  .member-card .name {
+    font-size: 12px; font-weight: 600;
+    color: #fff; text-align: center;
+  }
+  .member-card.added {
+    border-color: rgba(244,184,208,0.4);
+    background: rgba(244,184,208,0.08);
+  }
+  .member-card.added .name::after {
+    content: ' ♥';
+    color: #f4b8d0;
+  }
+
+  .my-idols-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .idol-card {
+    display: flex; flex-direction: column;
+    align-items: center;
+    padding: 14px 8px 12px;
+    background: rgba(244,184,208,0.06);
+    border: 1px solid rgba(244,184,208,0.2);
+    border-radius: 16px;
+    cursor: pointer;
+    position: relative;
+  }
+  .idol-card:active { transform: scale(0.95); }
+  .idol-card .avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: rgba(244,184,208,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    margin-bottom: 8px;
+    overflow: hidden;
+    border: 2px solid rgba(244,184,208,0.4);
+  }
+  .idol-card .avatar img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .idol-card .nick {
+    font-size: 12px; font-weight: 700;
+    color: #f4b8d0; text-align: center;
+    margin-bottom: 2px;
+    line-height: 1.3;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .idol-card .real {
+    font-size: 10px; color: #888;
+    text-align: center;
+  }
+
+  .empty-idols {
+    text-align: center; padding: 40px 20px;
+    color: #666; font-size: 13px;
+  }
+
+  .edit-modal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .edit-modal.show { display: flex; }
+  .edit-card {
+    width: 100%; max-width: 380px;
+    background: #1c1c1e;
+    border-radius: 24px;
+    padding: 24px 22px;
+    border: 1px solid rgba(244,184,208,0.2);
+    max-height: 88vh;
+    overflow-y: auto;
+  }
+  .edit-card h3 {
+    font-size: 17px; font-weight: 800;
+    color: #f4b8d0; margin-bottom: 20px;
+    text-align: center;
+  }
+  .edit-avatar {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: rgba(244,184,208,0.12);
+    border: 2px solid rgba(244,184,208,0.4);
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .edit-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .edit-label {
+    font-size: 12px; color: #888;
+    margin-bottom: 8px; margin-top: 14px;
+  }
+  .edit-input {
+    width: 100%; padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px;
+    outline: none; font-family: inherit;
+  }
+  .edit-input:focus { border-color: rgba(244,184,208,0.4); }
+
+  .emoji-picker {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 6px;
+    margin-top: 8px;
+    margin-bottom: 16px;
+  }
+  .emoji-pick {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid transparent;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; cursor: pointer;
+    transition: 0.15s;
+  }
+  .emoji-pick:active { transform: scale(0.9); }
+  .emoji-pick.selected {
+    border-color: #f4b8d0;
+    background: rgba(244,184,208,0.15);
+  }
+
+  .edit-actions {
+    display: flex; gap: 10px; margin-top: 16px;
+  }
+  .edit-actions button {
+    flex: 1; padding: 14px;
+    border-radius: 14px; border: none;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+  .edit-actions .cancel {
+    background: rgba(255,255,255,0.08); color: #ccc;
+  }
+  .edit-actions .save {
+    background: linear-gradient(135deg, #f4b8d0, #e08aa8);
+    color: #1a0f14;
+  }
+  .edit-actions .delete {
+    background: rgba(255,107,107,0.12);
+    color: #ff6b6b;
+    border: 1px solid rgba(255,107,107,0.3);
+  }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">Girl's Room</div>
+</div>
+
+<div id="content">
+
+  <div class="top-tabs">
+    <button class="top-tab active" data-tab="cycle" onclick="switchTop('cycle', this)">🩸 经期</button>
+    <button class="top-tab" data-tab="pain" onclick="switchTop('pain', this)">💊 急救</button>
+    <button class="top-tab" data-tab="idols" onclick="switchTop('idols', this)">⭐ 心肝</button>
+  </div>
+
+  <!-- ============ 经期 ============ -->
+  <div class="panel active" id="panel-cycle">
+
+    <div class="cycle-hero">
+      <div class="big" id="cycleBig">--</div>
+      <div class="lbl" id="cycleLbl">还没有记录</div>
+      <div class="sub" id="cycleSub">记录第一次月经，帮你看周期</div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">📅 记录这次月经</div>
+      <div class="edit-label">开始日期</div>
+      <input type="date" class="edit-input" id="cycleStart" style="margin-bottom:12px;">
+      <div class="edit-label">结束日期（可留空）</div>
+      <input type="date" class="edit-input" id="cycleEnd" style="margin-bottom:16px;">
+      <div class="btn-row">
+        <button class="btn-pink primary" onclick="addCycle()">＋ 添加记录</button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">📜 历史记录</div>
+      <div class="cycle-list" id="cycleList">
+        <div class="cycle-empty">还没有记录</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ 急救 ============ -->
+  <div class="panel" id="panel-pain">
+    <div class="section-card">
+      <div class="section-title">💊 你现在有多疼？</div>
+      <div class="pain-slider-wrap">
+        <div class="pain-level-big" id="painLevelBig" style="color:#7ad19f;">1</div>
+        <div class="pain-level-lbl">疼 痛 等 级</div>
+        <input type="range" min="1" max="10" value="1" class="pain-slider" id="painSlider" oninput="updatePain(this.value)">
+      </div>
+      <div class="pain-tips" id="painTips"></div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-title">💡 小提醒</div>
+      <div style="font-size:13px;color:#bbb;line-height:1.9;">
+        · 布洛芬建议饭后吃，胃不好先垫点东西<br>
+        · 热敷下腹 15-20 分钟，比喝热水更有效<br>
+        · 7 级以上、持续超过 2 天，建议去看医生<br>
+        · 痛经严重可能是子宫内膜异位，别硬扛
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 心肝 ============ -->
+  <div class="panel" id="panel-idols">
+
+    <div class="section-card">
+      <div class="section-title">💗 我的心肝们</div>
+      <div class="my-idols-grid" id="myIdolsGrid">
+        <div class="empty-idols" style="grid-column: 1 / -1;">还没有心肝，去下面选一个吧</div>
+      </div>
+    </div>
+
+    <div class="group-switch">
+      <button class="sw-btn active" data-gender="boy" onclick="switchGender('boy', this)">👦 男团</button>
+      <button class="sw-btn" data-gender="girl" onclick="switchGender('girl', this)">👧 女团</button>
+    </div>
+
+    <div class="group-tabs" id="groupTabs"></div>
+    <div class="member-grid" id="memberGrid"></div>
+
+  </div>
+
+</div>
+
+<!-- ============ 编辑心肝弹窗 ============ -->
+<div class="edit-modal" id="editModal">
+  <div class="edit-card">
+    <h3 id="editTitle">编辑心肝</h3>
+
+    <div class="edit-avatar" id="editAvatar" onclick="document.getElementById('editAvatarFile').click()">
+      🐱
+    </div>
+    <input type="file" id="editAvatarFile" accept="image/*" style="display:none" onchange="onEditAvatarUpload(event)">
+    <div style="font-size:11px;color:#666;text-align:center;margin-bottom:8px;">点击头像上传图片</div>
+
+    <div class="edit-label">或者选一个 emoji</div>
+    <div class="emoji-picker" id="emojiPicker"></div>
+
+    <div class="edit-label">给他起的昵称</div>
+    <input type="text" class="edit-input" id="editNickname" placeholder="比如：小熊、我宝、老公" maxlength="20">
+
+    <div class="edit-actions">
+      <button class="cancel" onclick="closeEdit()">取消</button>
+      <button class="save" onclick="saveIdolEdit()">保存</button>
+    </div>
+    <div class="edit-actions" style="margin-top:10px;">
+      <button class="delete" id="editDeleteBtn" onclick="deleteIdol()">从我的心肝里移除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  // ==================== 返回 ====================
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/';
+  }
+
+  // ==================== 顶部 Tab ====================
+  function switchTop(tab, el) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+    document.querySelectorAll('.top-tab').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    if (tab === 'idols') loadMyIdols();
+  }
+
+  // ==========================================================
+  //                        经期追踪
+  // ==========================================================
+  async function loadCycles() {
+    if (!MY_EMAIL) return [];
+    try {
+      const resp = await fetch('/api/her_cycles?email=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      return Array.isArray(data) ? data : [];
+    } catch (e) { return []; }
+  }
+
+  async function addCycle() {
+    const start = document.getElementById('cycleStart').value;
+    const end = document.getElementById('cycleEnd').value || null;
+    if (!start) { alert('请选择开始日期'); return; }
+    if (!MY_EMAIL) { alert('请先登录'); return; }
+    if (navigator.vibrate) navigator.vibrate(12);
+    try {
+      const resp = await fetch('/api/her_cycles/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, start_date: start, end_date: end })
+      });
+      const data = await resp.json();
+      if (data.error) { alert('保存失败：' + data.error); return; }
+    } catch (e) { alert('网络错误'); return; }
+    document.getElementById('cycleStart').value = '';
+    document.getElementById('cycleEnd').value = '';
+    await renderCycles();
+  }
+
+  async function deleteCycle(id) {
+    if (!confirm('删除这条记录？')) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      await fetch('/api/her_cycles/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, email: MY_EMAIL })
+      });
+    } catch (e) {}
+    await renderCycles();
+  }
+
+  async function renderCycles() {
+    const records = await loadCycles();
+    const big = document.getElementById('cycleBig');
+    const lbl = document.getElementById('cycleLbl');
+    const sub = document.getElementById('cycleSub');
+    const list = document.getElementById('cycleList');
+
+    if (records.length === 0) {
+      big.textContent = '--';
+      lbl.textContent = '还没有记录';
+      sub.textContent = '记录第一次月经，帮你看周期';
+      list.innerHTML = '<div class="cycle-empty">还没有记录</div>';
+      return;
+    }
+
+    // 预测下次
+    let avgCycle = 28;
+    if (records.length >= 2) {
+      let total = 0, count = 0;
+      for (let i = 1; i < records.length; i++) {
+        const d1 = new Date(records[i - 1].start_date);
+        const d2 = new Date(records[i].start_date);
+        const days = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+        if (days > 15 && days < 60) { total += days; count++; }
+      }
+      if (count > 0) avgCycle = Math.round(total / count);
+    }
+
+    const last = records[records.length - 1];
+    const lastDate = new Date(last.start_date);
+    const nextDate = new Date(lastDate.getTime() + avgCycle * 24 * 60 * 60 * 1000);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffDays = Math.round((nextDate - today) / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      big.textContent = diffDays;
+      lbl.textContent = '天后预计来';
+      sub.textContent = `预计 ${nextDate.toISOString().slice(0, 10)} · 平均周期 ${avgCycle} 天`;
+    } else if (diffDays === 0) {
+      big.textContent = '今天';
+      lbl.textContent = '预计今天来';
+      sub.textContent = `上次 ${last.start_date} 开始`;
+    } else {
+      big.textContent = Math.abs(diffDays);
+      lbl.textContent = '天前预计来的';
+      sub.textContent = `还没记录新的？记得补上`;
+    }
+
+    // 列表
+    list.innerHTML = '';
+    records.slice().reverse().forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'cycle-row';
+      const days = r.end_date
+        ? Math.round((new Date(r.end_date) - new Date(r.start_date)) / (1000 * 60 * 60 * 24)) + 1
+        : '未结束';
+      row.innerHTML = `
+        <div>
+          <div class="dates">${r.start_date}${r.end_date ? ' → ' + r.end_date : ''}</div>
+          <div class="days">持续 ${days} 天</div>
+        </div>
+        <button class="del" onclick="deleteCycle(${r.id})">✕</button>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  // ==========================================================
+  //                        痛经急救
+  // ==========================================================
+  const painAdvice = {
+    1: `<b>1 级 · 微微感觉</b><br>基本可以忽略。多喝点温水，别碰冰的。`,
+    2: `<b>2 级 · 有点不舒服</b><br>暖宝宝贴在下腹。今天别穿紧身裤。<br><ul><li>喝点红糖姜茶</li><li>走两步，别一直坐着</li></ul>`,
+    3: `<b>3 级 · 轻微痛</b><br>热敷 15-20 分钟。<br><ul><li>热水袋 / 暖宝宝</li><li>奶茶改热可可，咖啡少喝</li><li>早点睡</li></ul>`,
+    4: `<b>4 级 · 明显痛</b><br>可以吃布洛芬了。<br><ul><li>饭后吃，别空腹</li><li>躺平，腿弯起来</li><li>热敷下腹，别敷腰</li></ul>`,
+    5: `<b>5 级 · 影响生活</b><br>布洛芬 + 卧床。<br><ul><li>别硬撑去上课，请假</li><li>热水澡 10 分钟</li><li>小口小口喝温水</li></ul>`,
+    6: `<b>6 级 · 比较难受</b><br>按医嘱吃止痛药。今天别安排任何事。<br><ul><li>暖宝宝 + 热水袋双管齐下</li><li>放松音乐 / 追剧分散注意力</li><li>让朋友知道你今天不舒服</li></ul>`,
+    7: `<b>7 级 · 很痛</b><br>躺下休息。止痛药 6 小时可以再补一次，别超量。<br><ul><li>别吃凉的、别吹空调</li><li>用手掌顺时针揉小腹</li><li>症状超 2 天去医院</li></ul>`,
+    8: `<b>8 级 · 剧痛</b><br>不要再硬扛了。<br><ul><li>考虑联系朋友 / 家人</li><li>准备去急诊</li><li>备好病历本 + 医保卡</li></ul>`,
+    9: `<b>9 级 · 快撑不住</b><br><b>现在就去医院。</b><br><ul><li>打车 / 让朋友送</li><li>不要自己开车</li><li>把症状提前写在手机备忘录</li></ul>`,
+    10: `<b>10 级 · 极限疼痛</b><br><b>立即拨打 112（西班牙急救）。</b><br><ul><li>别犹豫，别硬撑</li><li>可能是宫外孕、卵巢囊肿破裂、内膜异位急性发作</li><li>告诉医生"经期剧痛 + 具体位置"</li></ul>`
+  };
+
+  function updatePain(v) {
+    v = parseInt(v);
+    const colors = { 1:'#7ad19f', 2:'#7ad19f', 3:'#a0d8b3', 4:'#ffc400', 5:'#ffc400', 6:'#ffb066', 7:'#ff8b95', 8:'#ff6b6b', 9:'#e74c3c', 10:'#c0392b' };
+    document.getElementById('painLevelBig').textContent = v;
+    document.getElementById('painLevelBig').style.color = colors[v] || '#fff';
+    document.getElementById('painTips').innerHTML = painAdvice[v] || '';
+  }
+
+  // ==========================================================
+  //                        心肝数据
+  // ==========================================================
+  const IDOL_DATA = {
+    boy: {
+      BTS: [
+        { name: 'RM', emoji: '🐨' },
+        { name: 'Jin', emoji: '🐹' },
+        { name: 'SUGA', emoji: '🐈‍⬛' },
+        { name: 'j-hope', emoji: '🐿️' },
+        { name: 'Jimin', emoji: '🐥' },
+        { name: 'V', emoji: '🐻' },
+        { name: 'Jungkook', emoji: '🐰' }
+      ],
+      RIIZE: [
+        { name: 'Shotaro', emoji: '🐭' },
+        { name: 'Eunseok', emoji: '🪨' },
+        { name: 'Sungchan', emoji: '🦌' },
+        { name: 'Wonbin', emoji: '🐱' },
+        { name: 'Sohee', emoji: '💂' },
+        { name: 'Anton', emoji: '🐶' }
+      ],
+      ENHYPEN: [
+        { name: 'Jungwon', emoji: '🐱' },
+        { name: 'Jay', emoji: '🐈‍⬛' },
+        { name: 'Jake', emoji: '🐶' },
+        { name: 'Sunghoon', emoji: '🍙' },
+        { name: 'Sunoo', emoji: '🦊' },
+        { name: 'Ni-ki', emoji: '🦆' }
+      ]
+    },
+    girl: {
+      ITZY: [
+        { name: 'Yeji', emoji: '🐱' },
+        { name: 'Lia', emoji: '🐰' },
+        { name: 'Ryujin', emoji: '🐻' },
+        { name: 'Chaeryeong', emoji: '🦊' },
+        { name: 'Yuna', emoji: '🐥' }
+      ],
+      NMIXX: [
+        { name: 'Lily', emoji: '🐨' },
+        { name: 'Haewon', emoji: '🐻' },
+        { name: 'Sullyoon', emoji: '🦌' },
+        { name: 'Bae', emoji: '🐶' },
+        { name: 'Jiwoo', emoji: '🐶' },
+        { name: 'Kyujin', emoji: '🐱' }
+      ]
+    }
+  };
+
+  const EMOJI_OPTIONS = [
+    '🐱','🐶','🦊','🐼','🦆','🦁','🐯','🐨',
+    '🐰','🐹','🐻','🐺','🦌','🐿️','🐥','🐧',
+    '🌸','🌈','⭐','🌙','☀️','🍀','🎵','🍕',
+    '🍙','🐈‍⬛','🐭','🪨'
+  ];
+
+  let currentGender = 'boy';
+  let currentGroup = 'BTS';
+  let myIdols = [];
+  let editingIdol = null;
+  let editingAvatarUrl = '';
+  let editingEmoji = '';
+
+  // ==========================================================
+  //                        心肝列表
+  // ==========================================================
+  async function loadMyIdols() {
+    if (!MY_EMAIL) {
+      renderMyIdols([]);
+      return;
+    }
+    try {
+      const resp = await fetch('/api/her_idols?email=' + encodeURIComponent(MY_EMAIL));
+      myIdols = await resp.json();
+      if (!Array.isArray(myIdols)) myIdols = [];
+    } catch (e) { myIdols = []; }
+    renderMyIdols(myIdols);
+    renderGroups();
+    renderMembers();
+  }
+
+  function renderMyIdols(list) {
+    const grid = document.getElementById('myIdolsGrid');
+    if (!list || list.length === 0) {
+      grid.innerHTML = '<div class="empty-idols" style="grid-column: 1 / -1;">还没有心肝，去下面选一个吧</div>';
+      return;
+    }
+    grid.innerHTML = '';
+    list.forEach(idol => {
+      const div = document.createElement('div');
+      div.className = 'idol-card';
+      const avatarHtml = idol.avatar_url
+        ? `<img src="${idol.avatar_url}" alt="">`
+        : (idol.avatar_emoji || '💗');
+      const nick = idol.nickname || idol.member_name;
+      div.innerHTML = `
+        <div class="avatar">${avatarHtml}</div>
+        <div class="nick">${escapeHtml(nick)}</div>
+        <div class="real">${escapeHtml(idol.group_name)} · ${escapeHtml(idol.member_name)}</div>
+      `;
+      div.onclick = () => openEditIdol(idol);
+      grid.appendChild(div);
+    });
+  }
+
+  function renderGroups() {
+    const tabs = document.getElementById('groupTabs');
+    const groups = Object.keys(IDOL_DATA[currentGender]);
+    tabs.innerHTML = '';
+    groups.forEach(g => {
+      const chip = document.createElement('div');
+      chip.className = 'group-chip' + (g === currentGroup ? ' active' : '');
+      chip.textContent = g;
+      chip.onclick = () => {
+        currentGroup = g;
+        renderGroups();
+        renderMembers();
+      };
+      tabs.appendChild(chip);
+    });
+  }
+
+  function renderMembers() {
+    const grid = document.getElementById('memberGrid');
+    const members = IDOL_DATA[currentGender][currentGroup] || [];
+    grid.innerHTML = '';
+    members.forEach(m => {
+      const isAdded = myIdols.some(i => i.group_name === currentGroup && i.member_name === m.name);
+      const div = document.createElement('div');
+      div.className = 'member-card' + (isAdded ? ' added' : '');
+      div.innerHTML = `
+        <div class="emoji">${m.emoji}</div>
+        <div class="name">${escapeHtml(m.name)}</div>
+      `;
+      div.onclick = () => {
+        if (isAdded) {
+          const idol = myIdols.find(i => i.group_name === currentGroup && i.member_name === m.name);
+          if (idol) openEditIdol(idol);
+        } else {
+          addIdol(currentGroup, m.name, m.emoji);
+        }
+      };
+      grid.appendChild(div);
+    });
+  }
+
+  function switchGender(g, el) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    currentGender = g;
+    const groups = Object.keys(IDOL_DATA[g]);
+    currentGroup = groups[0];
+    document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderGroups();
+    renderMembers();
+  }
+
+  async function addIdol(group, member, emoji) {
+    if (!MY_EMAIL) { alert('请先登录'); return; }
+    if (navigator.vibrate) navigator.vibrate(15);
+    try {
+      const resp = await fetch('/api/her_idols/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          group_name: group,
+          member_name: member,
+          nickname: '',
+          avatar_emoji: emoji,
+          avatar_url: ''
+        })
+      });
+      const data = await resp.json();
+      if (data.error) { alert(data.error); return; }
+    } catch (e) { alert('网络错误'); return; }
+    await loadMyIdols();
+    if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
+  }
+
+  // ==========================================================
+  //                        编辑心肝
+  // ==========================================================
+  function openEditIdol(idol) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    editingIdol = idol;
+    editingAvatarUrl = idol.avatar_url || '';
+    editingEmoji = idol.avatar_emoji || '';
+
+    document.getElementById('editTitle').textContent = `编辑 ${idol.group_name} · ${idol.member_name}`;
+    document.getElementById('editNickname').value = idol.nickname || '';
+
+    const avatarEl = document.getElementById('editAvatar');
+    if (editingAvatarUrl) {
+      avatarEl.innerHTML = `<img src="${editingAvatarUrl}" alt="">`;
+    } else {
+      avatarEl.textContent = editingEmoji || '💗';
+    }
+
+    // emoji 选
+    const picker = document.getElementById('emojiPicker');
+    picker.innerHTML = '';
+    EMOJI_OPTIONS.forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'emoji-pick' + (e === editingEmoji && !editingAvatarUrl ? ' selected' : '');
+      div.textContent = e;
+      div.onclick = () => {
+        editingEmoji = e;
+        editingAvatarUrl = '';
+        avatarEl.textContent = e;
+        document.querySelectorAll('.emoji-pick').forEach(p => p.classList.remove('selected'));
+        div.classList.add('selected');
+      };
+      picker.appendChild(div);
+    });
+
+    document.getElementById('editModal').classList.add('show');
+  }
+
+  async function onEditAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('请选图片'); return; }
+    if (file.size > 10 * 1024 * 1024) { alert('图片太大，最多 10MB'); return; }
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('bucket', 'avatars');
+    try {
+      const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await resp.json();
+      if (data.error) { alert('上传失败：' + data.error); return; }
+      editingAvatarUrl = data.url;
+      editingEmoji = '';
+      document.getElementById('editAvatar').innerHTML = `<img src="${data.url}" alt="">`;
+      document.querySelectorAll('.emoji-pick').forEach(p => p.classList.remove('selected'));
+      if (navigator.vibrate) navigator.vibrate(15);
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function saveIdolEdit() {
+    if (!editingIdol) return;
+    const nickname = document.getElementById('editNickname').value.trim();
+    if (navigator.vibrate) navigator.vibrate(12);
+    try {
+      const resp = await fetch('/api/her_idols/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingIdol.id,
+          email: MY_EMAIL,
+          nickname: nickname,
+          avatar_url: editingAvatarUrl,
+          avatar_emoji: editingEmoji
+        })
+      });
+      const data = await resp.json();
+      if (data.error) { alert(data.error); return; }
+    } catch (e) { alert('网络错误'); return; }
+    closeEdit();
+    await loadMyIdols();
+  }
+
+  async function deleteIdol() {
+    if (!editingIdol) return;
+    if (!confirm(`从心肝里移除 ${editingIdol.member_name}？`)) return;
+    if (navigator.vibrate) navigator.vibrate(15);
+    try {
+      await fetch('/api/her_idols/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingIdol.id, email: MY_EMAIL })
+      });
+    } catch (e) {}
+    closeEdit();
+    await loadMyIdols();
+  }
+
+  function closeEdit() {
+    document.getElementById('editModal').classList.remove('show');
+    editingIdol = null;
+    editingAvatarUrl = '';
+    editingEmoji = '';
+  }
+
+  // ==========================================================
+  //                        工具
+  // ==========================================================
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ==========================================================
+  //                        初始化
+  // ==========================================================
+  (async function init() {
+    if (!MY_EMAIL) {
+      // 没登录也能看，但心肝/经期数据为空
+    }
+    // 默认今天日期
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('cycleStart').value = today;
+
+    // 痛经默认展示 1 级
+    updatePain(1);
+
+    // 心肝初始化
+    renderGroups();
+    renderMembers();
+    if (MY_EMAIL) await loadMyIdols();
+
+    // 经期
+    await renderCycles();
+  })();
+</script>
+</body>
+</html>
