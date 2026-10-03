@@ -57,6 +57,7 @@
 
   .course-list { margin-bottom: 20px; }
 
+  /* 整张卡片用课程颜色半透明 */
   .course-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -65,9 +66,12 @@
     padding: 14px 16px;
     margin-bottom: 10px;
     position: relative;
+    cursor: pointer;
+    transition: transform 0.15s;
   }
+  .course-card:active { transform: scale(0.98); }
   .course-card .c-time {
-    font-size: 12px; color: #a0d8b3; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     margin-bottom: 4px;
   }
   .course-card .c-name {
@@ -75,7 +79,7 @@
     margin-bottom: 4px;
   }
   .course-card .c-meta {
-    font-size: 12px; color: #888; line-height: 1.5;
+    font-size: 12px; color: #bbb; line-height: 1.5;
   }
   .course-card .c-del {
     position: absolute; top: 12px; right: 12px;
@@ -84,6 +88,7 @@
     width: 24px; height: 24px; border-radius: 50%;
     font-size: 12px; cursor: pointer;
   }
+  .course-card .c-del:active { transform: scale(0.9); }
 
   .empty-state {
     text-align: center; color: #666; font-size: 13px;
@@ -132,6 +137,30 @@
   .time-row { display: flex; gap: 8px; }
   .time-row input { flex: 1; }
 
+  /* 多选星期几 */
+  .weekday-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .wd-chip {
+    padding: 10px 4px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: #ccc; font-size: 13px; font-weight: 600;
+    text-align: center; cursor: pointer;
+    font-family: inherit;
+    transition: 0.15s;
+  }
+  .wd-chip.active {
+    background: rgba(160,216,179,0.2);
+    border-color: #a0d8b3;
+    color: #a0d8b3;
+  }
+  .wd-chip:active { transform: scale(0.95); }
+
   .color-row { display: flex; gap: 8px; margin-bottom: 10px; }
   .color-dot {
     flex: 1; height: 36px; border-radius: 10px;
@@ -139,14 +168,17 @@
     cursor: pointer;
   }
   .color-dot.active { border-color: #fff; }
+  .color-dot:active { transform: scale(0.95); }
 
   .form-actions { display: flex; gap: 10px; margin-top: 8px; }
   .form-actions button {
     flex: 1; padding: 14px; border-radius: 12px; border: none;
     font-size: 15px; font-weight: bold; cursor: pointer;
+    font-family: inherit;
   }
   .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
   .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+  .form-actions .delete { background: rgba(231,76,60,0.15); color: #e74c3c; }
 </style>
 </head>
 <body>
@@ -165,21 +197,17 @@
 
 <button class="add-btn" onclick="openAdd()">＋</button>
 
+<!-- 添加弹窗 -->
 <div class="modal" id="addModal">
   <div class="modal-content">
     <h3>➕ 添加课程</h3>
     <input type="text" id="cName" placeholder="课程名 *（例：西班牙语 B1）">
     <input type="text" id="cTeacher" placeholder="老师（可选）">
     <input type="text" id="cRoom" placeholder="教室（可选，例：Aula 305）">
-    <select id="cWeekday">
-      <option value="1">周一</option>
-      <option value="2">周二</option>
-      <option value="3">周三</option>
-      <option value="4">周四</option>
-      <option value="5">周五</option>
-      <option value="6">周六</option>
-      <option value="7">周日</option>
-    </select>
+
+    <div style="font-size:12px;color:#888;margin-bottom:6px;">星期几（可多选）</div>
+    <div class="weekday-grid" id="weekdayGrid"></div>
+
     <div class="time-row">
       <input type="time" id="cStart" value="08:00">
       <input type="time" id="cEnd" value="09:30">
@@ -192,6 +220,37 @@
   </div>
 </div>
 
+<!-- 编辑弹窗 -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <h3>✎ 编辑课程</h3>
+    <input type="text" id="eName" placeholder="课程名 *">
+    <input type="text" id="eTeacher" placeholder="老师（可选）">
+    <input type="text" id="eRoom" placeholder="教室（可选）">
+
+    <select id="eWeekday">
+      <option value="1">周一</option>
+      <option value="2">周二</option>
+      <option value="3">周三</option>
+      <option value="4">周四</option>
+      <option value="5">周五</option>
+      <option value="6">周六</option>
+      <option value="7">周日</option>
+    </select>
+
+    <div class="time-row">
+      <input type="time" id="eStart">
+      <input type="time" id="eEnd">
+    </div>
+    <div class="color-row" id="eColorRow"></div>
+    <div class="form-actions">
+      <button class="delete" onclick="deleteFromEdit()">删除</button>
+      <button class="cancel" onclick="closeEdit()">取消</button>
+      <button class="submit" onclick="submitEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
   var el = function(id) { return document.getElementById(id); };
 
@@ -200,16 +259,34 @@
   var DAY_NAMES = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
   var COLORS = ['#a0d8b3', '#f4b8d0', '#ffc400', '#7cc4ff', '#c084fc', '#ff8c69'];
 
-  var currentDay = new Date().getDay() || 1; // 0=周日 → 1
+  var currentDay = new Date().getDay() || 1;
   if (currentDay < 1 || currentDay > 7) currentDay = 1;
 
   var courses = [];
   var selectedColor = COLORS[0];
+  var selectedWeekdays = [currentDay];
+
+  // 编辑状态
+  var editingId = null;
+  var editingColor = COLORS[0];
 
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (window.history.length > 1) window.history.back();
     else location.href = '/';
+  }
+
+  // ===== 工具：hex → rgba =====
+  function hexToRgba(hex, alpha) {
+    if (!hex) hex = '#a0d8b3';
+    hex = hex.replace('#', '');
+    if (hex.length === 3) {
+      hex = hex.split('').map(function(x) { return x + x; }).join('');
+    }
+    var r = parseInt(hex.substring(0, 2), 16);
+    var g = parseInt(hex.substring(2, 4), 16);
+    var b = parseInt(hex.substring(4, 6), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
   }
 
   // ===== 周几 tab =====
@@ -250,6 +327,7 @@
     renderCourses();
   }
 
+  // ===== 渲染课程卡片（整卡用课程色） =====
   function renderCourses() {
     var list = el('courseList');
     var dayCourses = courses.filter(function(c) { return c.weekday === currentDay; });
@@ -263,19 +341,25 @@
 
     list.innerHTML = '';
     dayCourses.forEach(function(c) {
+      var color = c.color || '#a0d8b3';
       var card = document.createElement('div');
       card.className = 'course-card';
-      card.style.borderLeftColor = c.color || '#a0d8b3';
+      card.style.borderLeftColor = color;
+      card.style.background = hexToRgba(color, 0.14);
+      card.style.borderColor = hexToRgba(color, 0.4);
+      card.style.borderLeft = '4px solid ' + color;
 
       var meta = [];
       if (c.teacher) meta.push('👤 ' + c.teacher);
       if (c.room) meta.push('📍 ' + c.room);
 
       card.innerHTML =
-        '<div class="c-time">' + c.start_time + ' - ' + c.end_time + '</div>' +
+        '<div class="c-time" style="color:' + color + ';">' + c.start_time + ' - ' + c.end_time + '</div>' +
         '<div class="c-name">' + escapeHtml(c.course_name) + '</div>' +
         (meta.length ? '<div class="c-meta">' + escapeHtml(meta.join('　')) + '</div>' : '') +
         '<button class="c-del" data-del="' + c.id + '">✕</button>';
+
+      card.setAttribute('data-edit', c.id);
 
       list.appendChild(card);
     });
@@ -286,9 +370,16 @@
     if (e.target.matches('[data-del]')) {
       e.stopPropagation();
       deleteCourse(e.target.getAttribute('data-del'));
+      return;
+    }
+    var card = e.target.closest('[data-edit]');
+    if (card) {
+      var id = card.getAttribute('data-edit');
+      openEdit(id);
     }
   });
 
+  // ===== 删除 =====
   async function deleteCourse(id) {
     if (!confirm('确定删除这门课吗？')) return;
     try {
@@ -301,30 +392,54 @@
     } catch (e) { alert('网络错误'); }
   }
 
-  // ===== 添加 =====
-  function renderColorRow() {
-    var row = el('colorRow');
+  // ===== 颜色选择器 =====
+  function renderColorRow(containerId, current, onPick) {
+    var row = el(containerId);
     row.innerHTML = '';
     COLORS.forEach(function(c) {
       var dot = document.createElement('div');
-      dot.className = 'color-dot' + (c === selectedColor ? ' active' : '');
+      dot.className = 'color-dot' + (c === current ? ' active' : '');
       dot.style.background = c;
       dot.addEventListener('click', function() {
-        selectedColor = c;
-        renderColorRow();
+        onPick(c);
+        renderColorRow(containerId, c, onPick);
       });
       row.appendChild(dot);
     });
   }
 
+  // ===== 多选星期几 =====
+  function renderWeekdayGrid() {
+    var grid = el('weekdayGrid');
+    grid.innerHTML = '';
+    for (var d = 1; d <= 7; d++) {
+      (function(day) {
+        var chip = document.createElement('button');
+        chip.className = 'wd-chip' + (selectedWeekdays.indexOf(day) !== -1 ? ' active' : '');
+        chip.textContent = DAY_NAMES[day].replace('周', '');
+        chip.type = 'button';
+        chip.addEventListener('click', function() {
+          var idx = selectedWeekdays.indexOf(day);
+          if (idx === -1) selectedWeekdays.push(day);
+          else selectedWeekdays.splice(idx, 1);
+          renderWeekdayGrid();
+        });
+        grid.appendChild(chip);
+      })(d);
+    }
+  }
+
+  // ===== 添加 =====
   function openAdd() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
     el('addModal').classList.add('show');
-    el('cWeekday').value = currentDay;
     selectedColor = COLORS[0];
-    renderColorRow();
+    selectedWeekdays = [currentDay];
+    renderWeekdayGrid();
+    renderColorRow('colorRow', selectedColor, function(c) { selectedColor = c; });
   }
+
   function closeAdd() {
     el('addModal').classList.remove('show');
     el('cName').value = '';
@@ -332,36 +447,117 @@
     el('cRoom').value = '';
   }
 
+  // ===== 提交添加（支持多天） =====
   async function submitCourse() {
     var name = el('cName').value.trim();
     if (!name) { alert('请填课程名'); return; }
+    if (selectedWeekdays.length === 0) { alert('请至少选一个星期一'); return; }
 
-    var payload = {
-      email: MY_EMAIL,
-      course_name: name,
-      teacher: el('cTeacher').value.trim(),
-      room: el('cRoom').value.trim(),
-      weekday: parseInt(el('cWeekday').value),
-      start_time: el('cStart').value,
-      end_time: el('cEnd').value,
-      color: selectedColor
-    };
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    var teacher = el('cTeacher').value.trim();
+    var room = el('cRoom').value.trim();
+    var start_time = el('cStart').value;
+    var end_time = el('cEnd').value;
+
+    var failed = 0;
+
+    for (var i = 0; i < selectedWeekdays.length; i++) {
+      try {
+        var r = await fetch('/api/timetable/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: MY_EMAIL,
+            course_name: name,
+            teacher: teacher,
+            room: room,
+            weekday: selectedWeekdays[i],
+            start_time: start_time,
+            end_time: end_time,
+            color: selectedColor
+          })
+        });
+        var d = await r.json();
+        if (d.error) failed++;
+      } catch (e) { failed++; }
+    }
+
+    if (failed > 0) alert('有 ' + failed + ' 天添加失败，请刷新后重试');
+
+    closeAdd();
+    currentDay = selectedWeekdays[0];
+    renderWeekBar();
+    await loadCourses();
+  }
+
+  // ===== 编辑 =====
+  function openEdit(id) {
+    if (navigator.vibrate) navigator.vibrate(10);
+    var c = courses.filter(function(x) { return String(x.id) === String(id); })[0];
+    if (!c) return;
+    editingId = c.id;
+    editingColor = c.color || COLORS[0];
+
+    el('eName').value = c.course_name || '';
+    el('eTeacher').value = c.teacher || '';
+    el('eRoom').value = c.room || '';
+    el('eWeekday').value = c.weekday || 1;
+    el('eStart').value = c.start_time || '08:00';
+    el('eEnd').value = c.end_time || '09:30';
+
+    renderColorRow('eColorRow', editingColor, function(col) { editingColor = col; });
+    el('editModal').classList.add('show');
+  }
+
+  function closeEdit() {
+    el('editModal').classList.remove('show');
+    editingId = null;
+  }
+
+  async function submitEdit() {
+    if (!editingId) return;
+    var name = el('eName').value.trim();
+    if (!name) { alert('请填课程名'); return; }
 
     if (navigator.vibrate) navigator.vibrate(15);
 
     try {
-      var r = await fetch('/api/timetable/add', {
+      var r = await fetch('/api/timetable/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          id: editingId,
+          email: MY_EMAIL,
+          course_name: name,
+          teacher: el('eTeacher').value.trim(),
+          room: el('eRoom').value.trim(),
+          weekday: parseInt(el('eWeekday').value),
+          start_time: el('eStart').value,
+          end_time: el('eEnd').value,
+          color: editingColor
+        })
       });
       var d = await r.json();
       if (d.error) { alert(d.error); return; }
-      closeAdd();
-      currentDay = payload.weekday;
-      renderWeekBar();
-      await loadCourses();
-    } catch (e) { alert('网络错误'); }
+    } catch (e) { alert('网络错误'); return; }
+
+    closeEdit();
+    await loadCourses();
+  }
+
+  async function deleteFromEdit() {
+    if (!editingId) return;
+    if (!confirm('确定删除这门课吗？')) return;
+    try {
+      await fetch('/api/timetable/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: editingId, email: MY_EMAIL })
+      });
+    } catch (e) {}
+    closeEdit();
+    await loadCourses();
   }
 
   function escapeHtml(s) {
@@ -373,7 +569,6 @@
 
   // ===== 启动 =====
   renderWeekBar();
-  renderColorRow();
   loadCourses();
 </script>
 <script src="/static/js/auth-gate.js"></script>

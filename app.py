@@ -1960,7 +1960,31 @@ def api_timetable_delete():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/api/timetable/update", methods=["POST"])
+def api_timetable_update():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    cid = data.get("id")
+    email = data.get("email", "").strip().lower()
+    name = data.get("course_name", "").strip()
+    if not cid or not email or not name:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("timetables").update({
+            "course_name": name,
+            "teacher": data.get("teacher", ""),
+            "room": data.get("room", ""),
+            "weekday": int(data.get("weekday", 1)),
+            "start_time": data.get("start_time", ""),
+            "end_time": data.get("end_time", ""),
+            "color": data.get("color", "#a0d8b3"),
+        }).eq("id", cid).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
+    
 @app.route("/timetable")
 def timetable_page():
     return render_template("timetable.html")

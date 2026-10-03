@@ -301,7 +301,6 @@
   }
   .member-card.added .name::after { content: ' ♥'; color: #f4b8d0; }
 
-  /* 自定义成员删除按钮 */
   .member-card .custom-del {
     position: absolute; top: 4px; right: 4px;
     width: 20px; height: 20px; border-radius: 50%;
@@ -684,10 +683,11 @@
       <button class="genre-tab" data-genre="thai" onclick="switchGenre('thai', this)">泰娱</button>
     </div>
 
-    <!-- 男团 / 女团（只在 K-pop / 内娱 / J-pop 显示，泰娱隐藏） -->
+    <!-- 男团 / 女团 / 单人 -->
     <div class="group-switch" id="genderSwitch">
       <button class="sw-btn active" data-gender="boy" onclick="switchGender('boy', this)">👦 男团</button>
       <button class="sw-btn" data-gender="girl" onclick="switchGender('girl', this)">👧 女团</button>
+      <button class="sw-btn" data-gender="solo" onclick="switchGender('solo', this)">🎤 单人</button>
     </div>
 
     <div class="group-tabs" id="groupTabs"></div>
@@ -753,16 +753,17 @@
       <button class="genre-tab" data-genre="thai" onclick="pickAddGenre('thai', this)">泰娱</button>
     </div>
 
-    <div class="edit-label">类型（泰娱可不选）</div>
+    <div class="edit-label">类型</div>
     <div class="group-switch" style="margin-bottom:8px;">
       <button class="sw-btn active" data-gender="boy" onclick="pickAddGender('boy', this)">👦 男团</button>
       <button class="sw-btn" data-gender="girl" onclick="pickAddGender('girl', this)">👧 女团</button>
+      <button class="sw-btn" data-gender="solo" onclick="pickAddGender('solo', this)">🎤 单人</button>
     </div>
 
-    <div class="edit-label">团名 / 分类名</div>
+    <div class="edit-label" id="addGroupLabel">团名 / 分类名</div>
     <input type="text" class="edit-input" id="addGroupName" placeholder="比如：SEVENTEEN、时代少年团、Snow Man">
 
-    <div class="edit-label">成员名</div>
+    <div class="edit-label">成员名 / 歌手名</div>
     <input type="text" class="edit-input" id="addMemberName" placeholder="比如：S.Coups、丁程鑫、目黑莲">
 
     <div class="edit-label">选一个 emoji 头像</div>
@@ -920,7 +921,7 @@
     } catch (e) { return []; }
   }
 
-  // ============ 已修：更稳的 addCycle（超时 + 详细错误） ============
+  // ============ ✅ 已修：更稳的 addCycle（超时 + 详细错误） ============
   async function addCycle() {
     const start = document.getElementById('cycleStart').value;
     const end = document.getElementById('cycleEnd').value || null;
@@ -1090,7 +1091,7 @@
   // ==========================================================
   //                        心肝数据
   // ==========================================================
-  // ⚠️ 你原有的团全部放进 K-pop，并保留男团 / 女团分类
+  // ⚠️ 你原有的团全部放进 K-pop，并保留男团 / 女团 / 单人
   const IDOL_DATA = {
     kpop: {
       boy: {
@@ -1149,19 +1150,23 @@
           { name: 'Jiwoo', emoji: '🐶' },
           { name: 'Kyujin', emoji: '🐱' }
         ]
-      }
+      },
+      solo: {}
     },
     cpop: {
       boy: {},
-      girl: {}
+      girl: {},
+      solo: {}
     },
     jpop: {
       boy: {},
-      girl: {}
+      girl: {},
+      solo: {}
     },
     thai: {
       boy: {},
-      girl: {}
+      girl: {},
+      solo: {}
     }
   };
 
@@ -1176,7 +1181,7 @@
   let currentGender = 'boy';
   let currentGroup = null;
   let myIdols = [];
-  let customIdols = [];   // 自定义团（从后端拉）
+  let customIdols = [];
   let editingIdol = null;
   let editingAvatarUrl = '';
   let editingEmoji = '';
@@ -1200,7 +1205,6 @@
     renderMembers();
   }
 
-  // ============ 从后端拉自定义团，并合并到 IDOL_DATA ============
   async function loadCustomIdols() {
     if (!MY_EMAIL) { customIdols = []; return; }
     try {
@@ -1213,7 +1217,7 @@
 
   function mergeCustomIntoIdolData() {
     customIdols.forEach(c => {
-      if (!IDOL_DATA[c.genre]) IDOL_DATA[c.genre] = { boy: {}, girl: {} };
+      if (!IDOL_DATA[c.genre]) IDOL_DATA[c.genre] = { boy: {}, girl: {}, solo: {} };
       if (!IDOL_DATA[c.genre][c.gender]) IDOL_DATA[c.genre][c.gender] = {};
       if (!IDOL_DATA[c.genre][c.gender][c.group_name]) {
         IDOL_DATA[c.genre][c.gender][c.group_name] = [];
@@ -1258,7 +1262,7 @@
     if (groups.length === 0) {
       const empty = document.createElement('div');
       empty.style.cssText = 'color:#666;font-size:12px;padding:8px 4px;';
-      empty.textContent = '还没有团，点下面「➕ 自己添加」吧';
+      empty.textContent = '还没有内容，点下面「➕ 自己添加」吧';
       tabs.appendChild(empty);
       currentGroup = null;
       return;
@@ -1309,7 +1313,6 @@
       grid.appendChild(div);
     });
 
-    // 每个分区最后一个：➕ 自己添加
     const addCard = document.createElement('div');
     addCard.className = 'add-member-card';
     addCard.innerHTML = `
@@ -1319,7 +1322,6 @@
     addCard.onclick = openAddCustom;
     grid.appendChild(addCard);
 
-    // 绑定自定义成员删除按钮
     grid.querySelectorAll('.custom-del').forEach(btn => {
       btn.onclick = (e) => {
         e.stopPropagation();
@@ -1396,6 +1398,18 @@
   let addGender = 'boy';
   let addEmoji = '⭐';
 
+  function updateAddGroupLabel() {
+    const label = document.getElementById('addGroupLabel');
+    const input = document.getElementById('addGroupName');
+    if (addGender === 'solo') {
+      label.textContent = '分类名（留空或填“单人”）';
+      input.placeholder = '比如：SOLO、独立歌手';
+    } else {
+      label.textContent = '团名 / 分类名';
+      input.placeholder = '比如：SEVENTEEN、时代少年团、Snow Man';
+    }
+  }
+
   function openAddCustom() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
@@ -1413,6 +1427,7 @@
     document.querySelectorAll('#addCustomModal .sw-btn').forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-gender') === addGender);
     });
+    updateAddGroupLabel();
 
     const picker = document.getElementById('addEmojiPicker');
     picker.innerHTML = '';
@@ -1445,19 +1460,24 @@
     addGender = g;
     document.querySelectorAll('#addCustomModal .sw-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
+    updateAddGroupLabel();
   }
 
-  // ============ 自己添加（写后端，永久保存） ============
   async function submitAddCustom() {
-    const group = document.getElementById('addGroupName').value.trim();
+    let group = document.getElementById('addGroupName').value.trim();
     const member = document.getElementById('addMemberName').value.trim();
 
+    // 单人模式：如果没填分类名，自动用 "单曲" 或 "SOLO"
+    if (addGender === 'solo' && !group) {
+      group = 'SOLO';
+    }
+
     if (!group) { alert('请填团名 / 分类名'); return; }
-    if (!member) { alert('请填成员名'); return; }
+    if (!member) { alert('请填成员名 / 歌手名'); return; }
 
     if (navigator.vibrate) navigator.vibrate(15);
 
-    // 1. 写自定义团库（永久保存）
+    // 1. 写自定义团库（永久）
     try {
       const resp = await fetch('/api/idol_custom/add', {
         method: 'POST',
