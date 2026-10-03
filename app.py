@@ -1826,14 +1826,16 @@ def api_idol_custom_add():
         if exist.data:
             return jsonify({"error": "这个成员已经加过了"}), 400
 
-        supabase.table("idol_custom_groups").insert({
+            supabase.table("idol_custom_groups").insert({
             "user_email": email,
             "genre": genre,
             "gender": gender,
             "group_name": group_name,
             "member_name": member_name,
             "emoji": emoji,
+            "avatar_url": data.get("avatar_url", ""),
         }).execute()
+            
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500

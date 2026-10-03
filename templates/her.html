@@ -233,7 +233,6 @@
     color: #f4b8d0;
   }
 
-  /* 分区切换（K-pop / 内娱 / J-pop / 泰娱） */
   .genre-tabs {
     display: flex; gap: 6px; margin-bottom: 14px;
     background: rgba(255,255,255,0.04);
@@ -675,7 +674,6 @@
       </div>
     </div>
 
-    <!-- 分区：K-pop / 内娱 / J-pop / 泰娱 -->
     <div class="genre-tabs">
       <button class="genre-tab active" data-genre="kpop" onclick="switchGenre('kpop', this)">K-pop</button>
       <button class="genre-tab" data-genre="cpop" onclick="switchGenre('cpop', this)">内娱</button>
@@ -683,7 +681,6 @@
       <button class="genre-tab" data-genre="thai" onclick="switchGenre('thai', this)">泰娱</button>
     </div>
 
-    <!-- 男团 / 女团 / 单人 -->
     <div class="group-switch" id="genderSwitch">
       <button class="sw-btn active" data-gender="boy" onclick="switchGender('boy', this)">👦 男团</button>
       <button class="sw-btn" data-gender="girl" onclick="switchGender('girl', this)">👧 女团</button>
@@ -740,7 +737,7 @@
   </div>
 </div>
 
-<!-- 自己添加：弹窗（先选分区，再填团名 / 成员名） -->
+<!-- 自己添加：弹窗（含头像上传） -->
 <div class="edit-modal" id="addCustomModal">
   <div class="edit-card">
     <h3>➕ 自己添加</h3>
@@ -766,7 +763,10 @@
     <div class="edit-label">成员名 / 歌手名</div>
     <input type="text" class="edit-input" id="addMemberName" placeholder="比如：S.Coups、丁程鑫、目黑莲">
 
-    <div class="edit-label">选一个 emoji 头像</div>
+    <div class="edit-label">头像（可上传图片，或选 emoji）</div>
+    <div class="edit-avatar" id="addAvatar" onclick="document.getElementById('addAvatarFile').click()">⭐</div>
+    <input type="file" id="addAvatarFile" accept="image/*" style="display:none" onchange="onAddAvatarUpload(event)">
+    <div style="font-size:11px;color:#666;text-align:center;margin-bottom:12px;">点上方圆圈上传图片</div>
     <div class="emoji-picker" id="addEmojiPicker"></div>
 
     <div class="edit-actions">
@@ -1091,7 +1091,6 @@
   // ==========================================================
   //                        心肝数据
   // ==========================================================
-  // ⚠️ 你原有的团全部放进 K-pop，并保留男团 / 女团 / 单人
   const IDOL_DATA = {
     kpop: {
       boy: {
@@ -1224,7 +1223,12 @@
       }
       const list = IDOL_DATA[c.genre][c.gender][c.group_name];
       if (!list.some(m => m.name === c.member_name)) {
-        list.push({ name: c.member_name, emoji: c.emoji || '⭐', _customId: c.id });
+        list.push({
+          name: c.member_name,
+          emoji: c.emoji || '⭐',
+          avatar_url: c.avatar_url || '',
+          _customId: c.id
+        });
       }
     });
   }
@@ -1296,8 +1300,16 @@
       const isAdded = myIdols.some(i => i.group_name === currentGroup && i.member_name === m.name);
       const div = document.createElement('div');
       div.className = 'member-card' + (isAdded ? ' added' : '');
+
+      let avatarContent;
+      if (m.avatar_url) {
+        avatarContent = `<img src="${m.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      } else {
+        avatarContent = m.emoji;
+      }
+
       div.innerHTML = `
-        <div class="emoji">${m.emoji}</div>
+        <div class="emoji" style="${m.avatar_url ? 'padding:0;overflow:hidden;border-radius:50%;width:44px;height:44px;display:flex;align-items:center;justify-content:center;' : ''}">${avatarContent}</div>
         <div class="name">${escapeHtml(m.name)}</div>
         ${m._customId ? `<button class="custom-del" data-cdid="${m._customId}">✕</button>` : ''}
       `;
@@ -1392,11 +1404,12 @@
   }
 
   // ==========================================================
-  //                        自己添加（弹窗）
+  //                        自己添加（弹窗 + 头像上传）
   // ==========================================================
   let addGenre = 'kpop';
   let addGender = 'boy';
   let addEmoji = '⭐';
+  let addAvatarUrl = '';
 
   function updateAddGroupLabel() {
     const label = document.getElementById('addGroupLabel');
@@ -1417,9 +1430,11 @@
     addGenre = currentGenre;
     addGender = currentGender;
     addEmoji = '⭐';
+    addAvatarUrl = '';
 
     document.getElementById('addGroupName').value = '';
     document.getElementById('addMemberName').value = '';
+    document.getElementById('addAvatar').innerHTML = '⭐';
 
     document.querySelectorAll('#addCustomModal .genre-tab').forEach(b => {
       b.classList.toggle('active', b.getAttribute('data-genre') === addGenre);
@@ -1437,6 +1452,8 @@
       div.textContent = e;
       div.onclick = () => {
         addEmoji = e;
+        addAvatarUrl = '';
+        document.getElementById('addAvatar').innerHTML = e;
         document.querySelectorAll('#addEmojiPicker .emoji-pick').forEach(p => p.classList.remove('selected'));
         div.classList.add('selected');
       };
@@ -1463,11 +1480,31 @@
     updateAddGroupLabel();
   }
 
+  async function onAddAvatarUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('请选图片'); return; }
+    if (file.size > 10 * 1024 * 1024) { alert('图片太大，最多 10MB'); return; }
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('bucket', 'avatars');
+    try {
+      const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await resp.json();
+      if (data.error) { alert('上传失败：' + data.error); return; }
+      addAvatarUrl = data.url;
+      addEmoji = '';
+      document.getElementById('addAvatar').innerHTML = `<img src="${data.url}" alt="">`;
+      document.querySelectorAll('#addEmojiPicker .emoji-pick').forEach(p => p.classList.remove('selected'));
+      if (navigator.vibrate) navigator.vibrate(15);
+    } catch (e) { alert('网络错误'); }
+  }
+
   async function submitAddCustom() {
     let group = document.getElementById('addGroupName').value.trim();
     const member = document.getElementById('addMemberName').value.trim();
 
-    // 单人模式：如果没填分类名，自动用 "单曲" 或 "SOLO"
     if (addGender === 'solo' && !group) {
       group = 'SOLO';
     }
@@ -1488,7 +1525,8 @@
           gender: addGender,
           group_name: group,
           member_name: member,
-          emoji: addEmoji
+          emoji: addEmoji || '⭐',
+          avatar_url: addAvatarUrl
         })
       });
       const data = await resp.json();
@@ -1508,8 +1546,8 @@
           group_name: group,
           member_name: member,
           nickname: '',
-          avatar_emoji: addEmoji,
-          avatar_url: ''
+          avatar_emoji: addEmoji || '',
+          avatar_url: addAvatarUrl
         })
       });
     } catch (e) {}
