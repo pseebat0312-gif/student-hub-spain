@@ -5,6 +5,7 @@ import calendar
 from flask import Flask, render_template, request, jsonify
 import pytz
 from supabase import create_client
+from openai import OpenAI
 
 app = Flask(__name__)
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
@@ -1483,6 +1484,158 @@ def api_upload():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# ==========================================================
+#                        口袋清单
+# ==========================================================
+@app.route("/api/memo/lists")
+def api_memo_lists():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip().lower()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = (
+            supabase.table("memo_lists")
+            .select("*")
+            .eq("user_email", owner)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memo/lists/add", methods=["POST"])
+def api_memo_lists_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    title = data.get("title", "").strip()
+    icon = data.get("icon", "📋")
+    if not email or not title:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        r = supabase.table("memo_lists").insert({
+            "user_email": email,
+            "title": title,
+            "icon": icon,
+        }).execute()
+        return jsonify({"success": True, "id": r.data[0]["id"] if r.data else None})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memo/lists/delete", methods=["POST"])
+def api_memo_lists_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    list_id = data.get("id")
+    email = data.get("email", "").strip().lower()
+    if not list_id or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        # 只能删自己的
+        supabase.table("memo_lists").delete().eq("id", list_id).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memo/items")
+def api_memo_items():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    list_id = request.args.get("list_id", "").strip()
+    if not list_id:
+        return jsonify({"error": "缺少 list_id"}), 400
+    try:
+        result = (
+            supabase.table("memo_items")
+            .select("*")
+            .eq("list_id", list_id)
+            .order("position", desc=False)
+            .order("created_at", desc=False)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memo/items/add", methods=["POST"])
+def api_memo_items_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    list_id = data.get("list_id")
+    content = data.get("content", "").strip()
+    if not list_id or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("memo_items").insert({
+            "list_id": list_id,
+            "content": content,
+            "checked": False,
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memo/items/toggle", methods=["POST"])
+def api_memo_items_toggle():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("id")
+    checked = bool(data.get("checked", False))
+    if not item_id:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("memo_items").update({"checked": checked}).eq("id", item_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memo/items/update", methods=["POST"])
+def api_memo_items_update():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("id")
+    content = data.get("content", "").strip()
+    if not item_id or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("memo_items").update({"content": content}).eq("id", item_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/memo/items/delete", methods=["POST"])
+def api_memo_items_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("id")
+    if not item_id:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("memo_items").delete().eq("id", item_id).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/memo")
+def memo_page():
+    return render_template("memo.html")
 
 
 # ==========================================================
@@ -1656,6 +1809,79 @@ def api_her_chats_add():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
+# ==========================================================
+#                        我的课表
+# ==========================================================
+@app.route("/api/timetable")
+def api_timetable_list():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip().lower()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = (
+            supabase.table("timetables")
+            .select("*")
+            .eq("user_email", owner)
+            .order("weekday", desc=False)
+            .order("start_time", desc=False)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/timetable/add", methods=["POST"])
+def api_timetable_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    name = data.get("course_name", "").strip()
+    weekday = data.get("weekday")
+    start_time = data.get("start_time", "").strip()
+    end_time = data.get("end_time", "").strip()
+    if not email or not name or not weekday or not start_time or not end_time:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("timetables").insert({
+            "user_email": email,
+            "course_name": name,
+            "teacher": data.get("teacher", ""),
+            "room": data.get("room", ""),
+            "weekday": int(weekday),
+            "start_time": start_time,
+            "end_time": end_time,
+            "color": data.get("color", "#a0d8b3"),
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/timetable/delete", methods=["POST"])
+def api_timetable_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    cid = data.get("id")
+    email = data.get("email", "").strip().lower()
+    if not cid or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("timetables").delete().eq("id", cid).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/timetable")
+def timetable_page():
+    return render_template("timetable.html")
 
 
 # ==========================================================
@@ -1853,6 +2079,98 @@ def api_travel_save():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#                        合同分析（VIP）
+# ==========================================================
+DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
+
+
+@app.route("/api/contract/analyze", methods=["POST"])
+def api_contract_analyze():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    text = data.get("text", "").strip()
+    file_name = data.get("file_name", "").strip()
+    if not email or not text:
+        return jsonify({"error": "缺少参数"}), 400
+
+    # 1. VIP 检查
+    try:
+        prof = supabase.table("user_profiles").select("is_vip,vip_expire_at").eq("email", email).execute()
+        is_vip = False
+        if prof.data:
+            row = prof.data[0]
+            is_vip = bool(row.get("is_vip"))
+            exp = row.get("vip_expire_at")
+            if is_vip and exp:
+                from datetime import datetime as _dt
+                e = _dt.fromisoformat(exp.replace("Z", "+00:00"))
+                if e < _dt.now(timezone.utc):
+                    is_vip = False
+        if not is_vip:
+            return jsonify({"error": "合同分析是 VIP 专属功能", "need_vip": True}), 403
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    if not DEEPSEEK_API_KEY:
+        return jsonify({"error": "AI 服务未配置"}), 500
+
+    # 2. 调 DeepSeek
+    try:
+        client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
+        resp = client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[
+                {"role": "system", "content": "你是一个专业的合同分析助手。用户会给你一段合同文本（可能是租房、保险、学校协议），请用中文输出：1）一句话总结这份合同是干什么的；2）核心条款（租金/金额/期限/双方义务）；3）需要警惕的风险点（隐藏费用、不公平条款、自动续约、押金退还条件等）；4）给留学生的建议。格式清晰，分点列出。"},
+                {"role": "user", "content": text[:8000]}
+            ]
+        )
+        result_text = resp.choices[0].message.content
+    except Exception as e:
+        return jsonify({"error": "AI 分析失败：" + str(e)}), 500
+
+    # 3. 存记录
+    try:
+        supabase.table("contract_analyses").insert({
+            "user_email": email,
+            "file_name": file_name,
+            "summary": result_text,
+            "risks": "",
+        }).execute()
+    except Exception as e:
+        print("存合同分析失败:", e)
+
+    return jsonify({"success": True, "result": result_text})
+
+
+@app.route("/api/contract/history")
+def api_contract_history():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = (
+            supabase.table("contract_analyses")
+            .select("id,file_name,summary,created_at")
+            .eq("user_email", email)
+            .order("created_at", desc=True)
+            .limit(50)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/contract")
+def contract_page():
+    return render_template("contract.html")
 
 
 # ==========================================================

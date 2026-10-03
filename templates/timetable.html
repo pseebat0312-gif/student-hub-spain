@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>我的课表 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+
+  #content { padding: 10px 16px 40px; }
+
+  .week-bar {
+    display: flex; gap: 6px; margin-bottom: 16px;
+    overflow-x: auto; padding-bottom: 4px;
+  }
+  .week-bar::-webkit-scrollbar { display: none; }
+  .day-chip {
+    flex: 1; min-width: 48px;
+    padding: 10px 4px; text-align: center;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    font-size: 12px; color: #aaa;
+    cursor: pointer;
+    transition: 0.15s;
+    font-family: inherit;
+  }
+  .day-chip.active {
+    background: rgba(160,216,179,0.18);
+    border-color: #a0d8b3;
+    color: #a0d8b3;
+    font-weight: 700;
+  }
+  .day-chip .day-name { display: block; font-size: 13px; margin-bottom: 2px; }
+  .day-chip .day-num { display: block; font-size: 10px; color: #666; }
+  .day-chip.active .day-num { color: #a0d8b3; opacity: 0.7; }
+
+  .course-list { margin-bottom: 20px; }
+
+  .course-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 4px solid #a0d8b3;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .course-card .c-time {
+    font-size: 12px; color: #a0d8b3; font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .course-card .c-name {
+    font-size: 15px; font-weight: 700; color: #fff;
+    margin-bottom: 4px;
+  }
+  .course-card .c-meta {
+    font-size: 12px; color: #888; line-height: 1.5;
+  }
+  .course-card .c-del {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(231,76,60,0.12);
+    border: none; color: #e74c3c;
+    width: 24px; height: 24px; border-radius: 50%;
+    font-size: 12px; cursor: pointer;
+  }
+
+  .empty-state {
+    text-align: center; color: #666; font-size: 13px;
+    padding: 50px 20px; line-height: 1.8;
+  }
+
+  .add-btn {
+    position: fixed; right: 20px; bottom: 30px;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 26px; font-weight: bold;
+    border: none; cursor: pointer;
+    box-shadow: 0 8px 24px rgba(74,124,89,0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+  }
+  .add-btn:active { transform: scale(0.9); }
+
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+    display: none; justify-content: center; align-items: flex-end;
+    z-index: 200; padding-top: 60px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #1a1a2e; width: 100%; max-width: 500px;
+    border-radius: 25px 25px 0 0; padding: 20px 18px 30px;
+    max-height: 80vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-content h3 {
+    font-size: 17px; margin-bottom: 14px;
+    color: #a0d8b3; text-align: center;
+  }
+  .modal-content input, .modal-content select {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 10px; font-family: inherit;
+  }
+  .modal-content select option { background: #1a1a2e; }
+  .modal-content input:focus { border-color: #a0d8b3; }
+
+  .time-row { display: flex; gap: 8px; }
+  .time-row input { flex: 1; }
+
+  .color-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .color-dot {
+    flex: 1; height: 36px; border-radius: 10px;
+    border: 3px solid transparent;
+    cursor: pointer;
+  }
+  .color-dot.active { border-color: #fff; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .form-actions button {
+    flex: 1; padding: 14px; border-radius: 12px; border: none;
+    font-size: 15px; font-weight: bold; cursor: pointer;
+  }
+  .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+  .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">📅 我的课表</div>
+</div>
+
+<div id="content">
+  <div class="week-bar" id="weekBar"></div>
+  <div class="course-list" id="courseList">
+    <div class="empty-state">加载中...</div>
+  </div>
+</div>
+
+<button class="add-btn" onclick="openAdd()">＋</button>
+
+<div class="modal" id="addModal">
+  <div class="modal-content">
+    <h3>➕ 添加课程</h3>
+    <input type="text" id="cName" placeholder="课程名 *（例：西班牙语 B1）">
+    <input type="text" id="cTeacher" placeholder="老师（可选）">
+    <input type="text" id="cRoom" placeholder="教室（可选，例：Aula 305）">
+    <select id="cWeekday">
+      <option value="1">周一</option>
+      <option value="2">周二</option>
+      <option value="3">周三</option>
+      <option value="4">周四</option>
+      <option value="5">周五</option>
+      <option value="6">周六</option>
+      <option value="7">周日</option>
+    </select>
+    <div class="time-row">
+      <input type="time" id="cStart" value="08:00">
+      <input type="time" id="cEnd" value="09:30">
+    </div>
+    <div class="color-row" id="colorRow"></div>
+    <div class="form-actions">
+      <button class="cancel" onclick="closeAdd()">取消</button>
+      <button class="submit" onclick="submitCourse()">添加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var el = function(id) { return document.getElementById(id); };
+
+  var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  var DAY_NAMES = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  var COLORS = ['#a0d8b3', '#f4b8d0', '#ffc400', '#7cc4ff', '#c084fc', '#ff8c69'];
+
+  var currentDay = new Date().getDay() || 1; // 0=周日 → 1
+  if (currentDay < 1 || currentDay > 7) currentDay = 1;
+
+  var courses = [];
+  var selectedColor = COLORS[0];
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/';
+  }
+
+  // ===== 周几 tab =====
+  function renderWeekBar() {
+    var bar = el('weekBar');
+    bar.innerHTML = '';
+    var today = new Date().getDay() || 1;
+    for (var d = 1; d <= 7; d++) {
+      var chip = document.createElement('button');
+      chip.className = 'day-chip' + (d === currentDay ? ' active' : '');
+      chip.innerHTML = '<span class="day-name">' + DAY_NAMES[d].replace('周', '') + '</span>' +
+        '<span class="day-num">' + (d === today ? '今天' : '') + '</span>';
+      chip.addEventListener('click', (function(day) {
+        return function() {
+          if (navigator.vibrate) navigator.vibrate(8);
+          currentDay = day;
+          renderWeekBar();
+          renderCourses();
+        };
+      })(d));
+      bar.appendChild(chip);
+    }
+  }
+
+  // ===== 加载课程 =====
+  async function loadCourses() {
+    if (!MY_EMAIL) {
+      el('courseList').innerHTML = '<div class="empty-state">请先登录</div>';
+      return;
+    }
+    try {
+      var r = await fetch('/api/timetable?owner=' + encodeURIComponent(MY_EMAIL));
+      var d = await r.json();
+      courses = Array.isArray(d) ? d : [];
+    } catch (e) {
+      courses = [];
+    }
+    renderCourses();
+  }
+
+  function renderCourses() {
+    var list = el('courseList');
+    var dayCourses = courses.filter(function(c) { return c.weekday === currentDay; });
+
+    if (dayCourses.length === 0) {
+      list.innerHTML = '<div class="empty-state">' + DAY_NAMES[currentDay] + ' 还没有课<br>点右下角 ＋ 添加</div>';
+      return;
+    }
+
+    dayCourses.sort(function(a, b) { return a.start_time.localeCompare(b.start_time); });
+
+    list.innerHTML = '';
+    dayCourses.forEach(function(c) {
+      var card = document.createElement('div');
+      card.className = 'course-card';
+      card.style.borderLeftColor = c.color || '#a0d8b3';
+
+      var meta = [];
+      if (c.teacher) meta.push('👤 ' + c.teacher);
+      if (c.room) meta.push('📍 ' + c.room);
+
+      card.innerHTML =
+        '<div class="c-time">' + c.start_time + ' - ' + c.end_time + '</div>' +
+        '<div class="c-name">' + escapeHtml(c.course_name) + '</div>' +
+        (meta.length ? '<div class="c-meta">' + escapeHtml(meta.join('　')) + '</div>' : '') +
+        '<button class="c-del" data-del="' + c.id + '">✕</button>';
+
+      list.appendChild(card);
+    });
+  }
+
+  // ===== 事件委托 =====
+  document.addEventListener('click', function(e) {
+    if (e.target.matches('[data-del]')) {
+      e.stopPropagation();
+      deleteCourse(e.target.getAttribute('data-del'));
+    }
+  });
+
+  async function deleteCourse(id) {
+    if (!confirm('确定删除这门课吗？')) return;
+    try {
+      await fetch('/api/timetable/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, email: MY_EMAIL })
+      });
+      await loadCourses();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  // ===== 添加 =====
+  function renderColorRow() {
+    var row = el('colorRow');
+    row.innerHTML = '';
+    COLORS.forEach(function(c) {
+      var dot = document.createElement('div');
+      dot.className = 'color-dot' + (c === selectedColor ? ' active' : '');
+      dot.style.background = c;
+      dot.addEventListener('click', function() {
+        selectedColor = c;
+        renderColorRow();
+      });
+      row.appendChild(dot);
+    });
+  }
+
+  function openAdd() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+    el('addModal').classList.add('show');
+    el('cWeekday').value = currentDay;
+    selectedColor = COLORS[0];
+    renderColorRow();
+  }
+  function closeAdd() {
+    el('addModal').classList.remove('show');
+    el('cName').value = '';
+    el('cTeacher').value = '';
+    el('cRoom').value = '';
+  }
+
+  async function submitCourse() {
+    var name = el('cName').value.trim();
+    if (!name) { alert('请填课程名'); return; }
+
+    var payload = {
+      email: MY_EMAIL,
+      course_name: name,
+      teacher: el('cTeacher').value.trim(),
+      room: el('cRoom').value.trim(),
+      weekday: parseInt(el('cWeekday').value),
+      start_time: el('cStart').value,
+      end_time: el('cEnd').value,
+      color: selectedColor
+    };
+
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    try {
+      var r = await fetch('/api/timetable/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      closeAdd();
+      currentDay = payload.weekday;
+      renderWeekBar();
+      await loadCourses();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // ===== 启动 =====
+  renderWeekBar();
+  renderColorRow();
+  loadCourses();
+</script>
+<script src="/static/js/auth-gate.js"></script>
+</body>
+</html>

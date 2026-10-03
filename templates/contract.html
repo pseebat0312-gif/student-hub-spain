@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>合同分析 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+  }
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer;
+  }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+
+  #content { padding: 10px 20px 40px; }
+
+  .intro {
+    color: #888; font-size: 13px; line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .vip-tip {
+    background: linear-gradient(135deg, rgba(232,168,184,0.15), rgba(201,128,148,0.1));
+    border: 1px solid rgba(232,168,184,0.35);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    color: #f4b8d0;
+    line-height: 1.6;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .vip-tip .go {
+    margin-left: auto;
+    background: linear-gradient(135deg, #f4b8d0, #e08aa8);
+    color: #1a0f14;
+    padding: 6px 12px; border-radius: 999px;
+    font-weight: 700; font-size: 12px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  textarea {
+    width: 100%; min-height: 200px;
+    padding: 16px; border-radius: 16px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px;
+    outline: none; resize: vertical;
+    font-family: inherit; line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  textarea:focus { border-color: #a0d8b3; }
+
+  .big-btn {
+    width: 100%; padding: 16px; border-radius: 16px;
+    border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 16px; font-weight: bold;
+    cursor: pointer;
+  }
+  .big-btn:active { transform: scale(0.97); }
+  .big-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .result-card {
+    margin-top: 20px;
+    background: rgba(160,216,179,0.06);
+    border: 1px solid rgba(160,216,179,0.2);
+    border-radius: 16px;
+    padding: 20px;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #ddd;
+    white-space: pre-wrap;
+    word-break: break-word;
+    display: none;
+  }
+  .result-card.show { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .history-title {
+    font-size: 14px; color: #a0d8b3; font-weight: 700;
+    margin-top: 30px; margin-bottom: 10px;
+  }
+  .history-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .history-item .h-date { font-size: 11px; color: #666; margin-bottom: 4px; }
+  .history-item .h-name { color: #ccc; }
+  .history-item:active { background: rgba(255,255,255,0.08); }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">📄 合同分析</div>
+</div>
+
+<div id="content">
+  <p class="intro">把租房合同、保险条款、学校协议的文本粘贴进来，AI 会帮你总结核心条款、标出风险点，给出留学生视角的建议。</p>
+
+  <div class="vip-tip" id="vipTip" style="display:none;">
+    <span>👑 这是 VIP 专属功能</span>
+    <a class="go" href="/vip">去开通</a>
+  </div>
+
+  <textarea id="contractText" placeholder="把合同文字粘贴到这里（建议不超过 8000 字）..."></textarea>
+  <button class="big-btn" id="analyzeBtn" onclick="analyze()">🔍 开始分析</button>
+
+  <div class="result-card" id="resultCard"></div>
+
+  <div class="history-title" id="historyTitle" style="display:none;">📜 历史分析</div>
+  <div id="historyList"></div>
+</div>
+
+<script>
+  var el = function(id) { return document.getElementById(id); };
+  var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/';
+  }
+
+  // ===== VIP 检查 =====
+  async function checkVip() {
+    if (!MY_EMAIL) {
+      el('vipTip').style.display = 'flex';
+      el('analyzeBtn').disabled = true;
+      el('analyzeBtn').textContent = '请先登录';
+      return;
+    }
+    try {
+      var r = await fetch('/api/vip/status?email=' + encodeURIComponent(MY_EMAIL));
+      var d = await r.json();
+      if (!d.is_vip) {
+        el('vipTip').style.display = 'flex';
+        el('analyzeBtn').disabled = true;
+        el('analyzeBtn').textContent = '👑 开通 VIP 后使用';
+      } else {
+        el('vipTip').style.display = 'none';
+        el('analyzeBtn').disabled = false;
+        el('analyzeBtn').textContent = '🔍 开始分析';
+      }
+    } catch (e) {}
+  }
+
+  async function analyze() {
+    var text = el('contractText').value.trim();
+    if (!text) { alert('请先粘贴合同文本'); return; }
+    if (text.length < 50) { alert('文本太短，请粘贴完整的合同内容'); return; }
+
+    if (navigator.vibrate) navigator.vibrate(15);
+    el('analyzeBtn').disabled = true;
+    el('analyzeBtn').textContent = '⏳ AI 分析中...（大约 10 秒）';
+    el('resultCard').classList.remove('show');
+
+    try {
+      var r = await fetch('/api/contract/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          text: text,
+          file_name: '粘贴的合同'
+        })
+      });
+      var d = await r.json();
+      if (d.error) {
+        alert(d.error);
+        if (d.need_vip) location.href = '/vip';
+        return;
+      }
+      el('resultCard').textContent = d.result;
+      el('resultCard').classList.add('show');
+      el('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      loadHistory();
+    } catch (e) {
+      alert('网络错误，请稍后重试');
+    } finally {
+      el('analyzeBtn').disabled = false;
+      el('analyzeBtn').textContent = '🔍 开始分析';
+    }
+  }
+
+  async function loadHistory() {
+    if (!MY_EMAIL) return;
+    try {
+      var r = await fetch('/api/contract/history?email=' + encodeURIComponent(MY_EMAIL));
+      var d = await r.json();
+      if (!Array.isArray(d) || d.length === 0) return;
+      el('historyTitle').style.display = 'block';
+      var list = el('historyList');
+      list.innerHTML = '';
+      d.forEach(function(item) {
+        var div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML =
+          '<div class="h-date">' + (item.created_at ? item.created_at.slice(0, 16).replace('T', ' ') : '') + '</div>' +
+          '<div class="h-name">' + escapeHtml(item.file_name || '合同') + '</div>';
+        div.addEventListener('click', function() {
+          el('resultCard').textContent = item.summary;
+          el('resultCard').classList.add('show');
+          el('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        list.appendChild(div);
+      });
+    } catch (e) {}
+  }
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  checkVip();
+  loadHistory();
+</script>
+<script src="/static/js/auth-gate.js"></script>
+</body>
+</html>

@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>备忘盒子 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
+
+  #content { padding: 10px 16px 40px; }
+
+  .intro {
+    color: #888; font-size: 13px; line-height: 1.6;
+    margin-bottom: 16px;
+  }
+
+  .new-list-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .new-list-row input {
+    flex: 1;
+    padding: 13px 16px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    font-family: inherit;
+  }
+  .new-list-row input:focus { border-color: #a0d8b3; }
+  .new-list-row button {
+    padding: 0 18px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .list-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .list-card .l-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .list-card .l-title {
+    flex: 1;
+    font-size: 15px; font-weight: 700; color: #fff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .list-card .l-count {
+    font-size: 11px; color: #888;
+    background: rgba(255,255,255,0.06);
+    padding: 3px 8px; border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .list-card .l-del {
+    background: rgba(231,76,60,0.12);
+    border: none; color: #e74c3c;
+    width: 26px; height: 26px; border-radius: 50%;
+    font-size: 12px; cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .list-card .l-actions {
+    display: flex; gap: 8px; margin-top: 10px;
+  }
+  .list-card .l-actions button {
+    flex: 1; padding: 10px; border-radius: 10px;
+    border: none; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .list-card .btn-open {
+    background: rgba(160,216,179,0.15); color: #a0d8b3;
+  }
+  .list-card .btn-export {
+    background: rgba(255,255,255,0.06); color: #ccc;
+  }
+
+  /* 清单详情弹层 */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: none; justify-content: center; align-items: flex-end;
+    z-index: 200; padding-top: 40px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #1a1a2e; width: 100%; max-width: 500px;
+    border-radius: 25px 25px 0 0; padding: 20px 18px 30px;
+    max-height: 85vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+  .modal-content .m-title {
+    font-size: 17px; margin-bottom: 14px;
+    color: #a0d8b3; text-align: center;
+  }
+
+  .add-item-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .add-item-row input {
+    flex: 1;
+    padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    font-family: inherit;
+  }
+  .add-item-row input:focus { border-color: #a0d8b3; }
+  .add-item-row button {
+    padding: 0 16px; border-radius: 12px; border: none;
+    background: rgba(160,216,179,0.2); color: #a0d8b3;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .item-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-row .checkbox {
+    width: 22px; height: 22px; border-radius: 6px;
+    border: 2px solid rgba(160,216,179,0.4);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0;
+    color: transparent; font-size: 14px;
+    transition: 0.15s;
+  }
+  .item-row .checkbox.checked {
+    background: #a0d8b3; border-color: #a0d8b3;
+    color: #1a0f14; font-weight: 700;
+  }
+  .item-row .item-text {
+    flex: 1;
+    font-size: 14px; color: #ddd;
+    line-height: 1.5;
+    word-break: break-word;
+    cursor: pointer;
+  }
+  .item-row .item-text.checked {
+    text-decoration: line-through;
+    color: #666;
+  }
+  .item-row .item-del {
+    background: none; border: none;
+    color: #555; font-size: 14px;
+    cursor: pointer; padding: 4px;
+    flex-shrink: 0;
+  }
+  .item-row .item-del:active { color: #e74c3c; }
+
+  .empty-items {
+    text-align: center; color: #666;
+    font-size: 13px; padding: 30px 20px;
+  }
+
+  .empty-state {
+    text-align: center; color: #666; font-size: 13px;
+    padding: 50px 20px; line-height: 1.8;
+  }
+
+  .modal-close {
+    width: 100%; padding: 14px; border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #ccc; font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    margin-top: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">🗂️ 备忘盒子</div>
+</div>
+
+<div id="content">
+  <p class="intro">创建任意清单，随时勾选、修改、删除，还能导出。</p>
+
+  <div class="new-list-row">
+    <input type="text" id="newListTitle" placeholder="新建清单，如：回国礼物清单" maxlength="30">
+    <button onclick="createList()">＋</button>
+  </div>
+
+  <div id="listContainer"><div class="empty-state">加载中...</div></div>
+</div>
+
+<!-- 清单详情 -->
+<div class="modal" id="detailModal">
+  <div class="modal-content">
+    <div class="m-title" id="detailTitle">清单</div>
+    <div class="add-item-row">
+      <input type="text" id="newItemInput" placeholder="添加一项...">
+      <button onclick="addItem()">＋</button>
+    </div>
+    <div id="itemList"></div>
+    <button class="modal-close" onclick="closeDetail()">关闭</button>
+  </div>
+</div>
+
+<script>
+  var el = function(id) { return document.getElementById(id); };
+  var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  var lists = [];
+  var currentList = null;   // {id, title, icon}
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/';
+  }
+
+  // ===== 加载清单列表 =====
+  async function loadLists() {
+    if (!MY_EMAIL) {
+      el('listContainer').innerHTML = '<div class="empty-state">请先登录</div>';
+      return;
+    }
+    try {
+      var r = await fetch('/api/memo/lists?owner=' + encodeURIComponent(MY_EMAIL));
+      var d = await r.json();
+      lists = Array.isArray(d) ? d : [];
+    } catch (e) { lists = []; }
+    renderLists();
+  }
+
+  function renderLists() {
+    var box = el('listContainer');
+    if (lists.length === 0) {
+      box.innerHTML = '<div class="empty-state">还没有清单<br>在上面输入名字，开始第一个吧</div>';
+      return;
+    }
+    box.innerHTML = '';
+    lists.forEach(function(l) {
+      var card = document.createElement('div');
+      card.className = 'list-card';
+      card.innerHTML =
+        '<div class="l-head">' +
+          '<div class="l-title">' + escapeHtml(l.title) + '</div>' +
+          '<div class="l-count" data-count="' + l.id + '">…</div>' +
+          '<button class="l-del" data-del="' + l.id + '">✕</button>' +
+        '</div>' +
+        '<div class="l-actions">' +
+          '<button class="btn-open" data-open="' + l.id + '">📂 打开</button>' +
+          '<button class="btn-export" data-export="' + l.id + '">📤 导出</button>' +
+        '</div>';
+      box.appendChild(card);
+      loadCount(l.id);
+    });
+  }
+
+  async function loadCount(listId) {
+    try {
+      var r = await fetch('/api/memo/items?list_id=' + listId);
+      var d = await r.json();
+      var total = Array.isArray(d) ? d.length : 0;
+      var checked = Array.isArray(d) ? d.filter(function(i) { return i.checked; }).length : 0;
+      var elCount = document.querySelector('[data-count="' + listId + '"]');
+      if (elCount) elCount.textContent = checked + '/' + total;
+    } catch (e) {}
+  }
+
+  async function createList() {
+    var title = el('newListTitle').value.trim();
+    if (!title) { alert('请输入清单名'); return; }
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+    if (navigator.vibrate) navigator.vibrate(15);
+    try {
+      var r = await fetch('/api/memo/lists/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, title: title })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      el('newListTitle').value = '';
+      await loadLists();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function deleteList(id) {
+    if (!confirm('删除这个清单？里面的内容也会一起删除。')) return;
+    try {
+      await fetch('/api/memo/lists/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, email: MY_EMAIL })
+      });
+      await loadLists();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  // ===== 详情 =====
+  async function openDetail(listId) {
+    var list = lists.filter(function(l) { return String(l.id) === String(listId); })[0];
+    if (!list) return;
+    currentList = list;
+    el('detailTitle').textContent = list.title;
+    el('detailModal').classList.add('show');
+    await loadItems();
+  }
+
+  function closeDetail() {
+    el('detailModal').classList.remove('show');
+    currentList = null;
+    loadLists();   // 刷新列表上的计数
+  }
+
+  async function loadItems() {
+    if (!currentList) return;
+    var listEl = el('itemList');
+    listEl.innerHTML = '<div class="empty-items">加载中...</div>';
+    try {
+      var r = await fetch('/api/memo/items?list_id=' + currentList.id);
+      var d = await r.json();
+      if (!Array.isArray(d)) d = [];
+      if (d.length === 0) {
+        listEl.innerHTML = '<div class="empty-items">还没有内容，上面添加吧</div>';
+        return;
+      }
+      listEl.innerHTML = '';
+      d.forEach(function(item) {
+        var row = document.createElement('div');
+        row.className = 'item-row';
+        row.innerHTML =
+          '<div class="checkbox' + (item.checked ? ' checked' : '') + '" data-check="' + item.id + '">✓</div>' +
+          '<div class="item-text' + (item.checked ? ' checked' : '') + '" data-edit="' + item.id + '">' + escapeHtml(item.content) + '</div>' +
+          '<button class="item-del" data-itemdel="' + item.id + '">🗑</button>';
+        listEl.appendChild(row);
+      });
+    } catch (e) {
+      listEl.innerHTML = '<div class="empty-items">加载失败</div>';
+    }
+  }
+
+  async function addItem() {
+    if (!currentList) return;
+    var content = el('newItemInput').value.trim();
+    if (!content) { alert('写点什么'); return; }
+    if (navigator.vibrate) navigator.vibrate(12);
+    try {
+      await fetch('/api/memo/items/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ list_id: currentList.id, content: content })
+      });
+      el('newItemInput').value = '';
+      await loadItems();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function toggleItem(id, current) {
+    try {
+      await fetch('/api/memo/items/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, checked: !current })
+      });
+      await loadItems();
+    } catch (e) {}
+  }
+
+  async function editItem(id) {
+    var row = document.querySelector('[data-edit="' + id + '"]');
+    if (!row) return;
+    var oldText = row.textContent;
+    var newText = prompt('修改内容：', oldText);
+    if (newText === null) return;
+    newText = newText.trim();
+    if (!newText || newText === oldText) return;
+    try {
+      await fetch('/api/memo/items/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, content: newText })
+      });
+      await loadItems();
+    } catch (e) {}
+  }
+
+  async function deleteItem(id) {
+    if (!confirm('删除这一项？')) return;
+    try {
+      await fetch('/api/memo/items/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+      });
+      await loadItems();
+    } catch (e) {}
+  }
+
+  // ===== 导出 =====
+  async function exportList(listId) {
+    var list = lists.filter(function(l) { return String(l.id) === String(listId); })[0];
+    if (!list) return;
+    try {
+      var r = await fetch('/api/memo/items?list_id=' + listId);
+      var d = await r.json();
+      if (!Array.isArray(d)) d = [];
+      var text = '📋 ' + list.title + '\n\n';
+      d.forEach(function(item) {
+        text += (item.checked ? '✅ ' : '⬜ ') + item.content + '\n';
+      });
+      // 复制到剪贴板
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(text);
+        alert('已复制到剪贴板！\n\n可以粘贴到微信、备忘录等地方。');
+      } else {
+        // 老浏览器回退
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        alert('已复制到剪贴板！');
+      }
+    } catch (e) {
+      alert('导出失败');
+    }
+  }
+
+  // ===== 事件委托 =====
+  document.addEventListener('click', function(e) {
+    var t = e.target;
+
+    if (t.matches('[data-open]')) {
+      e.stopPropagation();
+      openDetail(t.getAttribute('data-open'));
+      return;
+    }
+    if (t.matches('[data-del]')) {
+      e.stopPropagation();
+      deleteList(t.getAttribute('data-del'));
+      return;
+    }
+    if (t.matches('[data-export]')) {
+      e.stopPropagation();
+      exportList(t.getAttribute('data-export'));
+      return;
+    }
+    if (t.matches('[data-check]')) {
+      e.stopPropagation();
+      var isChecked = t.classList.contains('checked');
+      toggleItem(t.getAttribute('data-check'), isChecked);
+      return;
+    }
+    if (t.matches('[data-edit]')) {
+      e.stopPropagation();
+      editItem(t.getAttribute('data-edit'));
+      return;
+    }
+    if (t.matches('[data-itemdel]')) {
+      e.stopPropagation();
+      deleteItem(t.getAttribute('data-itemdel'));
+      return;
+    }
+  });
+
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  // 启动
+  loadLists();
+</script>
+<script src="/static/js/auth-gate.js"></script>
+</body>
+</html>
