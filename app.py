@@ -1356,7 +1356,7 @@ def api_vip_consume():
 
 @app.route("/api/vip/redeem", methods=["POST"])
 def api_vip_redeem():
-    """兑换码激活 VIP（Stripe 激活前的临时方案）"""
+    """兑换码激活 VIP（永久）"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     data = request.get_json()
@@ -1373,14 +1373,13 @@ def api_vip_redeem():
         if row.get("used_by"):
             return jsonify({"error": "兑换码已被使用"}), 400
 
-        # 激活 VIP（30 天）
+        # 激活 VIP（永久，无到期时间）
         from datetime import datetime as _dt
         now = _dt.now(timezone.utc)
-        expire = now + timedelta(days=30)
 
         payload = {
             "is_vip": True,
-            "vip_expire_at": expire.isoformat(),
+            "vip_expire_at": None,
             "updated_at": now.isoformat()
         }
         exist = supabase.table("user_profiles").select("email").eq("email", email).execute()
@@ -1395,7 +1394,7 @@ def api_vip_redeem():
             "used_at": now.isoformat()
         }).eq("code", code).execute()
 
-        return jsonify({"success": True, "expire_at": expire.isoformat()})
+        return jsonify({"success": True, "expire_at": None})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -1773,6 +1772,89 @@ def api_her_idols_delete():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#                    Girl's Room · 自定义团
+# ==========================================================
+@app.route("/api/idol_custom/list")
+def api_idol_custom_list():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    email = request.args.get("email", "").strip().lower()
+    if not email:
+        return jsonify({"error": "缺少 email"}), 400
+    try:
+        result = (
+            supabase.table("idol_custom_groups")
+            .select("*")
+            .eq("user_email", email)
+            .order("created_at", desc=False)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/idol_custom/add", methods=["POST"])
+def api_idol_custom_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    genre = data.get("genre", "").strip()
+    gender = data.get("gender", "boy").strip()
+    group_name = data.get("group_name", "").strip()
+    member_name = data.get("member_name", "").strip()
+    emoji = data.get("emoji", "⭐").strip() or "⭐"
+
+    if not email or not genre or not group_name or not member_name:
+        return jsonify({"error": "缺少参数"}), 400
+
+    try:
+        exist = (
+            supabase.table("idol_custom_groups")
+            .select("id")
+            .eq("user_email", email)
+            .eq("genre", genre)
+            .eq("gender", gender)
+            .eq("group_name", group_name)
+            .eq("member_name", member_name)
+            .execute()
+        )
+        if exist.data:
+            return jsonify({"error": "这个成员已经加过了"}), 400
+
+        supabase.table("idol_custom_groups").insert({
+            "user_email": email,
+            "genre": genre,
+            "gender": gender,
+            "group_name": group_name,
+            "member_name": member_name,
+            "emoji": emoji,
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/idol_custom/delete", methods=["POST"])
+def api_idol_custom_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    cid = data.get("id")
+    email = data.get("email", "").strip().lower()
+    if not cid or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("idol_custom_groups").delete().eq("id", cid).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    
 
 @app.route("/api/her_chats")
 def api_her_chats_list():

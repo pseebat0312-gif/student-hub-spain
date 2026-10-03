@@ -233,6 +233,27 @@
     color: #f4b8d0;
   }
 
+  /* 分区切换（K-pop / 内娱 / J-pop / 泰娱） */
+  .genre-tabs {
+    display: flex; gap: 6px; margin-bottom: 14px;
+    background: rgba(255,255,255,0.04);
+    padding: 4px; border-radius: 999px;
+    overflow-x: auto;
+  }
+  .genre-tabs::-webkit-scrollbar { display: none; }
+  .genre-tab {
+    flex: 1; min-width: 70px; padding: 9px 4px;
+    border-radius: 999px; border: none;
+    background: transparent; color: #888;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    white-space: nowrap;
+  }
+  .genre-tab.active {
+    background: rgba(244,184,208,0.2);
+    color: #f4b8d0;
+  }
+
   .group-tabs {
     display: flex; gap: 8px;
     overflow-x: auto;
@@ -253,6 +274,12 @@
   }
   .group-chip:active { transform: scale(0.95); }
 
+  .group-chip.custom::after {
+    content: ' ✎';
+    font-size: 10px;
+    opacity: 0.7;
+  }
+
   .member-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
@@ -263,6 +290,7 @@
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 16px; cursor: pointer;
     transition: 0.2s;
+    position: relative;
   }
   .member-card:active { transform: scale(0.95); background: rgba(244,184,208,0.1); }
   .member-card .emoji { font-size: 34px; margin-bottom: 8px; line-height: 1; }
@@ -272,6 +300,29 @@
     background: rgba(244,184,208,0.08);
   }
   .member-card.added .name::after { content: ' ♥'; color: #f4b8d0; }
+
+  /* 自定义成员删除按钮 */
+  .member-card .custom-del {
+    position: absolute; top: 4px; right: 4px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(255,107,107,0.2);
+    color: #ff6b6b;
+    border: none; font-size: 11px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .add-member-card {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center;
+    padding: 14px 8px 12px;
+    background: rgba(244,184,208,0.06);
+    border: 1px dashed rgba(244,184,208,0.4);
+    border-radius: 16px; cursor: pointer;
+  }
+  .add-member-card:active { transform: scale(0.95); }
+  .add-member-card .plus { font-size: 28px; color: #f4b8d0; line-height: 1; margin-bottom: 6px; }
+  .add-member-card .txt { font-size: 11px; color: #f4b8d0; font-weight: 600; }
 
   .my-idols-grid {
     display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
@@ -625,7 +676,16 @@
       </div>
     </div>
 
-    <div class="group-switch">
+    <!-- 分区：K-pop / 内娱 / J-pop / 泰娱 -->
+    <div class="genre-tabs">
+      <button class="genre-tab active" data-genre="kpop" onclick="switchGenre('kpop', this)">K-pop</button>
+      <button class="genre-tab" data-genre="cpop" onclick="switchGenre('cpop', this)">内娱</button>
+      <button class="genre-tab" data-genre="jpop" onclick="switchGenre('jpop', this)">J-pop</button>
+      <button class="genre-tab" data-genre="thai" onclick="switchGenre('thai', this)">泰娱</button>
+    </div>
+
+    <!-- 男团 / 女团（只在 K-pop / 内娱 / J-pop 显示，泰娱隐藏） -->
+    <div class="group-switch" id="genderSwitch">
       <button class="sw-btn active" data-gender="boy" onclick="switchGender('boy', this)">👦 男团</button>
       <button class="sw-btn" data-gender="girl" onclick="switchGender('girl', this)">👧 女团</button>
     </div>
@@ -676,6 +736,41 @@
     </div>
     <div class="edit-actions" style="margin-top:12px;">
       <button class="cancel" onclick="closeChat()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 自己添加：弹窗（先选分区，再填团名 / 成员名） -->
+<div class="edit-modal" id="addCustomModal">
+  <div class="edit-card">
+    <h3>➕ 自己添加</h3>
+
+    <div class="edit-label">选分区</div>
+    <div class="genre-tabs" style="margin-bottom:8px;">
+      <button class="genre-tab active" data-genre="kpop" onclick="pickAddGenre('kpop', this)">K-pop</button>
+      <button class="genre-tab" data-genre="cpop" onclick="pickAddGenre('cpop', this)">内娱</button>
+      <button class="genre-tab" data-genre="jpop" onclick="pickAddGenre('jpop', this)">J-pop</button>
+      <button class="genre-tab" data-genre="thai" onclick="pickAddGenre('thai', this)">泰娱</button>
+    </div>
+
+    <div class="edit-label">类型（泰娱可不选）</div>
+    <div class="group-switch" style="margin-bottom:8px;">
+      <button class="sw-btn active" data-gender="boy" onclick="pickAddGender('boy', this)">👦 男团</button>
+      <button class="sw-btn" data-gender="girl" onclick="pickAddGender('girl', this)">👧 女团</button>
+    </div>
+
+    <div class="edit-label">团名 / 分类名</div>
+    <input type="text" class="edit-input" id="addGroupName" placeholder="比如：SEVENTEEN、时代少年团、Snow Man">
+
+    <div class="edit-label">成员名</div>
+    <input type="text" class="edit-input" id="addMemberName" placeholder="比如：S.Coups、丁程鑫、目黑莲">
+
+    <div class="edit-label">选一个 emoji 头像</div>
+    <div class="emoji-picker" id="addEmojiPicker"></div>
+
+    <div class="edit-actions">
+      <button class="cancel" onclick="closeAddCustom()">取消</button>
+      <button class="save" onclick="submitAddCustom()">添加</button>
     </div>
   </div>
 </div>
@@ -825,16 +920,27 @@
     } catch (e) { return []; }
   }
 
+  // ============ 已修：更稳的 addCycle（超时 + 详细错误） ============
   async function addCycle() {
     const start = document.getElementById('cycleStart').value;
     const end = document.getElementById('cycleEnd').value || null;
+
     if (!start) { alert('请选择开始日期'); return; }
-    if (!MY_EMAIL) { alert('请先登录'); return; }
+    if (!MY_EMAIL) {
+      alert('请先登录');
+      location.href = '/login';
+      return;
+    }
     if (navigator.vibrate) navigator.vibrate(12);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 20000);
+
     try {
       const resp = await fetch('/api/her_cycles/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           email: MY_EMAIL,
           start_date: start,
@@ -843,16 +949,36 @@
           symptoms: selectedSymptoms
         })
       });
-      const data = await resp.json();
-      if (data.error) { alert('保存失败：' + data.error); return; }
-    } catch (e) { alert('网络错误'); return; }
-    document.getElementById('cycleStart').value = '';
-    document.getElementById('cycleEnd').value = '';
-    selectedFlow = '';
-    selectedSymptoms = [];
-    renderFlowRow();
-    renderSymptomGrid();
-    await renderCycles();
+      clearTimeout(timeoutId);
+
+      let data = {};
+      try { data = await resp.json(); } catch (e) { data = {}; }
+
+      if (!resp.ok) {
+        alert('保存失败：' + (data.error || ('服务器返回 ' + resp.status)));
+        return;
+      }
+      if (data.error) {
+        alert('保存失败：' + data.error);
+        return;
+      }
+
+      document.getElementById('cycleStart').value = '';
+      document.getElementById('cycleEnd').value = '';
+      selectedFlow = '';
+      selectedSymptoms = [];
+      renderFlowRow();
+      renderSymptomGrid();
+      await renderCycles();
+
+    } catch (e) {
+      clearTimeout(timeoutId);
+      if (e.name === 'AbortError') {
+        alert('服务器响应超时（可能正在唤醒中）\n\n请等 10 秒后重试一次。');
+      } else {
+        alert('保存失败：' + (e.message || '网络异常，请重试'));
+      }
+    }
   }
 
   async function deleteCycle(id) {
@@ -964,63 +1090,78 @@
   // ==========================================================
   //                        心肝数据
   // ==========================================================
+  // ⚠️ 你原有的团全部放进 K-pop，并保留男团 / 女团分类
   const IDOL_DATA = {
-    boy: {
-      BTS: [
-        { name: 'RM', emoji: '🐨' },
-        { name: 'Jin', emoji: '🐹' },
-        { name: 'SUGA', emoji: '🐈‍⬛' },
-        { name: 'j-hope', emoji: '🐿️' },
-        { name: 'Jimin', emoji: '🐥' },
-        { name: 'V', emoji: '🐻' },
-        { name: 'Jungkook', emoji: '🐰' }
-      ],
-      RIIZE: [
-        { name: 'Shotaro', emoji: '🐭' },
-        { name: 'Eunseok', emoji: '🪨' },
-        { name: 'Sungchan', emoji: '🦌' },
-        { name: 'Wonbin', emoji: '🐱' },
-        { name: 'Sohee', emoji: '💂' },
-        { name: 'Anton', emoji: '🐶' }
-      ],
-      ENHYPEN: [
-        { name: 'Jungwon', emoji: '🐱' },
-        { name: 'Jay', emoji: '🐈‍⬛' },
-        { name: 'Jake', emoji: '🐶' },
-        { name: 'Sunghoon', emoji: '🍙' },
-        { name: 'Sunoo', emoji: '🦊' },
-        { name: 'Ni-ki', emoji: '🦆' }
-      ],
-      TXT: [
-        { name: 'Yeonjun', emoji: '🐱' },
-        { name: 'Soobin', emoji: '🐰‍' },
-        { name: 'Beomgyu', emoji: '🐶' },
-        { name: 'Taehyun', emoji: '🐱' },
-        { name: 'HueningKai', emoji: '🐧' }
-      ]
+    kpop: {
+      boy: {
+        BTS: [
+          { name: 'RM', emoji: '🐨' },
+          { name: 'Jin', emoji: '🐹' },
+          { name: 'SUGA', emoji: '🐈‍⬛' },
+          { name: 'j-hope', emoji: '🐿️' },
+          { name: 'Jimin', emoji: '🐥' },
+          { name: 'V', emoji: '🐻' },
+          { name: 'Jungkook', emoji: '🐰' }
+        ],
+        RIIZE: [
+          { name: 'Shotaro', emoji: '🐭' },
+          { name: 'Eunseok', emoji: '🪨' },
+          { name: 'Sungchan', emoji: '🦌' },
+          { name: 'Wonbin', emoji: '🐱' },
+          { name: 'Sohee', emoji: '💂' },
+          { name: 'Anton', emoji: '🐶' }
+        ],
+        ENHYPEN: [
+          { name: 'Jungwon', emoji: '🐱' },
+          { name: 'Jay', emoji: '🐈‍⬛' },
+          { name: 'Jake', emoji: '🐶' },
+          { name: 'Sunghoon', emoji: '🍙' },
+          { name: 'Sunoo', emoji: '🦊' },
+          { name: 'Ni-ki', emoji: '🦆' }
+        ],
+        TXT: [
+          { name: 'Yeonjun', emoji: '🐱' },
+          { name: 'Soobin', emoji: '🐰‍' },
+          { name: 'Beomgyu', emoji: '🐶' },
+          { name: 'Taehyun', emoji: '🐱' },
+          { name: 'HueningKai', emoji: '🐧' }
+        ]
+      },
+      girl: {
+        aespa: [
+          { name: 'Karina', emoji: '🐍' },
+          { name: 'Winter', emoji: '🐶' },
+          { name: 'Giselle', emoji: '🐶' },
+          { name: 'Ningning', emoji: '🐱' }
+        ],
+        ITZY: [
+          { name: 'Yeji', emoji: '🐱' },
+          { name: 'Lia', emoji: '🐰' },
+          { name: 'Ryujin', emoji: '🐻' },
+          { name: 'Chaeryeong', emoji: '🦊' },
+          { name: 'Yuna', emoji: '🐥' }
+        ],
+        NMIXX: [
+          { name: 'Lily', emoji: '🐨' },
+          { name: 'Haewon', emoji: '🐻' },
+          { name: 'Sullyoon', emoji: '🦌' },
+          { name: 'Bae', emoji: '🐶' },
+          { name: 'Jiwoo', emoji: '🐶' },
+          { name: 'Kyujin', emoji: '🐱' }
+        ]
+      }
     },
-    girl: {
-      aespa: [
-        { name: 'Karina', emoji: '🐍' },
-        { name: 'Winter', emoji: '🐶' },
-        { name: 'Giselle', emoji: '🐶' },
-        { name: 'Ningning', emoji: '🐱' }
-      ],
-      ITZY: [
-        { name: 'Yeji', emoji: '🐱' },
-        { name: 'Lia', emoji: '🐰' },
-        { name: 'Ryujin', emoji: '🐻' },
-        { name: 'Chaeryeong', emoji: '🦊' },
-        { name: 'Yuna', emoji: '🐥' }
-      ],
-      NMIXX: [
-        { name: 'Lily', emoji: '🐨' },
-        { name: 'Haewon', emoji: '🐻' },
-        { name: 'Sullyoon', emoji: '🦌' },
-        { name: 'Bae', emoji: '🐶' },
-        { name: 'Jiwoo', emoji: '🐶' },
-        { name: 'Kyujin', emoji: '🐱' }
-      ]
+    cpop: {
+      boy: {},
+      girl: {}
+    },
+    jpop: {
+      boy: {},
+      girl: {}
+    },
+    thai: {
+      boy: {},
+      girl: {}
     }
   };
 
@@ -1031,9 +1172,11 @@
     '🍙','🐈‍⬛','🐭','🪨','💂','🐍'
   ];
 
+  let currentGenre = 'kpop';
   let currentGender = 'boy';
-  let currentGroup = 'BTS';
+  let currentGroup = null;
   let myIdols = [];
+  let customIdols = [];   // 自定义团（从后端拉）
   let editingIdol = null;
   let editingAvatarUrl = '';
   let editingEmoji = '';
@@ -1052,8 +1195,34 @@
       if (!Array.isArray(myIdols)) myIdols = [];
     } catch (e) { myIdols = []; }
     renderMyIdols(myIdols);
+    await loadCustomIdols();
     renderGroups();
     renderMembers();
+  }
+
+  // ============ 从后端拉自定义团，并合并到 IDOL_DATA ============
+  async function loadCustomIdols() {
+    if (!MY_EMAIL) { customIdols = []; return; }
+    try {
+      const resp = await fetch('/api/idol_custom/list?email=' + encodeURIComponent(MY_EMAIL));
+      const data = await resp.json();
+      customIdols = Array.isArray(data) ? data : [];
+    } catch (e) { customIdols = []; }
+    mergeCustomIntoIdolData();
+  }
+
+  function mergeCustomIntoIdolData() {
+    customIdols.forEach(c => {
+      if (!IDOL_DATA[c.genre]) IDOL_DATA[c.genre] = { boy: {}, girl: {} };
+      if (!IDOL_DATA[c.genre][c.gender]) IDOL_DATA[c.genre][c.gender] = {};
+      if (!IDOL_DATA[c.genre][c.gender][c.group_name]) {
+        IDOL_DATA[c.genre][c.gender][c.group_name] = [];
+      }
+      const list = IDOL_DATA[c.genre][c.gender][c.group_name];
+      if (!list.some(m => m.name === c.member_name)) {
+        list.push({ name: c.member_name, emoji: c.emoji || '⭐', _customId: c.id });
+      }
+    });
   }
 
   function renderMyIdols(list) {
@@ -1082,8 +1251,23 @@
 
   function renderGroups() {
     const tabs = document.getElementById('groupTabs');
-    const groups = Object.keys(IDOL_DATA[currentGender]);
+    const genderData = IDOL_DATA[currentGenre][currentGender] || {};
+    const groups = Object.keys(genderData);
     tabs.innerHTML = '';
+
+    if (groups.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'color:#666;font-size:12px;padding:8px 4px;';
+      empty.textContent = '还没有团，点下面「➕ 自己添加」吧';
+      tabs.appendChild(empty);
+      currentGroup = null;
+      return;
+    }
+
+    if (!currentGroup || !groups.includes(currentGroup)) {
+      currentGroup = groups[0];
+    }
+
     groups.forEach(g => {
       const chip = document.createElement('div');
       chip.className = 'group-chip' + (g === currentGroup ? ' active' : '');
@@ -1099,8 +1283,11 @@
 
   function renderMembers() {
     const grid = document.getElementById('memberGrid');
-    const members = IDOL_DATA[currentGender][currentGroup] || [];
     grid.innerHTML = '';
+
+    const genderData = IDOL_DATA[currentGenre][currentGender] || {};
+    const members = (currentGroup && genderData[currentGroup]) ? genderData[currentGroup] : [];
+
     members.forEach(m => {
       const isAdded = myIdols.some(i => i.group_name === currentGroup && i.member_name === m.name);
       const div = document.createElement('div');
@@ -1108,8 +1295,10 @@
       div.innerHTML = `
         <div class="emoji">${m.emoji}</div>
         <div class="name">${escapeHtml(m.name)}</div>
+        ${m._customId ? `<button class="custom-del" data-cdid="${m._customId}">✕</button>` : ''}
       `;
-      div.onclick = () => {
+      div.onclick = (e) => {
+        if (e.target.classList.contains('custom-del')) return;
         if (isAdded) {
           const idol = myIdols.find(i => i.group_name === currentGroup && i.member_name === m.name);
           if (idol) openEditIdol(idol);
@@ -1119,14 +1308,59 @@
       };
       grid.appendChild(div);
     });
+
+    // 每个分区最后一个：➕ 自己添加
+    const addCard = document.createElement('div');
+    addCard.className = 'add-member-card';
+    addCard.innerHTML = `
+      <div class="plus">＋</div>
+      <div class="txt">自己添加</div>
+    `;
+    addCard.onclick = openAddCustom;
+    grid.appendChild(addCard);
+
+    // 绑定自定义成员删除按钮
+    grid.querySelectorAll('.custom-del').forEach(btn => {
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        const cid = btn.getAttribute('data-cdid');
+        deleteCustomIdol(cid);
+      };
+    });
+  }
+
+  async function deleteCustomIdol(id) {
+    if (!confirm('从自定义列表里删除这个成员？')) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+    try {
+      await fetch('/api/idol_custom/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, email: MY_EMAIL })
+      });
+    } catch (e) {}
+    await loadMyIdols();
+  }
+
+  function switchGenre(genre, el) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    currentGenre = genre;
+    currentGender = 'boy';
+    currentGroup = null;
+    document.querySelectorAll('.genre-tab').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+    const boyBtn = document.querySelector('#genderSwitch .sw-btn[data-gender="boy"]');
+    if (boyBtn) boyBtn.classList.add('active');
+    renderGroups();
+    renderMembers();
   }
 
   function switchGender(g, el) {
     if (navigator.vibrate) navigator.vibrate(8);
     currentGender = g;
-    const groups = Object.keys(IDOL_DATA[g]);
-    currentGroup = groups[0];
-    document.querySelectorAll('.sw-btn').forEach(b => b.classList.remove('active'));
+    currentGroup = null;
+    document.querySelectorAll('#genderSwitch .sw-btn').forEach(b => b.classList.remove('active'));
     el.classList.add('active');
     renderGroups();
     renderMembers();
@@ -1153,6 +1387,129 @@
     } catch (e) { alert('网络错误'); return; }
     await loadMyIdols();
     if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
+  }
+
+  // ==========================================================
+  //                        自己添加（弹窗）
+  // ==========================================================
+  let addGenre = 'kpop';
+  let addGender = 'boy';
+  let addEmoji = '⭐';
+
+  function openAddCustom() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+
+    addGenre = currentGenre;
+    addGender = currentGender;
+    addEmoji = '⭐';
+
+    document.getElementById('addGroupName').value = '';
+    document.getElementById('addMemberName').value = '';
+
+    document.querySelectorAll('#addCustomModal .genre-tab').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-genre') === addGenre);
+    });
+    document.querySelectorAll('#addCustomModal .sw-btn').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-gender') === addGender);
+    });
+
+    const picker = document.getElementById('addEmojiPicker');
+    picker.innerHTML = '';
+    EMOJI_OPTIONS.forEach(e => {
+      const div = document.createElement('div');
+      div.className = 'emoji-pick' + (e === addEmoji ? ' selected' : '');
+      div.textContent = e;
+      div.onclick = () => {
+        addEmoji = e;
+        document.querySelectorAll('#addEmojiPicker .emoji-pick').forEach(p => p.classList.remove('selected'));
+        div.classList.add('selected');
+      };
+      picker.appendChild(div);
+    });
+
+    document.getElementById('addCustomModal').classList.add('show');
+  }
+
+  function closeAddCustom() {
+    document.getElementById('addCustomModal').classList.remove('show');
+  }
+
+  function pickAddGenre(genre, el) {
+    addGenre = genre;
+    document.querySelectorAll('#addCustomModal .genre-tab').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function pickAddGender(g, el) {
+    addGender = g;
+    document.querySelectorAll('#addCustomModal .sw-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  // ============ 自己添加（写后端，永久保存） ============
+  async function submitAddCustom() {
+    const group = document.getElementById('addGroupName').value.trim();
+    const member = document.getElementById('addMemberName').value.trim();
+
+    if (!group) { alert('请填团名 / 分类名'); return; }
+    if (!member) { alert('请填成员名'); return; }
+
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    // 1. 写自定义团库（永久保存）
+    try {
+      const resp = await fetch('/api/idol_custom/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          genre: addGenre,
+          gender: addGender,
+          group_name: group,
+          member_name: member,
+          emoji: addEmoji
+        })
+      });
+      const data = await resp.json();
+      if (data.error && data.error !== '这个成员已经加过了') {
+        alert(data.error);
+        return;
+      }
+    } catch (e) { alert('网络错误'); return; }
+
+    // 2. 同时加入我的心肝
+    try {
+      await fetch('/api/her_idols/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          group_name: group,
+          member_name: member,
+          nickname: '',
+          avatar_emoji: addEmoji,
+          avatar_url: ''
+        })
+      });
+    } catch (e) {}
+
+    closeAddCustom();
+
+    // 3. 切到刚添加的分区
+    currentGenre = addGenre;
+    currentGender = addGender;
+    currentGroup = group;
+    document.querySelectorAll('.genre-tab').forEach(b => b.classList.remove('active'));
+    const tab = document.querySelector(`.genre-tab[data-genre="${addGenre}"]`);
+    if (tab) tab.classList.add('active');
+    document.querySelectorAll('#genderSwitch .sw-btn').forEach(b => b.classList.remove('active'));
+    const gBtn = document.querySelector(`#genderSwitch .sw-btn[data-gender="${addGender}"]`);
+    if (gBtn) gBtn.classList.add('active');
+
+    await loadMyIdols();
+    renderGroups();
+    renderMembers();
   }
 
   // ==========================================================
@@ -1801,14 +2158,12 @@
       const data = await resp.json();
       const pending = (data.received || []).filter(r => r.status === 'pending');
       if (pending.length > 0) {
-        // 直接在页面顶部显示一个横幅，点击进入暗号面板
         showSafetyInviteBanner(pending);
       }
     } catch (e) {}
   }
 
   function showSafetyInviteBanner(pending) {
-    // 防止重复
     if (document.getElementById('__safetyInviteBanner')) return;
 
     const banner = document.createElement('div');
@@ -1851,19 +2206,16 @@
     `;
     banner.onclick = () => {
       banner.remove();
-      // 打开暗号面板：走 openSafety 流程
       openSafetyAndShowInvites();
     };
     document.body.appendChild(banner);
 
-    // 10 秒后自动消失
     setTimeout(() => {
       const b = document.getElementById('__safetyInviteBanner');
       if (b) b.remove();
     }, 10000);
   }
 
-  // 打开暗号面板并展示邀请（即使没设置过暗号也能处理邀请）
   async function openSafetyAndShowInvites() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (!MY_EMAIL) {
@@ -1875,17 +2227,13 @@
       const resp = await fetch('/api/her_safety?email=' + encodeURIComponent(MY_EMAIL));
       sosData = await resp.json();
       if (!sosData || !sosData.secret_code) {
-        // 没设置过自己的暗号，也可以直接进"共享管理"模式
-        // 直接打开展示面板（不走验证），因为还没有自己的暗号
         document.getElementById('safetyPanelModal').classList.add('show');
-        // 展示面板里"我的暗号"是空的，但"我守护的人"和"收到的邀请"都能操作
         document.getElementById('sosCodeDisplay').textContent = '（还没设置）';
         document.getElementById('sosCallList').innerHTML = '<div style="text-align:center;color:#666;font-size:12px;padding:14px;">去"编辑设置"里先设置你自己的暗号</div>';
         loadSafetyShares();
         loadWatchingList();
         return;
       }
-      // 已设置过 → 走原验证流程，验证后进入面板
       openSosVerify();
     } catch (e) {
       alert('网络错误');
@@ -1914,7 +2262,6 @@
     if (MY_EMAIL) await loadMyIdols();
     await renderCycles();
     applyIdolTabVisibility();
-    // 检查是否有待处理的暗号共享邀请
     checkPendingSafetyInvites();
   })();
 </script>
