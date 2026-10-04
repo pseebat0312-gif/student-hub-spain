@@ -364,7 +364,8 @@ const ALL_APPS = [
 { id: 'her', name: "Girl's Room", icon: '🎀', url: '/her', color: 'color-pink' },
 { id: 'timetable', name: '我的课表', icon: '📅', url: '/timetable', color: 'color-blue' },
 { id: 'contract', name: '合同分析', icon: '📄', url: '/contract', color: 'color-purple' },
-{ id: 'memo', name: '备忘盒子', icon: '🗂️', url: '/memo', color: 'color-green' }
+{ id: 'memo', name: '备忘盒子', icon: '🗂️', url: '/memo', color: 'color-green' },
+{ id: 'emergency_contacts', name: '通讯录', icon: '📞', url: '/emergency_contacts', color: 'color-red' }
 ];
 
 const DEFAULT_ORDER = ALL_APPS.map(a => a.id);
@@ -1315,6 +1316,109 @@ window.addEventListener('load', () => {
   function closeInstallGuide() {
     if (navigator.vibrate) navigator.vibrate(8);
     document.getElementById('installGuideOverlay').style.display = 'none';
+  }
+</script>
+<!-- ============ 更新说明弹窗 ============ -->
+<div id="updateOverlay" style="
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 999999;
+  justify-content: center; align-items: center;
+  padding: 24px;
+  animation: updFadeIn 0.3s ease;
+">
+  <div style="
+    position: relative;
+    width: 100%; max-width: 420px;
+    background: #1c1c1e;
+    border-radius: 26px;
+    padding: 28px 24px 24px;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    max-height: 82vh;
+    overflow-y: auto;
+    animation: updSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  ">
+    <div style="text-align: center; margin-bottom: 18px;">
+      <div style="font-size: 46px; margin-bottom: 8px;">🎉</div>
+      <div style="font-size: 20px; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 4px;">
+        更新啦！
+      </div>
+      <div style="font-size: 12px; color: rgba(255,255,255,0.45);">
+        以下是本次新增内容
+      </div>
+    </div>
+
+    <!-- 👇👇👇 这段就是你要改的地方 👇👇👇 -->
+    <div style="
+      background: rgba(160,216,179,0.08);
+      border: 1px solid rgba(160,216,179,0.2);
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: 13px;
+      color: #ddd;
+      line-height: 1.9;
+      margin-bottom: 20px;
+    ">
+      <div style="color:#a0d8b3;font-weight:700;margin-bottom:8px;">✨本次新增功能：</div>
+      📞 <b>通讯录</b>：自动存入重要号码如112，一键拨号，可以自己加号码和分组<br>
+      📅 <b>我的课表</b>：手动填课，彩色标记，一次加多天，可局部编辑<br>
+      📄 <b>ai分析</b>：优化算法<br>
+      🗂️ <b>备忘盒子</b>：无限清单，打勾、导出<br>
+      ⭐ <b>追星专区</b>：新增自主添加<br>
+      🎨 <b>桌面文件夹</b>：长按图标拖到另一个上，就能建文件夹
+    </div>
+
+    <button onclick="closeUpdate()" style="
+      width: 100%; padding: 16px; border-radius: 999px; border: none;
+      background: linear-gradient(135deg, #a0d8b3, #7ab890);
+      color: #0f0c29; font-size: 15px; font-weight: 800;
+      cursor: pointer; font-family: inherit; letter-spacing: -0.2px;
+    ">我知道了，去试试</button>
+
+    <div style="text-align: center; font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 12px;">
+      有问题欢迎留言反馈 💗
+    </div>
+  </div>
+</div>
+
+<style>
+  @keyframes updFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes updSlideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); } }
+</style>
+
+<script>
+  // ============ 更新说明控制 ============
+  // 👇👇👇 以后发新版，只改这一行（随便改成一个新字符串） 👇👇👇
+  const UPDATE_VERSION = 'v1';
+
+  const UPDATE_SEEN_KEY = 'update_seen_version';
+
+  (function showUpdateIfNeeded() {
+    try {
+      const seen = localStorage.getItem(UPDATE_SEEN_KEY);
+      if (seen === UPDATE_VERSION) return;
+      setTimeout(() => {
+        const ov = document.getElementById('updateOverlay');
+        if (ov) ov.style.display = 'flex';
+      }, 800);
+    } catch (e) {}
+  })();
+
+  function closeUpdate() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    const ov = document.getElementById('updateOverlay');
+    if (ov) {
+      ov.style.animation = 'updFadeIn 0.2s ease reverse';
+      setTimeout(() => ov.style.display = 'none', 200);
+    }
+    try {
+      localStorage.setItem(UPDATE_SEEN_KEY, UPDATE_VERSION);
+    } catch (e) {}
   }
 </script>
 </body>
