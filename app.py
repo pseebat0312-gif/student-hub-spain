@@ -17,6 +17,25 @@ else:
     print("环境变量未设置")
 ADMIN_EMAIL = "pseebat0312@gmail.com"
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_limiter.errors import RateLimitExceeded
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=["300 per minute"],
+    storage_uri="memory://",
+)
+
+@app.errorhandler(RateLimitExceeded)
+def handle_rate_limit(e):
+    return jsonify({
+        "error": "请求过于频繁，请稍后再试",
+        "retry_after": str(e.retry_after) if hasattr(e, 'retry_after') else None
+    }), 429
+
+
 @app.route("/")
 def index():
     spain_tz = pytz.timezone("Europe/Madrid")
@@ -67,7 +86,7 @@ def api_geocode():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    
+
 @app.route("/school")
 def school():
     return render_template("school.html")
@@ -241,6 +260,7 @@ def api_notifications_read():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/reset_password", methods=["POST"])
+@limiter.limit("3 per minute")
 def api_reset_password():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
@@ -255,6 +275,7 @@ def api_reset_password():
         return jsonify({"error": str(e)}), 400
 
 @app.route("/api/update_password", methods=["POST"])
+@limiter.limit("5 per minute")
 def api_update_password():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
@@ -373,6 +394,7 @@ def api_admin_messages_delete():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/api/register", methods=["POST"])
+@limiter.limit("5 per minute")
 def api_register():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
@@ -388,6 +410,7 @@ def api_register():
         return jsonify({"error": str(e)}), 400
 
 @app.route("/api/login", methods=["POST"])
+@limiter.limit("10 per minute")
 def api_login():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
@@ -617,7 +640,6 @@ def api_menu_share_remove():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    
 
 @app.route("/api/countdowns")
 def api_countdowns():
@@ -1046,13 +1068,10 @@ def api_shops_delete():
     if not shop_id or not email:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 只能删自己的
         supabase.table("shops").delete().eq("id", shop_id).eq("user_email", email).execute()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-    
 
 
 # ==========================================================
@@ -1087,7 +1106,7 @@ def api_shops_comments_add():
     shop_id = data.get("shop_id")
     email = data.get("email", "").strip().lower()
     content = data.get("content", "").strip()
-    parent_id = data.get("parent_id")  # 可为 None
+    parent_id = data.get("parent_id")
     if not shop_id or not email or not content:
         return jsonify({"error": "缺少参数"}), 400
     try:
@@ -1100,7 +1119,6 @@ def api_shops_comments_add():
             row["parent_id"] = parent_id
         supabase.table("shop_comments").insert(row).execute()
 
-        # 通知：如果回复的是别人评论，通知那条评论的作者
         if parent_id:
             try:
                 p = supabase.table("shop_comments").select("user_email").eq("id", parent_id).execute()
@@ -1126,13 +1144,12 @@ def api_shops_comments_delete():
     if not cid or not email:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 只能删自己的
         supabase.table("shop_comments").delete().eq("id", cid).eq("user_email", email).execute()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    
+
 # ==========================================================
 #                        社区
 # ==========================================================
@@ -1221,14 +1238,12 @@ def api_community_delete():
     if not post_id or not email:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 只能删自己的
         supabase.table("community_posts").delete().eq("id", post_id).eq("user_email", email).execute()
-        # 顺便删掉这个帖子下的所有回复
         supabase.table("community_replies").delete().eq("post_id", post_id).execute()
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
+
 # ==========================================================
 #                        用户资料
 # ==========================================================
@@ -1283,7 +1298,7 @@ import uuid
 # ==========================================================
 #                        VIP 系统
 # ==========================================================
-FREE_LIMIT = 3   # 免费用户每个功能试用 2 次
+FREE_LIMIT = 3
 
 VIP_FEATURES = {
     "ai_detect": "AI 检测",
@@ -1310,7 +1325,6 @@ def api_vip_status():
         row = result.data[0]
         is_vip = bool(row.get("is_vip"))
         expire_at = row.get("vip_expire_at")
-        # 过期检查
         if is_vip and expire_at:
             from datetime import datetime as _dt
             exp = _dt.fromisoformat(expire_at.replace("Z", "+00:00"))
@@ -1331,7 +1345,6 @@ def api_vip_check_usage():
     if not email or not feature:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 先查 VIP
         prof = supabase.table("user_profiles").select("is_vip,vip_expire_at").eq("email", email).execute()
         is_vip = False
         if prof.data:
@@ -1343,9 +1356,8 @@ def api_vip_check_usage():
                 if e < _dt.now(timezone.utc):
                     is_vip = False
         if is_vip:
-            return jsonify({"is_vip": True, "remaining": -1})   # -1 = 无限
+            return jsonify({"is_vip": True, "remaining": -1})
 
-        # 查免费次数
         used = supabase.table("ai_usage").select("id", count="exact").eq("user_email", email).eq("feature", feature).execute()
         used_count = used.count if hasattr(used, "count") and used.count is not None else len(used.data or [])
         remaining = max(0, FREE_LIMIT - used_count)
@@ -1365,7 +1377,6 @@ def api_vip_consume():
     if not email or not feature:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # VIP 直接放行
         prof = supabase.table("user_profiles").select("is_vip,vip_expire_at").eq("email", email).execute()
         if prof.data and prof.data[0].get("is_vip"):
             exp = prof.data[0].get("vip_expire_at")
@@ -1377,13 +1388,11 @@ def api_vip_consume():
             else:
                 return jsonify({"success": True, "is_vip": True})
 
-        # 免费用户：检查剩余
         used = supabase.table("ai_usage").select("id", count="exact").eq("user_email", email).eq("feature", feature).execute()
         used_count = used.count if hasattr(used, "count") and used.count is not None else len(used.data or [])
         if used_count >= FREE_LIMIT:
             return jsonify({"error": "免费次数已用完", "need_vip": True}), 403
 
-        # 记一次
         supabase.table("ai_usage").insert({
             "user_email": email,
             "feature": feature
@@ -1394,6 +1403,7 @@ def api_vip_consume():
 
 
 @app.route("/api/vip/redeem", methods=["POST"])
+@limiter.limit("3 per minute")
 def api_vip_redeem():
     """兑换码激活 VIP（永久）"""
     if not supabase:
@@ -1404,7 +1414,6 @@ def api_vip_redeem():
     if not email or not code:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 查兑换码
         r = supabase.table("vip_codes").select("*").eq("code", code).execute()
         if not r.data:
             return jsonify({"error": "兑换码无效"}), 400
@@ -1412,7 +1421,6 @@ def api_vip_redeem():
         if row.get("used_by"):
             return jsonify({"error": "兑换码已被使用"}), 400
 
-        # 激活 VIP（永久，无到期时间）
         from datetime import datetime as _dt
         now = _dt.now(timezone.utc)
 
@@ -1427,7 +1435,6 @@ def api_vip_redeem():
         else:
             supabase.table("user_profiles").insert({"email": email, **payload}).execute()
 
-        # 标记兑换码已用
         supabase.table("vip_codes").update({
             "used_by": email,
             "used_at": now.isoformat()
@@ -1443,12 +1450,6 @@ def api_vip_redeem():
 # ==========================================================
 @app.route("/api/stripe/webhook", methods=["POST"])
 def api_stripe_webhook():
-    """
-    Stripe 付款成功后回调
-    需要环境变量 STRIPE_WEBHOOK_SECRET
-    在 Stripe Dashboard → Developers → Webhooks 配置
-    事件：checkout.session.completed
-    """
     import stripe
     stripe.api_key = os.environ.get("STRIPE_SECRET_KEY", "")
     webhook_secret = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
@@ -1489,8 +1490,8 @@ def api_stripe_webhook():
     return jsonify({"received": True}), 200
 
 
-
 @app.route("/api/upload", methods=["POST"])
+@limiter.limit("10 per minute")
 def api_upload():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
@@ -1505,7 +1506,6 @@ def api_upload():
     ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else "jpg"
     if ext not in ("jpg", "jpeg", "png", "gif", "webp", "heic"):
         return jsonify({"error": "文件类型不支持"}), 400
-    # 限 10MB
     f.seek(0, 2)
     size = f.tell()
     f.seek(0)
@@ -1576,7 +1576,6 @@ def api_memo_lists_delete():
     if not list_id or not email:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 只能删自己的
         supabase.table("memo_lists").delete().eq("id", list_id).eq("user_email", email).execute()
         return jsonify({"success": True})
     except Exception as e:
@@ -1865,7 +1864,7 @@ def api_idol_custom_add():
         if exist.data:
             return jsonify({"error": "这个成员已经加过了"}), 400
 
-            supabase.table("idol_custom_groups").insert({
+        supabase.table("idol_custom_groups").insert({
             "user_email": email,
             "genre": genre,
             "gender": gender,
@@ -1874,7 +1873,7 @@ def api_idol_custom_add():
             "emoji": emoji,
             "avatar_url": data.get("avatar_url", ""),
         }).execute()
-            
+
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -1895,7 +1894,6 @@ def api_idol_custom_delete():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    
 
 @app.route("/api/her_chats")
 def api_her_chats_list():
@@ -1931,7 +1929,6 @@ def api_her_chats_add():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 # ==========================================================
@@ -2025,7 +2022,7 @@ def api_timetable_update():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-    
+
 @app.route("/timetable")
 def timetable_page():
     return render_template("timetable.html")
@@ -2076,13 +2073,11 @@ def api_her_safety_save():
         return jsonify({"error": str(e)}), 500
 
 
-
 # ==========================================================
 #               Girl's Room · 暗号共享
 # ==========================================================
 @app.route("/api/her_safety/shares")
 def api_her_safety_shares():
-    """返回我发出去的 + 别人发给我的"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     email = request.args.get("email", "").strip()
@@ -2139,7 +2134,7 @@ def api_her_safety_share_respond():
         return jsonify({"error": "数据库未连接"}), 500
     data = request.get_json()
     share_id = data.get("id")
-    action = data.get("action")  # accept / reject / remove
+    action = data.get("action")
     email = data.get("email", "").strip().lower()
     if not share_id or action not in ("accept", "reject", "remove") or not email:
         return jsonify({"error": "缺少参数"}), 400
@@ -2162,7 +2157,6 @@ def api_her_safety_share_respond():
 
 @app.route("/api/her_safety/shared_with_me")
 def api_her_safety_shared_with_me():
-    """我守护的人（已接受共享的）的暗号+联系人"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     email = request.args.get("email", "").strip().lower()
@@ -2177,7 +2171,6 @@ def api_her_safety_shared_with_me():
         return jsonify(safeties.data or [])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 # ==========================================================
@@ -2235,6 +2228,7 @@ DEEPSEEK_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
 
 
 @app.route("/api/contract/analyze", methods=["POST"])
+@limiter.limit("5 per minute")
 def api_contract_analyze():
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
@@ -2245,7 +2239,6 @@ def api_contract_analyze():
     if not email or not text:
         return jsonify({"error": "缺少参数"}), 400
 
-    # 1. VIP 检查
     try:
         prof = supabase.table("user_profiles").select("is_vip,vip_expire_at").eq("email", email).execute()
         is_vip = False
@@ -2266,7 +2259,6 @@ def api_contract_analyze():
     if not DEEPSEEK_API_KEY:
         return jsonify({"error": "AI 服务未配置"}), 500
 
-    # 2. 调 DeepSeek
     try:
         client = OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
         resp = client.chat.completions.create(
@@ -2280,7 +2272,6 @@ def api_contract_analyze():
     except Exception as e:
         return jsonify({"error": "AI 分析失败：" + str(e)}), 500
 
-    # 3. 存记录
     try:
         supabase.table("contract_analyses").insert({
             "user_email": email,
@@ -2367,16 +2358,13 @@ def api_location_stop():
 
 @app.route("/api/location/friends")
 def api_location_friends():
-    """返回我的好友列表（我共享给的和共享给我的），带他们的位置"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     email = request.args.get("email", "").strip()
     if not email:
         return jsonify({"error": "缺少 email"}), 400
     try:
-        # 我发给别人的
         sent = supabase.table("location_shares").select("*").eq("owner_email", email).execute()
-        # 别人发给我的
         received = supabase.table("location_shares").select("*").eq("friend_email", email).execute()
         return jsonify({
             "sent": sent.data or [],
@@ -2388,7 +2376,6 @@ def api_location_friends():
 
 @app.route("/api/location/share", methods=["POST"])
 def api_location_share():
-    """发起共享邀请"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     data = request.get_json()
@@ -2407,7 +2394,6 @@ def api_location_share():
             "friend_email": friend,
             "status": "pending",
         }).execute()
-        # 通知对方
         notify(friend, "location_invite", owner + " 想和你共享位置", "/travel")
         return jsonify({"success": True})
     except Exception as e:
@@ -2416,17 +2402,15 @@ def api_location_share():
 
 @app.route("/api/location/respond", methods=["POST"])
 def api_location_respond():
-    """接受或拒绝共享邀请"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     data = request.get_json()
     share_id = data.get("id")
-    action = data.get("action")  # accept / reject / remove
+    action = data.get("action")
     email = data.get("email", "").strip().lower()
     if not share_id or action not in ("accept", "reject", "remove") or not email:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        # 校验权限：只能操作跟我有关的
         row = supabase.table("location_shares").select("*").eq("id", share_id).execute()
         if not row.data:
             return jsonify({"error": "记录不存在"}), 404
@@ -2445,14 +2429,12 @@ def api_location_respond():
 
 @app.route("/api/location/positions")
 def api_location_positions():
-    """返回我所有已接受好友的实时位置"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
     email = request.args.get("email", "").strip().lower()
     if not email:
         return jsonify({"error": "缺少 email"}), 400
     try:
-        # 拿到所有 accepted 的共享关系
         sent = supabase.table("location_shares").select("friend_email").eq("owner_email", email).eq("status", "accepted").execute()
         received = supabase.table("location_shares").select("owner_email").eq("friend_email", email).eq("status", "accepted").execute()
         friend_emails = set()
@@ -2461,14 +2443,12 @@ def api_location_positions():
         friend_emails.discard(email)
         if not friend_emails:
             return jsonify([])
-        # 拿这些人的位置
         positions = supabase.table("user_locations").select("*").in_("user_email", list(friend_emails)).execute()
         return jsonify(positions.data or [])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-    
 # ==========================================================
 #                        汇率
 # ==========================================================
@@ -2588,8 +2568,6 @@ def api_rates_refresh():
         return jsonify({"error": str(e)}), 500
 
 
-
-
 # ==========================================================
 #                        汇率提醒
 # ==========================================================
@@ -2638,8 +2616,6 @@ def api_rate_alerts_save():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
 
 
 if __name__ == "__main__":
