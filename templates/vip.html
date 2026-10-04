@@ -394,13 +394,7 @@
       if (data.is_vip) {
         document.getElementById('vipActiveCard').style.display = 'block';
         document.getElementById('vipIntro').style.display = 'none';
-        let sinceText = '感谢你的支持 💗';
-        if (data.expire_at) {
-          try {
-            const d = new Date(data.expire_at);
-            sinceText = '有效期至 ' + d.toLocaleDateString('zh-CN');
-          } catch (e) {}
-        }
+        let sinceText = '👑 永久会员 · 感谢你的支持 💗';
         document.getElementById('vipSince').textContent = sinceText;
       } else {
         document.getElementById('vipActiveCard').style.display = 'none';

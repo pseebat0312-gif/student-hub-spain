@@ -415,14 +415,7 @@
       // 隐藏升级引导
       if (upsellCard) upsellCard.style.display = 'none';
       if (tipBox) {
-        let expireText = 'VIP 有效中';
-        if (data.expire_at) {
-          try {
-            const d = new Date(data.expire_at);
-            expireText = '有效期至 ' + d.toLocaleDateString('zh-CN');
-          } catch (e) {}
-        }
-        tipBox.textContent = '✅ ' + expireText;
+        tipBox.textContent = '✅ 👑 永久 VIP，感谢你的支持';
         tipBox.style.color = '#a0d8b3';
       }
     } else {
