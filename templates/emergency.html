@@ -519,13 +519,10 @@ async function unlockCard() {
   }
 }
 
-// ===== 首次使用 · 隐私说明 =====
+// ===== 隐私说明（每次创建都弹，不记忆） =====
 function startCreate() {
-  // 已同意过 → 直接打开编辑
-  if (localStorage.getItem(INTRO_KEY) === '1') {
-    openEdit();
-    return;
-  }
+  // 每次点“创建我的急救卡” → 都弹出隐私说明
+  // 不看有没有同意过，一律重新勾选
   document.getElementById('introOverlay').classList.add('show');
   document.getElementById('agreeCheck').checked = false;
   document.getElementById('continueBtn').disabled = true;
@@ -538,7 +535,6 @@ function toggleAgree() {
 
 function confirmIntro() {
   if (!document.getElementById('agreeCheck').checked) return;
-  localStorage.setItem(INTRO_KEY, '1');
   document.getElementById('introOverlay').classList.remove('show');
   openEdit();
 }
