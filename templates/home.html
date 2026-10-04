@@ -66,6 +66,34 @@
   animation-delay: 0.10s;
 }
 
+/* ===== 文件夹图标 ===== */
+.app-icon.folder-icon .icon-box {
+  position: relative;
+  background: rgba(160,216,179,0.12);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  padding: 6px;
+  overflow: hidden;
+}
+.app-icon.folder-icon .icon-box .mini-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  line-height: 1;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.app-icon.folder-icon .icon-box .mini-icon img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+.app-icon.folder-icon .icon-box .mini-empty {
+  background: transparent;
+}
+
 /* ===== 和"进入工具箱"完全同参数的卡片 ===== */
 .card-tool-like {
   position: relative;
@@ -115,6 +143,86 @@
   font-weight: 400;
   color: rgba(255, 255, 255, 0.55);
   letter-spacing: -0.1px;
+}
+
+/* ===== 文件夹弹层 ===== */
+#folderOverlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 99998;
+  justify-content: center; align-items: center;
+  padding: 24px;
+}
+#folderOverlay.show { display: flex; }
+#folderOverlay .folder-panel {
+  width: 100%; max-width: 420px;
+  background: #1c1c1e;
+  border-radius: 26px;
+  padding: 24px 20px 22px;
+  border: 1px solid rgba(255,255,255,0.1);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+#folderOverlay .folder-head {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+#folderOverlay .folder-name {
+  flex: 1;
+  font-size: 18px; font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#folderOverlay .folder-actions {
+  display: flex; gap: 8px;
+}
+#folderOverlay .folder-actions button {
+  padding: 8px 12px; border-radius: 10px; border: none;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+#folderOverlay .btn-rename {
+  background: rgba(160,216,179,0.15); color: #a0d8b3;
+}
+#folderOverlay .btn-dissolve {
+  background: rgba(255,107,107,0.12); color: #ff6b6b;
+}
+#folderOverlay .folder-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+#folderOverlay .f-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+#folderOverlay .f-item:active { transform: scale(0.92); }
+#folderOverlay .f-item .f-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.07);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+#folderOverlay .f-item .f-name {
+  font-size: 11px; color: #ccc;
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#folderOverlay .close-btn {
+  width: 100%; padding: 14px; border-radius: 14px; border: none;
+  background: rgba(255,255,255,0.08); color: #ccc;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
 }
 </style>
 </head>
@@ -173,7 +281,7 @@
 <div class="tab-page" id="tab-tools">
 <div class="app-grid" id="appGrid"></div>
 <div style="font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 8px; padding-bottom: 12px;">
-  长按图标可拖动排序（登录后会自动同步到云端）
+  长按图标可拖动排序；拖到另一个图标上建文件夹（登录后会自动同步到云端）
 </div>
 </div>
 
@@ -219,6 +327,21 @@
 </div>
 </div>
 
+<!-- 文件夹弹层 -->
+<div id="folderOverlay">
+  <div class="folder-panel">
+    <div class="folder-head">
+      <div class="folder-name" id="folderName">文件夹</div>
+      <div class="folder-actions">
+        <button class="btn-rename" onclick="renameFolder()">重命名</button>
+        <button class="btn-dissolve" onclick="dissolveFolder()">解散</button>
+      </div>
+    </div>
+    <div class="folder-grid" id="folderGrid"></div>
+    <button class="close-btn" onclick="closeFolder()">关闭</button>
+  </div>
+</div>
+
 <script>
 const ADMIN_EMAIL = "pseebat0312@gmail.com";
 
@@ -246,28 +369,76 @@ const ALL_APPS = [
 
 const DEFAULT_ORDER = ALL_APPS.map(a => a.id);
 
-// ===== 布局：从 localStorage 读，没有就用默认 =====
+// ===== 布局结构（新）：
+// 每一项可能是：
+//   "id"                            → 单个图标
+//   { type:'folder', id, name, items:["id1","id2"] }  → 文件夹
+// ================================================
+
+// ===== 旧结构（一维数组） → 新结构（含 folder） =====
+function upgradeLayout(raw) {
+  if (!Array.isArray(raw)) return DEFAULT_ORDER.slice();
+  // 已经是新结构（含有 object）就保留
+  if (raw.some(item => item && typeof item === 'object' && item.type === 'folder')) {
+    return raw;
+  }
+  // 旧的一维数组 → 直接包一层
+  return raw.filter(id => typeof id === 'string');
+}
+
+// ===== 校验布局完整性：补充缺失的 app / 去掉无效 app =====
+function normalizeLayout(layout) {
+  const seen = new Set();
+  const result = [];
+
+  layout.forEach(item => {
+    if (typeof item === 'string') {
+      if (ALL_APPS.some(a => a.id === item) && !seen.has(item)) {
+        seen.add(item);
+        result.push(item);
+      }
+    } else if (item && item.type === 'folder' && Array.isArray(item.items)) {
+      const validItems = item.items.filter(id => ALL_APPS.some(a => a.id === id) && !seen.has(id));
+      validItems.forEach(id => seen.add(id));
+      if (validItems.length > 0) {
+        result.push({
+          type: 'folder',
+          id: item.id || ('f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
+          name: item.name || '文件夹',
+          items: validItems,
+        });
+      }
+    }
+  });
+
+  // 补充未被放入的 app
+  ALL_APPS.forEach(a => {
+    if (!seen.has(a.id)) {
+      result.push(a.id);
+      seen.add(a.id);
+    }
+  });
+
+  return result;
+}
+
+// ===== 布局读写 =====
 function getLocalLayout() {
   try {
     const raw = localStorage.getItem('app_layout');
     if (!raw) return DEFAULT_ORDER.slice();
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return DEFAULT_ORDER.slice();
-    const valid = parsed.filter(id => ALL_APPS.some(a => a.id === id));
-    ALL_APPS.forEach(a => { if (!valid.includes(a.id)) valid.push(a.id); });
-    return valid;
+    return normalizeLayout(upgradeLayout(JSON.parse(raw)));
   } catch (e) {
     return DEFAULT_ORDER.slice();
   }
 }
 
-function setLocalLayout(order) {
+function setLocalLayout(layout) {
   try {
-    localStorage.setItem('app_layout', JSON.stringify(order));
+    localStorage.setItem('app_layout', JSON.stringify(layout));
   } catch (e) {}
 }
 
-// ===== 云端同步 =====
 async function loadCloudLayout() {
   const email = localStorage.getItem('user_email');
   const token = localStorage.getItem('access_token');
@@ -276,15 +447,13 @@ async function loadCloudLayout() {
     const resp = await fetch('/api/layout?owner=' + encodeURIComponent(email));
     const data = await resp.json();
     if (data && Array.isArray(data.layout)) {
-      const valid = data.layout.filter(id => ALL_APPS.some(a => a.id === id));
-      ALL_APPS.forEach(a => { if (!valid.includes(a.id)) valid.push(a.id); });
-      return valid;
+      return normalizeLayout(upgradeLayout(data.layout));
     }
   } catch (e) {}
   return null;
 }
 
-async function saveCloudLayout(order) {
+async function saveCloudLayout(layout) {
   const email = localStorage.getItem('user_email');
   const token = localStorage.getItem('access_token');
   if (!email || !token) return;
@@ -292,38 +461,90 @@ async function saveCloudLayout(order) {
     await fetch('/api/layout/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ owner: email, layout: order })
+      body: JSON.stringify({ owner: email, layout: layout })
     });
   } catch (e) {}
 }
 
-// ===== 渲染 =====
-function renderApps(order) {
-  if (!Array.isArray(order)) order = getLocalLayout();
+// ===== 渲染工具图标（单个） =====
+function buildAppIcon(appId) {
+  const app = ALL_APPS.find(a => a.id === appId);
+  if (!app) return null;
+  const div = document.createElement('div');
+  div.className = 'app-icon';
+  div.dataset.id = app.id;
+  div.dataset.kind = 'app';
+  div.innerHTML = `
+    <div class="icon-box ${app.color}">${app.icon}</div>
+    <div class="app-name">${app.name}</div>
+  `;
+  return div;
+}
+
+// ===== 渲染文件夹图标 =====
+function buildFolderIcon(folder) {
+  const div = document.createElement('div');
+  div.className = 'app-icon folder-icon';
+  div.dataset.id = folder.id;
+  div.dataset.kind = 'folder';
+
+  // 取前 4 个图标显示
+  const miniIcons = folder.items.slice(0, 4).map(id => {
+    const app = ALL_APPS.find(a => a.id === id);
+    if (!app) return `<div class="mini-empty"></div>`;
+    return `<div class="mini-icon">${app.icon}</div>`;
+  });
+  // 补足 4 个格子
+  while (miniIcons.length < 4) miniIcons.push(`<div class="mini-empty"></div>`);
+
+  div.innerHTML = `
+    <div class="icon-box">${miniIcons.join('')}</div>
+    <div class="app-name">${folder.name}</div>
+  `;
+  return div;
+}
+
+// ===== 渲染整个网格 =====
+function renderApps(layout) {
+  if (!Array.isArray(layout)) layout = getLocalLayout();
   const grid = document.getElementById('appGrid');
   grid.innerHTML = '';
-  order.forEach(id => {
-    const app = ALL_APPS.find(a => a.id === id);
-    if (!app) return;
-    const div = document.createElement('div');
-    div.className = 'app-icon';
-    div.dataset.id = app.id;
-    div.onclick = () => {
-      if (navigator.vibrate) navigator.vibrate(10);
-      if (grid.classList.contains('editing')) return;
-      location.href = app.url;
-    };
-    div.innerHTML = `
-      <div class="icon-box ${app.color}">${app.icon}</div>
-      <div class="app-name">${app.name}</div>
-    `;
-    grid.appendChild(div);
+  layout.forEach(item => {
+    let el = null;
+    if (typeof item === 'string') {
+      el = buildAppIcon(item);
+    } else if (item && item.type === 'folder') {
+      el = buildFolderIcon(item);
+    }
+    if (el) grid.appendChild(el);
   });
   initSortable();
 }
 
+// ===== 读取当前网格 → 生成 layout 数组 =====
+function readLayoutFromGrid() {
+  const grid = document.getElementById('appGrid');
+  const result = [];
+  Array.from(grid.children).forEach(el => {
+    if (el.dataset.kind === 'folder') {
+      // 文件夹 DOM 上挂了 items 数据
+      const items = (el._folderItems || []).slice();
+      result.push({
+        type: 'folder',
+        id: el.dataset.id,
+        name: el.querySelector('.app-name').textContent || '文件夹',
+        items: items,
+      });
+    } else {
+      result.push(el.dataset.id);
+    }
+  });
+  return result;
+}
+
 // ===== SortableJS =====
 let sortableInstance = null;
+
 function initSortable() {
   const grid = document.getElementById('appGrid');
   if (!grid) return;
@@ -342,17 +563,219 @@ function initSortable() {
       if (navigator.vibrate) navigator.vibrate(15);
       grid.classList.add('editing');
     },
-    onEnd: () => {
+    onEnd: (evt) => {
       grid.classList.remove('editing');
-      const order = Array.from(grid.children).map(el => el.dataset.id);
-      setLocalLayout(order);
-      saveCloudLayout(order);
       if (navigator.vibrate) navigator.vibrate(10);
+
+      // 判断是否拖到另一个图标上（文件夹或单个图标）
+      const from = evt.item;
+      const to = evt.to;
+
+      // 找到落点位置上的兄弟节点（不考虑自己）
+      const children = Array.from(to.children);
+      const fromIndex = children.indexOf(from);
+      let targetEl = null;
+      if (fromIndex > 0) targetEl = children[fromIndex - 1];
+      else if (children.length > 1) targetEl = children[1];
+      // 避免把 folder 拖到自己身上
+      if (targetEl === from) targetEl = null;
+
+      // 判断是否要合并成文件夹：
+      // - 目标是一个文件夹 → 把它移进去
+      // - 目标是一个普通图标 → 两个合并成新文件夹
+      if (targetEl && targetEl.dataset.kind === 'folder') {
+        // 移到文件夹里
+        addToFolder(targetEl, from);
+        return;
+      }
+      if (targetEl && targetEl.dataset.kind === 'app' && from.dataset.kind === 'app') {
+        // 两个 app → 弹出命名对话框，合并成文件夹
+        const name = prompt('给这个文件夹起个名字：', '新文件夹');
+        if (!name) {
+          // 用户取消 → 不合并
+          return;
+        }
+        mergeToFolder(targetEl, from, name);
+        return;
+      }
+
+      // 普通排序
+      const layout = readLayoutFromGrid();
+      setLocalLayout(layout);
+      saveCloudLayout(layout);
+    }
+  });
+
+  // 恢复已有文件夹的 items
+  restoreFolderItems();
+}
+
+// 渲染时把已存在文件夹的 items 挂到 DOM 上
+function restoreFolderItems() {
+  const grid = document.getElementById('appGrid');
+  const layout = getLocalLayout();
+  Array.from(grid.children).forEach(el => {
+    if (el.dataset.kind === 'folder') {
+      const folder = layout.find(x => x && x.type === 'folder' && x.id === el.dataset.id);
+      if (folder) el._folderItems = folder.items.slice();
+      else el._folderItems = [];
     }
   });
 }
 
-// ===== 首次加载：先本地，再尝试云端合并 =====
+// ===== 合并两个 app 为新文件夹 =====
+function mergeToFolder(appEl1, appEl2, name) {
+  const id1 = appEl1.dataset.id;
+  const id2 = appEl2.dataset.id;
+
+  // 用 DOM 的方式：删掉两个图标，插入一个文件夹
+  const grid = document.getElementById('appGrid');
+  const folderId = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+
+  const folderEl = buildFolderIcon({ id: folderId, name: name, items: [id1, id2] });
+  folderEl._folderItems = [id1, id2];
+
+  // 用 folder 替换第一个图标的位置
+  grid.insertBefore(folderEl, appEl1);
+  grid.removeChild(appEl1);
+  grid.removeChild(appEl2);
+
+  if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
+
+  const layout = readLayoutFromGrid();
+  setLocalLayout(layout);
+  saveCloudLayout(layout);
+}
+
+// ===== 把 app 拖进文件夹 =====
+function addToFolder(folderEl, appEl) {
+  if (!folderEl._folderItems) folderEl._folderItems = [];
+  const id = appEl.dataset.id;
+  if (folderEl._folderItems.includes(id)) {
+    // 已经在里面，忽略
+    return;
+  }
+  folderEl._folderItems.push(id);
+
+  // 删掉 appEl
+  appEl.parentNode.removeChild(appEl);
+
+  // 重新渲染文件夹内容
+  const folderData = {
+    id: folderEl.dataset.id,
+    name: folderEl.querySelector('.app-name').textContent,
+    items: folderEl._folderItems,
+  };
+  const newEl = buildFolderIcon(folderData);
+  newEl._folderItems = folderEl._folderItems.slice();
+  folderEl.parentNode.replaceChild(newEl, folderEl);
+
+  if (navigator.vibrate) navigator.vibrate(15);
+
+  const layout = readLayoutFromGrid();
+  setLocalLayout(layout);
+  saveCloudLayout(layout);
+}
+
+// ===== 打开文件夹弹层 =====
+let currentFolderEl = null;
+
+function openFolder(folderEl) {
+  currentFolderEl = folderEl;
+  const items = folderEl._folderItems || [];
+  document.getElementById('folderName').textContent = folderEl.querySelector('.app-name').textContent;
+
+  const grid = document.getElementById('folderGrid');
+  grid.innerHTML = '';
+  items.forEach(id => {
+    const app = ALL_APPS.find(a => a.id === id);
+    if (!app) return;
+    const item = document.createElement('div');
+    item.className = 'f-item';
+    item.innerHTML = `
+      <div class="f-icon">${app.icon}</div>
+      <div class="f-name">${app.name}</div>
+    `;
+    item.onclick = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      closeFolder();
+      location.href = app.url;
+    };
+    grid.appendChild(item);
+  });
+
+  document.getElementById('folderOverlay').classList.add('show');
+}
+
+function closeFolder() {
+  document.getElementById('folderOverlay').classList.remove('show');
+  currentFolderEl = null;
+}
+
+function renameFolder() {
+  if (!currentFolderEl) return;
+  const oldName = currentFolderEl.querySelector('.app-name').textContent;
+  const newName = prompt('新的文件夹名字：', oldName);
+  if (!newName || newName === oldName) return;
+  currentFolderEl.querySelector('.app-name').textContent = newName;
+  document.getElementById('folderName').textContent = newName;
+
+  const layout = readLayoutFromGrid();
+  setLocalLayout(layout);
+  saveCloudLayout(layout);
+  if (navigator.vibrate) navigator.vibrate(15);
+}
+
+function dissolveFolder() {
+  if (!currentFolderEl) return;
+  if (!confirm('确定解散这个文件夹吗？里面的图标会回到桌面上。')) return;
+
+  const items = (currentFolderEl._folderItems || []).slice();
+  const grid = document.getElementById('appGrid');
+
+  // 把文件夹替换成第一个 app，然后在它后面依次插入其他 app
+  let anchor = currentFolderEl;
+  items.forEach(id => {
+    const appEl = buildAppIcon(id);
+    if (!appEl) return;
+    grid.insertBefore(appEl, anchor);
+    anchor = appEl;
+  });
+  grid.removeChild(currentFolderEl);
+
+  closeFolder();
+  if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
+
+  const layout = readLayoutFromGrid();
+  setLocalLayout(layout);
+  saveCloudLayout(layout);
+}
+
+// ===== 点击事件：区分「点击 app」「点击 folder」「编辑模式」 =====
+document.addEventListener('click', (e) => {
+  const grid = document.getElementById('appGrid');
+  if (!grid) return;
+  const icon = e.target.closest('.app-icon');
+  if (!icon) return;
+
+  // 编辑模式（Sortable 拖拽中）不触发点击
+  if (grid.classList.contains('editing')) return;
+
+  if (icon.dataset.kind === 'folder') {
+    e.stopPropagation();
+    if (navigator.vibrate) navigator.vibrate(10);
+    openFolder(icon);
+    return;
+  }
+  if (icon.dataset.kind === 'app') {
+    const app = ALL_APPS.find(a => a.id === icon.dataset.id);
+    if (!app) return;
+    if (navigator.vibrate) navigator.vibrate(10);
+    location.href = app.url;
+  }
+});
+
+// ===== 首次加载 =====
 (async function initLayout() {
   renderApps(getLocalLayout());
   const cloud = await loadCloudLayout();
@@ -421,7 +844,6 @@ function refreshLoginUI() {
     else location.href = '/login';
   });
 
-  // VIP 欢迎文字（"我的"tab）
   const vipWelcome = document.getElementById('vipWelcomeText');
   if (vipWelcome) {
     if (token && email) {
@@ -440,7 +862,6 @@ function refreshLoginUI() {
     }
   }
 
-  // 检查 VIP，改顶部标题
   checkHomeVip();
 }
 
@@ -605,7 +1026,7 @@ window.addEventListener('load', () => {
     border-radius: 28px 28px 0 0;
     padding: 26px 22px 34px;
     color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
     animation: pwaSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     box-sizing: border-box;
     max-height: 90vh;
@@ -787,7 +1208,7 @@ window.addEventListener('load', () => {
     border-radius: 28px 28px 0 0;
     padding: 26px 22px 34px;
     color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
     animation: igSlideUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
     box-sizing: border-box;
     max-height: 90vh;

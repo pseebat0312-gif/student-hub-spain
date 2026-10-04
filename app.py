@@ -184,6 +184,9 @@ def travel():
 def her():
     return render_template("her.html")
 
+@app.route("/emergency_contacts")
+def emergency_contacts_page():
+    return render_template("emergency_contacts.html")
 
 
 

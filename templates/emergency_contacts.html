@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>紧急电话 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 60px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #ff8b95; flex: 1; }
+  #topBar .edit-btn {
+    background: rgba(255,139,149,0.15); border: 1px solid rgba(255,139,149,0.3);
+    color: #ff8b95; font-size: 12px; font-weight: 700;
+    padding: 8px 12px; border-radius: 10px; cursor: pointer;
+  }
+  #topBar .edit-btn:active { transform: scale(0.95); }
+  #topBar .edit-btn.active {
+    background: rgba(255,139,149,0.35);
+    color: #fff;
+  }
+
+  #content { padding: 10px 20px 40px; }
+
+  .privacy-note {
+    background: rgba(160, 216, 179, 0.08);
+    border-left: 3px solid #a0d8b3;
+    padding: 12px 14px; border-radius: 8px;
+    font-size: 12px; color: #ccc; line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .privacy-note b { color: #a0d8b3; }
+
+  .quick-actions {
+    display: flex; gap: 10px; margin-bottom: 18px;
+  }
+  .quick-actions button {
+    flex: 1; padding: 14px; border-radius: 14px; border: none;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
+  }
+  .qa-add {
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff;
+  }
+  .qa-folder {
+    background: rgba(160,216,179,0.15); color: #a0d8b3;
+    border: 1px solid rgba(160,216,179,0.3);
+  }
+  .quick-actions button:active { transform: scale(0.97); }
+
+  .group-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 16px 16px 8px;
+    margin-bottom: 14px;
+  }
+  .group-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    cursor: pointer;
+  }
+  .group-head .g-emoji {
+    font-size: 22px; flex-shrink: 0;
+  }
+  .group-head .g-name {
+    flex: 1;
+    font-size: 15px; font-weight: 700; color: #fff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .group-head .g-count {
+    font-size: 11px; color: #888;
+    background: rgba(255,255,255,0.06);
+    padding: 3px 8px; border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .group-head .g-arrow {
+    font-size: 12px; color: #666;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .group-card.collapsed .g-arrow {
+    transform: rotate(-90deg);
+  }
+  .group-card.collapsed .group-body { display: none; }
+
+  .group-body { margin-bottom: 8px; }
+
+  .contact-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    transition: 0.15s;
+  }
+  .contact-item:active { background: rgba(255,255,255,0.06); }
+  .contact-item .c-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(255,139,149,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .contact-item .c-info { flex: 1; min-width: 0; }
+  .contact-item .c-name {
+    font-size: 14px; font-weight: 700; color: #fff;
+    margin-bottom: 2px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .contact-item .c-phone {
+    font-size: 12px; color: #a0d8b3;
+    font-family: ui-monospace, monospace;
+  }
+  .contact-item .c-call {
+    flex-shrink: 0;
+    padding: 8px 14px; border-radius: 999px; border: none;
+    background: linear-gradient(135deg, #ff6b6b, #c0392b);
+    color: #fff; font-size: 12px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+  }
+  .contact-item .c-call:active { transform: scale(0.94); }
+  .contact-item .c-del {
+    flex-shrink: 0;
+    background: rgba(255,107,107,0.12);
+    border: none; color: #ff6b6b;
+    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 12px; cursor: pointer;
+  }
+  .contact-item .c-edit {
+    flex-shrink: 0;
+    background: rgba(160,216,179,0.12);
+    border: none; color: #a0d8b3;
+    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 12px; cursor: pointer;
+  }
+
+  body.editing .contact-item .c-call { display: none; }
+  body.editing .contact-item .c-del,
+  body.editing .contact-item .c-edit { display: flex; align-items: center; justify-content: center; }
+  .contact-item .c-del, .contact-item .c-edit { display: none; }
+
+  .empty-group {
+    font-size: 12px; color: #666;
+    padding: 12px; text-align: center;
+  }
+
+  .reset-btn {
+    width: 100%; padding: 12px; border-radius: 12px;
+    border: 1px solid rgba(255,107,107,0.25);
+    background: rgba(255,107,107,0.06);
+    color: #ff6b6b; font-size: 12px;
+    cursor: pointer; font-family: inherit;
+    margin-top: 20px;
+  }
+  .reset-btn:active { transform: scale(0.98); }
+
+  .pin-btn {
+    width: 100%; padding: 12px; border-radius: 12px;
+    border: 1px solid rgba(160,216,179,0.25);
+    background: rgba(160,216,179,0.06);
+    color: #a0d8b3; font-size: 12px;
+    cursor: pointer; font-family: inherit;
+    margin-top: 10px;
+  }
+  .pin-btn:active { transform: scale(0.98); }
+
+  /* 弹窗 */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: none; justify-content: center; align-items: flex-end;
+    z-index: 200; padding: 20px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #1a1a2e; width: 100%; max-width: 480px;
+    border-radius: 22px; padding: 24px 20px 28px;
+    margin-bottom: 20px;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-content h3 {
+    font-size: 17px; margin-bottom: 16px;
+    color: #a0d8b3; text-align: center;
+  }
+  .modal-content label {
+    display: block; font-size: 12px; color: #888;
+    margin-bottom: 6px; margin-top: 12px;
+  }
+  .modal-content input, .modal-content textarea, .modal-content select {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    font-family: inherit;
+  }
+  .modal-content input:focus, .modal-content textarea:focus { border-color: #a0d8b3; }
+
+  .emoji-row {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+  }
+  .emoji-opt {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 2px solid transparent;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; cursor: pointer;
+  }
+  .emoji-opt.active { border-color: #a0d8b3; background: rgba(160,216,179,0.15); }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .form-actions button {
+    flex: 1; padding: 14px; border-radius: 12px; border: none;
+    font-size: 14px; font-weight: bold; cursor: pointer;
+    font-family: inherit;
+  }
+  .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+  .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+
+  /* ===== 首次使用说明页 ===== */
+  .intro-overlay {
+    position: fixed; inset: 0;
+    background: #0f0c29;
+    display: none; flex-direction: column;
+    z-index: 600; padding: 24px 20px 30px;
+    overflow-y: auto;
+  }
+  .intro-overlay.show { display: flex; }
+  .intro-overlay h2 {
+    font-size: 20px; font-weight: 800;
+    color: #a0d8b3; margin-bottom: 6px;
+  }
+  .intro-overlay .sub {
+    font-size: 13px; color: #888;
+    margin-bottom: 24px;
+  }
+  .intro-overlay .block {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #ccc;
+    line-height: 1.8;
+  }
+  .intro-overlay .block b { color: #a0d8b3; }
+  .intro-overlay .block .warn { color: #ffc400; font-weight: 700; }
+  .intro-overlay .agree-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 14px;
+    background: rgba(160,216,179,0.08);
+    border: 1px solid rgba(160,216,179,0.25);
+    border-radius: 14px;
+    margin-top: 16px;
+    margin-bottom: 18px;
+  }
+  .intro-overlay .agree-row input {
+    margin-top: 3px;
+    width: 18px; height: 18px;
+    accent-color: #a0d8b3;
+    flex-shrink: 0;
+  }
+  .intro-overlay .agree-row label {
+    font-size: 13px;
+    color: #fff;
+    line-height: 1.6;
+    flex: 1;
+    cursor: pointer;
+  }
+  .intro-overlay .continue-btn {
+    width: 100%; padding: 16px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 15px; font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .intro-overlay .continue-btn:disabled {
+    opacity: 0.4; cursor: not-allowed;
+  }
+  .intro-overlay .cancel-btn {
+    width: 100%; padding: 14px; border-radius: 14px;
+    background: rgba(255,255,255,0.08); color: #ccc;
+    border: none; font-size: 14px; cursor: pointer;
+  }
+
+  /* ===== PIN 锁定页 ===== */
+  .locked-overlay {
+    position: fixed; inset: 0;
+    background: #0f0c29;
+    display: none; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 500; padding: 30px;
+  }
+  .locked-overlay.show { display: flex; }
+  .locked-overlay .lock-icon { font-size: 64px; margin-bottom: 20px; }
+  .locked-overlay .lock-text { font-size: 15px; color: #ccc; margin-bottom: 24px; text-align: center; line-height: 1.7; }
+  .locked-overlay .pin-input {
+    width: 200px; text-align: center;
+    font-size: 22px; letter-spacing: 12px; font-weight: 700;
+    padding: 14px; border-radius: 14px;
+    border: 2px solid rgba(160,216,179,0.3);
+    background: rgba(255,255,255,0.06);
+    color: #fff; outline: none;
+    margin-bottom: 12px;
+    font-family: inherit;
+  }
+  .locked-overlay .pin-input:focus { border-color: #a0d8b3; }
+  .locked-overlay .pin-error {
+    font-size: 12px; color: #ff6b6b;
+    min-height: 16px; margin-bottom: 14px;
+  }
+  .locked-overlay button {
+    padding: 14px 32px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
+  }
+  .locked-overlay button:active { transform: scale(0.97); }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">📞 紧急电话</div>
+  <button class="edit-btn" id="editBtn" onclick="toggleEdit()">编辑</button>
+</div>
+
+<div id="content">
+
+  <div class="privacy-note">
+    🔒 <b>重要隐私声明：</b><br>
+    你填写的所有号码、分组名称，<b>只保存在你自己手机浏览器的本地存储里</b>，
+    <b>不会上传到我们的服务器</b>，<b>后台完全看不见</b>。<br>
+    清缓存、换手机、卸载 PWA 都会丢失，建议截图备份。
+  </div>
+
+  <div class="quick-actions">
+    <button class="qa-add" onclick="openAddContact()">➕ 添加号码</button>
+    <button class="qa-folder" onclick="openAddGroup()">📁 新建分组</button>
+  </div>
+
+  <div id="listContainer"></div>
+
+  <button class="pin-btn" id="pinBtn" onclick="openPinSetting()">🔐 设置 PIN 码保护</button>
+  <button class="reset-btn" onclick="resetDefault()">🔄 恢复默认号码</button>
+
+</div>
+
+<!-- 首次使用说明 -->
+<div class="intro-overlay" id="introOverlay">
+  <h2>📞 紧急电话 · 使用前请读</h2>
+  <div class="sub">这不是一份"收集你数据的表格"，而是一个"只在你手机本地存号码的小工具"</div>
+
+  <div class="block">
+    <b>📱 信息存在哪？</b><br>
+    你填的所有号码、分组，只存在**你自己手机浏览器的本地存储**里，相当于本机的一个备忘录。
+    我们的服务器<b>不会收到、不会保存、不会看到</b>任何内容。
+  </div>
+
+  <div class="block">
+    <b>👀 后台能看见吗？</b><br>
+    <b>完全看不见。</b> 我们没有对应的后端接口来接收这些数据，也没有任何方式从服务器读取。
+  </div>
+
+  <div class="block">
+    <b>🔐 PIN 码保护（可选）</b><br>
+    你可以设置 4 位 PIN 码保护。PIN 码会经过 SHA-256 哈希后再保存到手机本地，
+    <b>连我们和你的手机都无法还原出原始 PIN</b>。忘了 PIN 只能清空数据重新设置。
+  </div>
+
+  <div class="block">
+    <b class="warn">⚠️ 你必须知道的风险</b><br>
+    · 号码仅存本地，<b>换手机、换浏览器、清缓存、卸载 PWA，数据都会丢</b>。<br>
+    · <b>不要在公共设备上创建</b>，同一设备上的任何人都能看到。<br>
+    · 我们不会对你的本地数据做备份，<b>丢了就丢了</b>。
+  </div>
+
+  <div class="agree-row">
+    <input type="checkbox" id="agreeCheck" onchange="toggleAgree()">
+    <label for="agreeCheck">我已阅读并理解以上说明，知道这些号码只存在我自己的手机里，后台看不见，也接受可能丢失的风险。</label>
+  </div>
+
+  <button class="continue-btn" id="continueBtn" disabled onclick="confirmIntro()">我了解，开始使用</button>
+  <button class="cancel-btn" onclick="cancelIntro()">取消，先不用</button>
+</div>
+
+<!-- PIN 解锁页 -->
+<div class="locked-overlay" id="lockedOverlay">
+  <div class="lock-icon">🔒</div>
+  <div class="lock-text">输入 4 位 PIN 码查看紧急电话<br><span style="font-size:12px;color:#666;">（忘记 PIN 需清空数据）</span></div>
+  <input type="tel" inputmode="numeric" maxlength="4" class="pin-input" id="pinInput" placeholder="••••" oninput="onPinInput(this)">
+  <div class="pin-error" id="pinError"></div>
+  <button onclick="unlockPage()">🔓 解锁</button>
+</div>
+
+<!-- 号码编辑弹窗 -->
+<div class="modal" id="contactModal">
+  <div class="modal-content">
+    <h3 id="contactModalTitle">添加号码</h3>
+
+    <label>名称 *</label>
+    <input type="text" id="cName" placeholder="例如：中国驻西使馆">
+
+    <label>号码 *</label>
+    <input type="tel" id="cPhone" placeholder="例如：+34 917 194 100">
+
+    <label>归属分组</label>
+    <select id="cGroup"></select>
+
+    <label>图标 emoji</label>
+    <div class="emoji-row" id="emojiRow"></div>
+
+    <div class="form-actions">
+      <button class="cancel" onclick="closeContactModal()">取消</button>
+      <button class="submit" onclick="saveContact()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 分组编辑弹窗 -->
+<div class="modal" id="groupModal">
+  <div class="modal-content">
+    <h3 id="groupModalTitle">新建分组</h3>
+
+    <label>分组名称 *</label>
+    <input type="text" id="gName" placeholder="例如：马德里">
+
+    <label>图标 emoji</label>
+    <div class="emoji-row" id="groupEmojiRow"></div>
+
+    <div class="form-actions">
+      <button class="cancel" onclick="closeGroupModal()">取消</button>
+      <button class="submit" onclick="saveGroup()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- PIN 设置弹窗 -->
+<div class="modal" id="pinSettingModal">
+  <div class="modal-content">
+    <h3>🔐 PIN 码设置</h3>
+
+    <div style="font-size:12px;color:#888;line-height:1.7;margin-bottom:16px;">
+      PIN 码只保存在你手机本地，SHA-256 哈希后存储，服务器无法还原。<br>
+      忘记 PIN 只能"清空本地数据"重新设置。
+    </div>
+
+    <label>当前状态</label>
+    <div style="font-size:13px;color:#ccc;padding:12px 14px;background:rgba(255,255,255,0.04);border-radius:12px;" id="pinStatusText">未启用</div>
+
+    <div id="pinChangeArea" style="display:none;">
+      <label>输入新 4 位 PIN</label>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinNew1" placeholder="4 位数字">
+      <label>再输一次确认</label>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinNew2" placeholder="再输一次">
+    </div>
+
+    <div class="form-actions">
+      <button class="cancel" onclick="closePinSetting()">取消</button>
+      <button class="submit" id="pinSaveBtn" onclick="savePinSetting()">设置 PIN</button>
+    </div>
+    <button class="cancel" id="pinDisableBtn" style="width:100%;margin-top:10px;padding:14px;border-radius:12px;border:none;background:rgba(255,107,107,0.12);color:#ff6b6b;font-size:14px;font-weight:700;cursor:pointer;display:none;" onclick="disablePin()">关闭 PIN 保护</button>
+  </div>
+</div>
+
+<script>
+  // ==========================================================
+  //                    SHA-256
+  // ==========================================================
+  async function sha256(str) {
+    const buf = new TextEncoder().encode(str);
+    const h = await crypto.subtle.digest('SHA-256', buf);
+    return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // ==========================================================
+  //                    数据结构
+  // ==========================================================
+  const STORAGE_KEY = 'emergency_contacts_v1';
+  const INTRO_KEY = 'emergency_contacts_intro_ok';
+  const PIN_KEY = 'emergency_contacts_pin_hash';
+  const LOCK_KEY = 'emergency_contacts_unlocked';
+
+  const DEFAULT_DATA = {
+    groups: [
+      {
+        id: 'g_emergency', name: '紧急号码', emoji: '🚨', collapsed: false,
+        contacts: [
+          { id: 'c_112', name: '欧盟通用急救', phone: '112', emoji: '🚨' },
+          { id: 'c_091', name: '国家警察', phone: '091', emoji: '👮' },
+          { id: 'c_092', name: '地方警察', phone: '092', emoji: '🚓' },
+          { id: 'c_061', name: '医疗急救', phone: '061', emoji: '🚑' },
+          { id: 'c_080', name: '消防', phone: '080', emoji: '🚒' },
+          { id: 'c_016', name: '性别暴力求助', phone: '016', emoji: '💗' }
+        ],
+        subgroups: []
+      },
+      {
+        id: 'g_china', name: '中国官方', emoji: '🇨🇳', collapsed: false,
+        contacts: [
+          { id: 'c_cn_madrid', name: '中国驻西班牙大使馆（马德里）', phone: '+34 917 194 100', emoji: '🇨🇳' },
+          { id: 'c_cn_bcn', name: '中国驻巴塞罗那总领馆', phone: '+34 934 342 922', emoji: '🇨🇳' },
+          { id: 'c_cn_consul', name: '领事保护应急（外交部）', phone: '+86 10 12308', emoji: '📞' }
+        ],
+        subgroups: []
+      },
+      {
+        id: 'g_life', name: '生活常用', emoji: '🏠', collapsed: false,
+        contacts: [],
+        subgroups: [
+          { id: 'sg_school', name: '学校', emoji: '🎓', contacts: [] },
+          { id: 'sg_hospital', name: '医院', emoji: '🏥', contacts: [] },
+          { id: 'sg_lawyer', name: '律师', emoji: '⚖️', contacts: [] }
+        ]
+      }
+    ],
+    ungrouped: []
+  };
+
+  const CONTACT_EMOJIS = ['📞','🚨','👮','🚓','🚑','🚒','🇨🇳','🇪🇸','🏥','🎓','⚖️','🏠','💗','🚕','🏦','📮','✈️','🛒','👨‍👩‍👧','⭐'];
+  const GROUP_EMOJIS = ['🚨','🇨🇳','🏠','🎓','🏥','⚖️','🚕','🏦','📮','✈️','🛒','💗','⭐','📁'];
+
+  let data = null;
+  let editing = false;
+  let editingContactId = null;
+  let editingContactScope = null;
+  let editingGroupId = null;
+  let pickedContactEmoji = '📞';
+  let pickedGroupEmoji = '📁';
+
+  // ==========================================================
+  //                    读写
+  // ==========================================================
+  function loadData() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        data = JSON.parse(raw);
+        if (!data.groups) data.groups = [];
+        if (!data.ungrouped) data.ungrouped = [];
+      } else {
+        data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+      }
+    } catch (e) {
+      data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch (e) {}
+  }
+
+  // ==========================================================
+  //                    渲染
+  // ==========================================================
+  function render() {
+    const box = document.getElementById('listContainer');
+    box.innerHTML = '';
+
+    if (data.ungrouped && data.ungrouped.length > 0) {
+      box.appendChild(buildGroupCard({
+        id: '__ungrouped',
+        name: '未分组',
+        emoji: '📋',
+        collapsed: false,
+        contacts: data.ungrouped,
+        subgroups: [],
+      }));
+    }
+
+    (data.groups || []).forEach(g => {
+      box.appendChild(buildGroupCard(g));
+    });
+  }
+
+  function buildGroupCard(group) {
+    const card = document.createElement('div');
+    card.className = 'group-card' + (group.collapsed ? ' collapsed' : '');
+    card.dataset.gid = group.id;
+
+    const head = document.createElement('div');
+    head.className = 'group-head';
+    head.onclick = () => {
+      group.collapsed = !group.collapsed;
+      saveData();
+      render();
+    };
+    const totalContacts = (group.contacts || []).length +
+      (group.subgroups || []).reduce((sum, sg) => sum + (sg.contacts || []).length, 0);
+    head.innerHTML = `
+      <div class="g-emoji">${group.emoji || '📁'}</div>
+      <div class="g-name">${escapeHtml(group.name)}</div>
+      <div class="g-count">${totalContacts}</div>
+      <div class="g-arrow">▼</div>
+    `;
+    head.ondblclick = () => {
+      if (!editing) return;
+      openEditGroup(group.id);
+    };
+    card.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'group-body';
+
+    (group.contacts || []).forEach(c => {
+      body.appendChild(buildContactItem(c, group.id, null));
+    });
+
+    (group.subgroups || []).forEach(sg => {
+      body.appendChild(buildSubgroupBlock(sg, group.id));
+    });
+
+    card.appendChild(body);
+    return card;
+  }
+
+  function buildSubgroupBlock(sg, parentGroupId) {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-left:8px; margin-bottom:10px; padding-left:10px; border-left:2px dashed rgba(160,216,179,0.2);';
+    const head = document.createElement('div');
+    head.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    head.innerHTML = `
+      <span style="font-size:16px;">${sg.emoji || '📁'}</span>
+      <span style="font-size:13px;font-weight:700;color:#a0d8b3;flex:1;">${escapeHtml(sg.name)}</span>
+      <span style="font-size:11px;color:#666;">${(sg.contacts || []).length}</span>
+    `;
+    head.ondblclick = () => {
+      if (!editing) return;
+      openEditSubgroup(parentGroupId, sg.id);
+    };
+    wrap.appendChild(head);
+
+    (sg.contacts || []).forEach(c => {
+      wrap.appendChild(buildContactItem(c, parentGroupId, sg.id));
+    });
+    if ((sg.contacts || []).length === 0 && !editing) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-group';
+      empty.textContent = '（暂无号码）';
+      wrap.appendChild(empty);
+    }
+    return wrap;
+  }
+
+  function buildContactItem(contact, groupId, subgroupId) {
+    const item = document.createElement('div');
+    item.className = 'contact-item';
+    item.dataset.cid = contact.id;
+
+    item.innerHTML = `
+      <div class="c-icon">${contact.emoji || '📞'}</div>
+      <div class="c-info">
+        <div class="c-name">${escapeHtml(contact.name)}</div>
+        <div class="c-phone">${escapeHtml(contact.phone)}</div>
+      </div>
+      <button class="c-edit" data-action="edit">✎</button>
+      <button class="c-del" data-action="del">✕</button>
+      <button class="c-call" data-action="call">📞 拨号</button>
+    `;
+
+    item.querySelector('[data-action="call"]').onclick = (e) => {
+      e.stopPropagation();
+      if (navigator.vibrate) navigator.vibrate(15);
+      if (confirm('拨打 ' + contact.name + ' ' + contact.phone + '？')) {
+        location.href = 'tel:' + contact.phone.replace(/\s/g, '');
+      }
+    };
+    item.querySelector('[data-action="edit"]').onclick = (e) => {
+      e.stopPropagation();
+      openEditContact(contact, groupId, subgroupId);
+    };
+    item.querySelector('[data-action="del"]').onclick = (e) => {
+      e.stopPropagation();
+      if (confirm('删除这个号码？')) {
+        deleteContact(contact.id, groupId, subgroupId);
+      }
+    };
+
+    return item;
+  }
+
+  function deleteContact(cid, groupId, subgroupId) {
+    if (groupId === '__ungrouped') {
+      data.ungrouped = data.ungrouped.filter(c => c.id !== cid);
+    } else {
+      const g = data.groups.find(x => x.id === groupId);
+      if (!g) return;
+      if (subgroupId) {
+        const sg = (g.subgroups || []).find(x => x.id === subgroupId);
+        if (sg) sg.contacts = sg.contacts.filter(c => c.id !== cid);
+      } else {
+        g.contacts = g.contacts.filter(c => c.id !== cid);
+      }
+    }
+    saveData();
+    render();
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+
+  // ==========================================================
+  //                    号码弹窗
+  // ==========================================================
+  function openAddContact() {
+    editingContactId = null;
+    editingContactScope = null;
+    pickedContactEmoji = '📞';
+    document.getElementById('contactModalTitle').textContent = '添加号码';
+    document.getElementById('cName').value = '';
+    document.getElementById('cPhone').value = '';
+    fillGroupSelect();
+    renderEmojiRow('emojiRow', CONTACT_EMOJIS, pickedContactEmoji, (e) => {
+      pickedContactEmoji = e;
+      renderEmojiRow('emojiRow', CONTACT_EMOJIS, pickedContactEmoji, arguments.callee);
+    });
+    document.getElementById('contactModal').classList.add('show');
+  }
+
+  function openEditContact(contact, groupId, subgroupId) {
+    editingContactId = contact.id;
+    editingContactScope = { groupId, subgroupId };
+    pickedContactEmoji = contact.emoji || '📞';
+    document.getElementById('contactModalTitle').textContent = '编辑号码';
+    document.getElementById('cName').value = contact.name;
+    document.getElementById('cPhone').value = contact.phone;
+    fillGroupSelect(groupId, subgroupId);
+    renderEmojiRow('emojiRow', CONTACT_EMOJIS, pickedContactEmoji, (e) => {
+      pickedContactEmoji = e;
+      renderEmojiRow('emojiRow', CONTACT_EMOJIS, pickedContactEmoji, arguments.callee);
+    });
+    document.getElementById('contactModal').classList.add('show');
+  }
+
+  function closeContactModal() {
+    document.getElementById('contactModal').classList.remove('show');
+  }
+
+  function fillGroupSelect(currentGroupId, currentSubgroupId) {
+    const sel = document.getElementById('cGroup');
+    sel.innerHTML = '';
+    const optUngrouped = document.createElement('option');
+    optUngrouped.value = '__ungrouped';
+    optUngrouped.textContent = '未分组';
+    sel.appendChild(optUngrouped);
+
+    (data.groups || []).forEach(g => {
+      const opt = document.createElement('option');
+      opt.value = g.id;
+      opt.textContent = (g.emoji || '📁') + ' ' + g.name;
+      sel.appendChild(opt);
+
+      (g.subgroups || []).forEach(sg => {
+        const opt2 = document.createElement('option');
+        opt2.value = g.id + '::' + sg.id;
+        opt2.textContent = '　└ ' + (sg.emoji || '📁') + ' ' + sg.name;
+        sel.appendChild(opt2);
+      });
+    });
+
+    if (currentGroupId) {
+      if (currentSubgroupId) sel.value = currentGroupId + '::' + currentSubgroupId;
+      else sel.value = currentGroupId;
+    }
+  }
+
+  function saveContact() {
+    const name = document.getElementById('cName').value.trim();
+    const phone = document.getElementById('cPhone').value.trim();
+    if (!name) { alert('请填名称'); return; }
+    if (!phone) { alert('请填号码'); return; }
+
+    const selVal = document.getElementById('cGroup').value;
+
+    if (editingContactId && editingContactScope) {
+      const { groupId, subgroupId } = editingContactScope;
+      if (groupId === '__ungrouped') {
+        data.ungrouped = data.ungrouped.filter(c => c.id !== editingContactId);
+      } else {
+        const g = data.groups.find(x => x.id === groupId);
+        if (g) {
+          if (subgroupId) {
+            const sg = (g.subgroups || []).find(x => x.id === subgroupId);
+            if (sg) sg.contacts = sg.contacts.filter(c => c.id !== editingContactId);
+          } else {
+            g.contacts = g.contacts.filter(c => c.id !== editingContactId);
+          }
+        }
+      }
+    }
+
+    const cid = editingContactId || ('c_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6));
+    const rec = { id: cid, name: name, phone: phone, emoji: pickedContactEmoji || '📞' };
+
+    if (selVal === '__ungrouped') {
+      if (!data.ungrouped) data.ungrouped = [];
+      data.ungrouped.push(rec);
+    } else if (selVal.indexOf('::') >= 0) {
+      const [gid, sgid] = selVal.split('::');
+      const g = data.groups.find(x => x.id === gid);
+      if (g) {
+        const sg = (g.subgroups || []).find(x => x.id === sgid);
+        if (sg) {
+          if (!sg.contacts) sg.contacts = [];
+          sg.contacts.push(rec);
+        }
+      }
+    } else {
+      const g = data.groups.find(x => x.id === selVal);
+      if (g) {
+        if (!g.contacts) g.contacts = [];
+        g.contacts.push(rec);
+      }
+    }
+
+    saveData();
+    closeContactModal();
+    render();
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+
+  // ==========================================================
+  //                    分组弹窗
+  // ==========================================================
+  function openAddGroup() {
+    editingGroupId = null;
+    pickedGroupEmoji = '📁';
+    document.getElementById('groupModalTitle').textContent = '新建分组';
+    document.getElementById('gName').value = '';
+    renderEmojiRow('groupEmojiRow', GROUP_EMOJIS, pickedGroupEmoji, (e) => {
+      pickedGroupEmoji = e;
+      renderEmojiRow('groupEmojiRow', GROUP_EMOJIS, pickedGroupEmoji, arguments.callee);
+    });
+    document.getElementById('groupModal').classList.add('show');
+  }
+
+  function openEditGroup(gid) {
+    const g = data.groups.find(x => x.id === gid);
+    if (!g) return;
+    editingGroupId = gid;
+    pickedGroupEmoji = g.emoji || '📁';
+    document.getElementById('groupModalTitle').textContent = '编辑分组';
+    document.getElementById('gName').value = g.name;
+    renderEmojiRow('groupEmojiRow', GROUP_EMOJIS, pickedGroupEmoji, (e) => {
+      pickedGroupEmoji = e;
+      renderEmojiRow('groupEmojiRow', GROUP_EMOJIS, pickedGroupEmoji, arguments.callee);
+    });
+    document.getElementById('groupModal').classList.add('show');
+  }
+
+  function openEditSubgroup(parentGroupId, sgId) {
+    const g = data.groups.find(x => x.id === parentGroupId);
+    if (!g) return;
+    const sg = (g.subgroups || []).find(x => x.id === sgId);
+    if (!sg) return;
+    editingGroupId = parentGroupId + '::' + sgId;
+    pickedGroupEmoji = sg.emoji || '📁';
+    document.getElementById('groupModalTitle').textContent = '编辑子分组';
+    document.getElementById('gName').value = sg.name;
+    renderEmojiRow('groupEmojiRow', GROUP_EMOJIS, pickedGroupEmoji, (e) => {
+      pickedGroupEmoji = e;
+      renderEmojiRow('groupEmojiRow', GROUP_EMOJIS, pickedGroupEmoji, arguments.callee);
+    });
+    document.getElementById('groupModal').classList.add('show');
+  }
+
+  function closeGroupModal() {
+    document.getElementById('groupModal').classList.remove('show');
+  }
+
+  function saveGroup() {
+    const name = document.getElementById('gName').value.trim();
+    if (!name) { alert('请填分组名称'); return; }
+
+    if (editingGroupId && editingGroupId.indexOf('::') >= 0) {
+      const [gid, sgid] = editingGroupId.split('::');
+      const g = data.groups.find(x => x.id === gid);
+      if (g) {
+        const sg = (g.subgroups || []).find(x => x.id === sgid);
+        if (sg) {
+          sg.name = name;
+          sg.emoji = pickedGroupEmoji;
+        }
+      }
+    } else if (editingGroupId) {
+      const g = data.groups.find(x => x.id === editingGroupId);
+      if (g) {
+        g.name = name;
+        g.emoji = pickedGroupEmoji;
+      }
+    } else {
+      data.groups.push({
+        id: 'g_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        name: name,
+        emoji: pickedGroupEmoji,
+        collapsed: false,
+        contacts: [],
+        subgroups: [],
+      });
+    }
+
+    saveData();
+    closeGroupModal();
+    render();
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+
+  // ==========================================================
+  //                    emoji 选择
+  // ==========================================================
+  function renderEmojiRow(containerId, list, current, onPick) {
+    const box = document.getElementById(containerId);
+    box.innerHTML = '';
+    list.forEach(e => {
+      const d = document.createElement('div');
+      d.className = 'emoji-opt' + (e === current ? ' active' : '');
+      d.textContent = e;
+      d.onclick = () => onPick(e);
+      box.appendChild(d);
+    });
+  }
+
+  // ==========================================================
+  //                    编辑模式
+  // ==========================================================
+  function toggleEdit() {
+    editing = !editing;
+    document.body.classList.toggle('editing', editing);
+    document.getElementById('editBtn').classList.toggle('active', editing);
+    document.getElementById('editBtn').textContent = editing ? '完成' : '编辑';
+    render();
+    if (navigator.vibrate) navigator.vibrate(10);
+  }
+
+  // ==========================================================
+  //                    恢复默认
+  // ==========================================================
+  function resetDefault() {
+    if (!confirm('恢复默认号码？你自定义的号码会全部被清空。')) return;
+    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    saveData();
+    render();
+    if (navigator.vibrate) navigator.vibrate(15);
+  }
+
+  // ==========================================================
+  //                    PIN 保护
+  // ==========================================================
+  function onPinInput(input) {
+    input.value = input.value.replace(/\D/g, '');
+    if (input.value.length === 4) {
+      setTimeout(unlockPage, 100);
+    }
+  }
+
+  async function unlockPage() {
+    const input = document.getElementById('pinInput');
+    const errEl = document.getElementById('pinError');
+    const pin = (input.value || '').trim();
+    errEl.textContent = '';
+
+    if (!/^\d{4}$/.test(pin)) {
+      errEl.textContent = '请输入 4 位数字';
+      return;
+    }
+    const storedHash = localStorage.getItem(PIN_KEY);
+    if (!storedHash) {
+      localStorage.setItem(LOCK_KEY, '1');
+      document.getElementById('lockedOverlay').classList.remove('show');
+      return;
+    }
+    const hash = await sha256(pin);
+    if (hash === storedHash) {
+      if (navigator.vibrate) navigator.vibrate(15);
+      localStorage.setItem(LOCK_KEY, '1');
+      document.getElementById('lockedOverlay').classList.remove('show');
+      input.value = '';
+    } else {
+      if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+      errEl.textContent = 'PIN 码错误';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  function openPinSetting() {
+    const hasPin = !!localStorage.getItem(PIN_KEY);
+    document.getElementById('pinStatusText').textContent = hasPin ? '✅ 已启用' : '未启用';
+    document.getElementById('pinChangeArea').style.display = hasPin ? 'none' : 'block';
+    document.getElementById('pinSaveBtn').textContent = hasPin ? '修改 PIN' : '设置 PIN';
+    document.getElementById('pinDisableBtn').style.display = hasPin ? 'block' : 'none';
+    document.getElementById('pinNew1').value = '';
+    document.getElementById('pinNew2').value = '';
+    document.getElementById('pinSettingModal').classList.add('show');
+  }
+
+  function closePinSetting() {
+    document.getElementById('pinSettingModal').classList.remove('show');
+  }
+
+  async function savePinSetting() {
+    const hasPin = !!localStorage.getItem(PIN_KEY);
+    // 如果已经设置过，先展开修改区域
+    if (hasPin && document.getElementById('pinChangeArea').style.display === 'none') {
+      document.getElementById('pinChangeArea').style.display = 'block';
+      document.getElementById('pinSaveBtn').textContent = '确认修改';
+      return;
+    }
+    const p1 = document.getElementById('pinNew1').value.trim();
+    const p2 = document.getElementById('pinNew2').value.trim();
+    if (!/^\d{4}$/.test(p1)) { alert('PIN 必须是 4 位数字'); return; }
+    if (p1 !== p2) { alert('两次输入不一致'); return; }
+    const hash = await sha256(p1);
+    localStorage.setItem(PIN_KEY, hash);
+    localStorage.removeItem(LOCK_KEY);
+    alert('✅ PIN 已设置，下次打开需要输入');
+    closePinSetting();
+  }
+
+  function disablePin() {
+    if (!confirm('关闭 PIN 保护？下次打开就不需要输入 PIN 了。')) return;
+    localStorage.removeItem(PIN_KEY);
+    localStorage.removeItem(LOCK_KEY);
+    alert('✅ PIN 保护已关闭');
+    closePinSetting();
+  }
+
+  // ==========================================================
+  //                    隐私说明
+  // ==========================================================
+  function toggleAgree() {
+    const checked = document.getElementById('agreeCheck').checked;
+    document.getElementById('continueBtn').disabled = !checked;
+  }
+
+  function confirmIntro() {
+    if (!document.getElementById('agreeCheck').checked) return;
+    localStorage.setItem(INTRO_KEY, '1');
+    document.getElementById('introOverlay').classList.remove('show');
+    initAfterIntro();
+  }
+
+  function cancelIntro() {
+    document.getElementById('introOverlay').classList.remove('show');
+    // 回首页
+    location.href = '/?tab=tools';
+  }
+
+  // ==========================================================
+  //                    初始化流程
+  // ==========================================================
+  function initAfterIntro() {
+    loadData();
+    render();
+    // 如果设置了 PIN，显示锁定页
+    if (localStorage.getItem(PIN_KEY)) {
+      if (localStorage.getItem(LOCK_KEY) !== '1') {
+        document.getElementById('lockedOverlay').classList.add('show');
+        setTimeout(() => {
+          const input = document.getElementById('pinInput');
+          if (input) input.focus();
+        }, 200);
+        return;
+      }
+    }
+    // 没 PIN 或已解锁，正常渲染
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/?tab=tools';
+  }
+
+  // ==========================================================
+  //                    启动
+  // ==========================================================
+  (function init() {
+    // 没同意过隐私说明 → 先显示说明
+    if (localStorage.getItem(INTRO_KEY) !== '1') {
+      document.getElementById('introOverlay').classList.add('show');
+      document.getElementById('agreeCheck').checked = false;
+      document.getElementById('continueBtn').disabled = true;
+      return;
+    }
+    // 已同意 → 检查 PIN
+    initAfterIntro();
+  })();
+</script>
+<script src="/static/js/auth-gate.js"></script>
+</body>
+</html>

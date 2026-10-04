@@ -40,7 +40,6 @@ font-size: 12px; padding: 8px 14px; border-radius: 10px; cursor: pointer;
   }
   .install-btn:active { transform: scale(0.98); }
 
-
 .privacy-note {
 background: rgba(160, 216, 179, 0.08);
 border-left: 3px solid #a0d8b3;
@@ -189,7 +188,7 @@ font-size: 14px; font-weight: bold; cursor: pointer;
 .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
 .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
 
-/* 锁定页（Face ID 之前的遮罩） */
+/* 锁定页 */
 .locked-overlay {
 position: fixed; inset: 0;
 background: #0f0c29;
@@ -199,11 +198,94 @@ z-index: 500; padding: 30px;
 }
 .locked-overlay.show { display: flex; }
 .locked-overlay .lock-icon { font-size: 64px; margin-bottom: 20px; }
-.locked-overlay .lock-text { font-size: 15px; color: #ccc; margin-bottom: 24px; text-align: center; }
+.locked-overlay .lock-text { font-size: 15px; color: #ccc; margin-bottom: 24px; text-align: center; line-height: 1.7; }
+.locked-overlay .pin-input {
+width: 200px; text-align: center;
+font-size: 22px; letter-spacing: 12px; font-weight: 700;
+padding: 14px; border-radius: 14px;
+border: 2px solid rgba(160,216,179,0.3);
+background: rgba(255,255,255,0.06);
+color: #fff; outline: none;
+margin-bottom: 12px;
+font-family: inherit;
+}
+.locked-overlay .pin-input:focus { border-color: #a0d8b3; }
+.locked-overlay .pin-error {
+font-size: 12px; color: #ff6b6b;
+min-height: 16px; margin-bottom: 14px;
+}
 .locked-overlay button {
 padding: 14px 32px; border-radius: 14px; border: none;
 background: linear-gradient(135deg, #4a7c59, #2d5a3d);
 color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
+}
+.locked-overlay button:active { transform: scale(0.97); }
+
+/* 首次使用说明页 */
+.intro-overlay {
+position: fixed; inset: 0;
+background: #0f0c29;
+display: none; flex-direction: column;
+z-index: 600; padding: 24px 20px 30px;
+overflow-y: auto;
+}
+.intro-overlay.show { display: flex; }
+.intro-overlay h2 {
+font-size: 20px; font-weight: 800;
+color: #a0d8b3; margin-bottom: 6px;
+}
+.intro-overlay .sub {
+font-size: 13px; color: #888;
+margin-bottom: 24px;
+}
+.intro-overlay .block {
+background: rgba(255,255,255,0.04);
+border: 1px solid rgba(255,255,255,0.08);
+border-radius: 14px;
+padding: 16px 18px;
+margin-bottom: 12px;
+font-size: 13px;
+color: #ccc;
+line-height: 1.8;
+}
+.intro-overlay .block b { color: #a0d8b3; }
+.intro-overlay .block .warn { color: #ffc400; font-weight: 700; }
+.intro-overlay .agree-row {
+display: flex; align-items: flex-start; gap: 10px;
+padding: 14px;
+background: rgba(160,216,179,0.08);
+border: 1px solid rgba(160,216,179,0.25);
+border-radius: 14px;
+margin-top: 16px;
+margin-bottom: 18px;
+}
+.intro-overlay .agree-row input {
+margin-top: 3px;
+width: 18px; height: 18px;
+accent-color: #a0d8b3;
+flex-shrink: 0;
+}
+.intro-overlay .agree-row label {
+font-size: 13px;
+color: #fff;
+line-height: 1.6;
+flex: 1;
+cursor: pointer;
+}
+.intro-overlay .continue-btn {
+width: 100%; padding: 16px; border-radius: 14px; border: none;
+background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+color: #fff; font-size: 15px; font-weight: bold;
+cursor: pointer;
+margin-bottom: 10px;
+}
+.intro-overlay .continue-btn:disabled {
+opacity: 0.4; cursor: not-allowed;
+}
+.intro-overlay .cancel-btn {
+width: 100%; padding: 14px; border-radius: 14px;
+background: rgba(255,255,255,0.08); color: #ccc;
+border: none; font-size: 14px; cursor: pointer;
 }
 </style>
 </head>
@@ -218,17 +300,21 @@ color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
 <div id="content">
 
 <div class="privacy-note">
-🔒 <b>你的信息只保存在你自己手机里，或你本人的加密账户里。</b><br>
-除非你主动打开“云同步”，否则我们不会上传任何信息。你可以随时删除全部数据。
+🔒 <b>重要隐私声明：</b><br>
+你填写的所有信息（姓名、电话、护照、NIE、紧急联系人等）<b>只保存在你自己手机的浏览器里</b>，
+<b>不会上传到我们的服务器</b>，<b>后台完全看不见</b>。<br>
+你可以随时点“删除我的所有数据”，一键清空本地内容。<br>
+<b>请勿在公共设备上创建急救卡。</b>
 </div>
 
 <div class="howto-note">
     📖 <b>怎么用？</b><br>
-    1. 点“创建我的急救卡”，填写姓名、电话、护照、NIE、紧急联系人。<br>
-    2. 保存后，你的卡片就存在手机里了。<br>
-    3. 紧急情况下，打开它，直接给警察/医生看。<br>
-    4. 点“拨打 112”可一键报警，点“联系家人”可一键拨打紧急联系人。<br>
-    5. 建议把急救卡添加到手机主屏幕，秒开。
+    1. 首次使用前，会有一段“隐私说明”，请仔细阅读并同意后再创建。<br>
+    2. 填写姓名、电话、护照、NIE、紧急联系人（全部可选，填多少都行）。<br>
+    3. 保存后，急救卡只存在你的手机本地。<br>
+    4. 紧急情况下，打开它，直接给警察/医生看。<br>
+    5. 可以设置 4 位 PIN 码保护，查看时需输入 PIN。<br>
+    6. 建议添加到手机主屏幕，秒开。
   </div>
 
 <button class="install-btn" id="installBtn" onclick="showInstallTip()">📱 如何添加到主屏幕</button>
@@ -254,16 +340,64 @@ color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
 </div>
 </div>
 
-<button class="primary-btn" id="newBtn" onclick="openEdit()">➕ 创建我的急救卡</button>
+<button class="primary-btn" id="newBtn" onclick="startCreate()">➕ 创建我的急救卡</button>
 <button class="danger-btn" id="deleteBtn" style="display:none;" onclick="deleteCard()">🗑️ 删除我的所有数据</button>
 
 </div>
 
-<!-- Face ID 锁定页 -->
+<!-- 首次使用 · 隐私说明 -->
+<div class="intro-overlay" id="introOverlay">
+  <h2>🆘 急救卡 · 使用前请读</h2>
+  <div class="sub">这不是一份“收集你数据的表格”，而是一个“只在你手机本地存信息的小工具”</div>
+
+  <div class="block">
+    <b>📱 信息存在哪？</b><br>
+    你填的所有内容，只存在**你自己手机浏览器的本地存储**里，相当于本机的一个备忘录。
+    我们的服务器<b>不会收到、不会保存、不会看到</b>任何内容。
+  </div>
+
+  <div class="block">
+    <b>👀 后台能看见吗？</b><br>
+    <b>完全看不见。</b> 我们没有对应的后端接口来接收这些数据，也没有任何方式从服务器读取。
+    就算我们的服务器被入侵，你的急救卡内容也不会泄露。
+  </div>
+
+  <div class="block">
+    <b>🔐 PIN 码保护</b><br>
+    你可以设置 4 位 PIN 码保护。PIN 码会经过 SHA-256 哈希后再保存到手机本地，
+    <b>连我们和你的手机都无法还原出原始 PIN</b>。忘了 PIN 只能删除数据重新创建。
+  </div>
+
+  <div class="block">
+    <b>🗑️ 删除自由</b><br>
+    点“删除我的所有数据”，本机存储里的急救卡内容会立刻清空。
+    你无需联系我们，也没有任何“注销申请”流程。
+  </div>
+
+  <div class="block">
+    <b class="warn">⚠️ 你必须知道的风险</b><br>
+    · 急救卡仅存本地，<b>换手机、换浏览器、清缓存、卸载 PWA，数据都会丢</b>。<br>
+    · <b>不要在公共设备（网吧、朋友手机）创建</b>，因为同一设备上的任何人都能看到本地数据。<br>
+    · <b>不要在这里存银行卡号、密码、身份证照片</b>。护照号、NIE 号可以存，但要自己评估风险。<br>
+    · 我们不会对你的本地数据做备份，<b>丢了就丢了</b>。
+  </div>
+
+  <div class="agree-row">
+    <input type="checkbox" id="agreeCheck" onchange="toggleAgree()">
+    <label for="agreeCheck">我已阅读并理解以上说明，知道这些信息只存在我自己的手机里，后台看不见，也接受可能丢失的风险。</label>
+  </div>
+
+  <button class="continue-btn" id="continueBtn" disabled onclick="confirmIntro()">我了解，开始创建</button>
+  <button class="cancel-btn" onclick="cancelIntro()">取消，先不用</button>
+</div>
+
+<!-- PIN 解锁页 -->
 <div class="locked-overlay" id="lockedOverlay">
 <div class="lock-icon">🔒</div>
-<div class="lock-text">需要验证你的身份才能查看急救卡</div>
-<button onclick="unlockCard()">🔓 使用 Face ID / 指纹解锁</button>
+<div class="lock-text">输入 4 位 PIN 码查看急救卡<br><span style="font-size:12px;color:#666;">（忘记 PIN 需删除数据重建）</span></div>
+<input type="tel" inputmode="numeric" maxlength="4" class="pin-input" id="pinInput" placeholder="••••" oninput="onPinInput(this)">
+<div class="pin-error" id="pinError"></div>
+<button onclick="unlockCard()">🔓 解锁</button>
 </div>
 
 <!-- 编辑弹窗 -->
@@ -277,10 +411,10 @@ color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
 <label>手机号 / Phone / Teléfono</label>
 <input type="tel" id="phone" placeholder="+34 6XX XXX XXX">
 
-<label>护照号 / Passport</label>
+<label>护照号 / Passport（可选）</label>
 <input type="text" id="passport" placeholder="例如：E12345678">
 
-<label>NIE 号 / NIE</label>
+<label>NIE 号 / NIE（可选）</label>
 <input type="text" id="nie" placeholder="例如：X1234567A">
 
 <label>紧急联系人姓名</label>
@@ -293,13 +427,15 @@ color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
 <textarea id="notes" placeholder="例如：对青霉素过敏"></textarea>
 
 <div class="checkbox-row">
-<input type="checkbox" id="cloudSync">
-<label for="cloudSync">开启云同步（换手机也能看到）</label>
+<input type="checkbox" id="pinProtect" onchange="onPinProtectChange()">
+<label for="pinProtect">启用 4 位 PIN 码保护（查看时需要输入）</label>
 </div>
 
-<div class="checkbox-row">
-<input type="checkbox" id="faceIdProtect">
-<label for="faceIdProtect">Face ID / 指纹保护（查看时需要验证）</label>
+<div id="pinSetup" style="display:none;">
+  <label>设置 4 位 PIN 码</label>
+  <input type="tel" inputmode="numeric" maxlength="4" id="pin1" placeholder="输入 4 位数字">
+  <label>再次输入确认</label>
+  <input type="tel" inputmode="numeric" maxlength="4" id="pin2" placeholder="再输一次">
 </div>
 
 <div class="form-actions">
@@ -310,251 +446,261 @@ color: #fff; font-size: 15px; font-weight: bold; cursor: pointer;
 </div>
 
 <script>
-const MY_EMAIL = localStorage.getItem('user_email') || 'anonymous';
-const LOCAL_KEY = 'emergency_card_local';
-const LOCK_KEY = 'emergency_card_locked';
+const LOCAL_KEY = 'emergency_card_local_v2';
+const LOCK_KEY = 'emergency_card_unlocked';
+const INTRO_KEY = 'emergency_card_intro_ok';
 
 let card = null;
-let cloudSync = false;
+
+// ===== SHA-256 =====
+async function sha256(str) {
+  const buf = new TextEncoder().encode(str);
+  const h = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(h)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 // ===== 加载 =====
-async function loadCard() {
-try {
-const local = localStorage.getItem(LOCAL_KEY);
-if (local) {
-card = JSON.parse(local);
-cloudSync = !!card.cloud_sync;
-}
-} catch(e) {}
+function loadCard() {
+  try {
+    const local = localStorage.getItem(LOCAL_KEY);
+    if (local) card = JSON.parse(local);
+  } catch (e) { card = null; }
 
-if (!card) {
-try {
-const resp = await fetch('/api/emergency?owner=' + encodeURIComponent(MY_EMAIL));
-const data = await resp.json();
-if (data && data.full_name) {
-card = data;
-card.cloud_sync = true;
-cloudSync = true;
-}
-} catch(e) {}
-}
+  // 如果开了 PIN 保护，并且当前未解锁 → 显示锁定页
+  if (card && card.pin_protected && card.pin_hash) {
+    if (localStorage.getItem(LOCK_KEY) !== '1') {
+      document.getElementById('lockedOverlay').classList.add('show');
+      setTimeout(() => {
+        const input = document.getElementById('pinInput');
+        if (input) input.focus();
+      }, 200);
+    }
+  }
 
-// ===== 检查是否要 Face ID 解锁 =====
-if (card && card.face_id_protected) {
-document.getElementById('lockedOverlay').classList.add('show');
-renderCard();
-return;
+  renderCard();
 }
 
-renderCard();
+// ===== PIN 解锁 =====
+function onPinInput(input) {
+  input.value = input.value.replace(/\D/g, '');
+  if (input.value.length === 4) {
+    // 自动提交
+    setTimeout(unlockCard, 100);
+  }
 }
 
-// ===== Face ID 解锁 =====
 async function unlockCard() {
-if (navigator.vibrate) navigator.vibrate(15);
+  const input = document.getElementById('pinInput');
+  const errEl = document.getElementById('pinError');
+  const pin = (input.value || '').trim();
+  errEl.textContent = '';
 
-// 判断是否支持 WebAuthn
-if (!window.PublicKeyCredential) {
-alert('你的浏览器不支持 Face ID / 指纹，请在 Safari 里打开。');
-// 不支持就直接解锁，避免用户卡住
-localStorage.setItem(LOCK_KEY, 'unlocked');
-document.getElementById('lockedOverlay').classList.remove('show');
-return;
+  if (!/^\d{4}$/.test(pin)) {
+    errEl.textContent = '请输入 4 位数字';
+    return;
+  }
+  if (!card || !card.pin_hash) {
+    // 没有 PIN，直接放行
+    localStorage.setItem(LOCK_KEY, '1');
+    document.getElementById('lockedOverlay').classList.remove('show');
+    return;
+  }
+  const hash = await sha256(pin);
+  if (hash === card.pin_hash) {
+    if (navigator.vibrate) navigator.vibrate(15);
+    localStorage.setItem(LOCK_KEY, '1');
+    document.getElementById('lockedOverlay').classList.remove('show');
+    input.value = '';
+  } else {
+    if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+    errEl.textContent = 'PIN 码错误';
+    input.value = '';
+    input.focus();
+  }
 }
 
-try {
-// 用 WebAuthn 做一次“验证”
-const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
-if (!available) {
-alert('你的设备暂不支持 Face ID / 指纹。');
-localStorage.setItem(LOCK_KEY, 'unlocked');
-document.getElementById('lockedOverlay').classList.remove('show');
-return;
+// ===== 首次使用 · 隐私说明 =====
+function startCreate() {
+  // 已同意过 → 直接打开编辑
+  if (localStorage.getItem(INTRO_KEY) === '1') {
+    openEdit();
+    return;
+  }
+  document.getElementById('introOverlay').classList.add('show');
+  document.getElementById('agreeCheck').checked = false;
+  document.getElementById('continueBtn').disabled = true;
 }
 
-// 创建 challenge
-const challenge = new Uint8Array(32);
-crypto.getRandomValues(challenge);
+function toggleAgree() {
+  const checked = document.getElementById('agreeCheck').checked;
+  document.getElementById('continueBtn').disabled = !checked;
+}
 
-// 尝试注册/验证一个本地凭证
-const credential = await navigator.credentials.create({
-publicKey: {
-challenge: challenge,
-rp: { name: "急救卡" },
-user: {
-id: new Uint8Array(16),
-name: MY_EMAIL,
-displayName: "急救卡"
-},
-pubKeyCredParams: [
-{ alg: -7, type: "public-key" },
-{ alg: -257, type: "public-key" }
-],
-authenticatorSelection: {
-authenticatorAttachment: "platform",
-userVerification: "required"
-},
-timeout: 60000,
-attestation: "none"
+function confirmIntro() {
+  if (!document.getElementById('agreeCheck').checked) return;
+  localStorage.setItem(INTRO_KEY, '1');
+  document.getElementById('introOverlay').classList.remove('show');
+  openEdit();
 }
-});
 
-if (credential) {
-localStorage.setItem(LOCK_KEY, 'unlocked');
-document.getElementById('lockedOverlay').classList.remove('show');
-}
-} catch (e) {
-// 用户取消 / 验证失败
-if (e.name === 'NotAllowedError') {
-alert('未通过验证');
-} else {
-// 其他错误（比如已注册过），也放行，避免卡死
-localStorage.setItem(LOCK_KEY, 'unlocked');
-document.getElementById('lockedOverlay').classList.remove('show');
-}
-}
+function cancelIntro() {
+  document.getElementById('introOverlay').classList.remove('show');
 }
 
 // ===== 渲染 =====
 function renderCard() {
-const container = document.getElementById('cardContainer');
-const newBtn = document.getElementById('newBtn');
-const editBtn = document.getElementById('editBtn');
-const deleteBtn = document.getElementById('deleteBtn');
+  const container = document.getElementById('cardContainer');
+  const newBtn = document.getElementById('newBtn');
+  const editBtn = document.getElementById('editBtn');
+  const deleteBtn = document.getElementById('deleteBtn');
 
-if (!card) {
-container.innerHTML = `
-<div class="empty-card">
-<div class="icon">🆘</div>
-<div class="text">你还没有创建急救卡。<br>点击下方按钮，创建一张救命卡片。</div>
-</div>
-`;
-newBtn.style.display = 'block';
-editBtn.style.display = 'none';
-deleteBtn.style.display = 'none';
-return;
-}
+  if (!card) {
+    container.innerHTML = `
+      <div class="empty-card">
+        <div class="icon">🆘</div>
+        <div class="text">你还没有创建急救卡。<br>点击下方按钮，创建一张救命卡片。</div>
+      </div>
+    `;
+    newBtn.style.display = 'block';
+    editBtn.style.display = 'none';
+    deleteBtn.style.display = 'none';
+    return;
+  }
 
-newBtn.style.display = 'none';
-editBtn.style.display = 'block';
-deleteBtn.style.display = 'block';
+  newBtn.style.display = 'none';
+  editBtn.style.display = 'block';
+  deleteBtn.style.display = 'block';
 
-container.innerHTML = `
-<div class="card">
-<div class="card-title">🆘 紧急情况 / EMERGENCY</div>
-<div class="card-sub">Emergencia · 紧急信息卡</div>
+  const esc = (s) => String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-${card.full_name ? `<div class="row"><span class="label">姓名</span><span class="value">${card.full_name}</span></div>` : ''}
-${card.phone ? `<div class="row"><span class="label">电话</span><span class="value">${card.phone}</span></div>` : ''}
-${card.passport ? `<div class="row"><span class="label">护照</span><span class="value">${card.passport}</span></div>` : ''}
-${card.nie ? `<div class="row"><span class="label">NIE</span><span class="value">${card.nie}</span></div>` : ''}
-${card.emergency_contact_name ? `<div class="row"><span class="label">紧急联系人</span><span class="value">${card.emergency_contact_name}</span></div>` : ''}
-${card.emergency_contact_phone ? `<div class="row"><span class="label">联系电话</span><span class="value">${card.emergency_contact_phone}</span></div>` : ''}
-${card.notes ? `<div class="row"><span class="label">备注</span><span class="value">${card.notes}</span></div>` : ''}
+  container.innerHTML = `
+    <div class="card">
+      <div class="card-title">🆘 紧急情况 / EMERGENCY</div>
+      <div class="card-sub">Emergencia · 紧急信息卡</div>
 
-<div class="actions">
-<button class="call-btn" onclick="callEmergency()">📞 拨打 112</button>
-${card.emergency_contact_phone ? `<button class="contact-btn" onclick="callContact()">👨‍👩‍👧 联系家人</button>` : ''}
-</div>
-</div>
-`;
+      ${card.full_name ? `<div class="row"><span class="label">姓名</span><span class="value">${esc(card.full_name)}</span></div>` : ''}
+      ${card.phone ? `<div class="row"><span class="label">电话</span><span class="value">${esc(card.phone)}</span></div>` : ''}
+      ${card.passport ? `<div class="row"><span class="label">护照</span><span class="value">${esc(card.passport)}</span></div>` : ''}
+      ${card.nie ? `<div class="row"><span class="label">NIE</span><span class="value">${esc(card.nie)}</span></div>` : ''}
+      ${card.emergency_contact_name ? `<div class="row"><span class="label">紧急联系人</span><span class="value">${esc(card.emergency_contact_name)}</span></div>` : ''}
+      ${card.emergency_contact_phone ? `<div class="row"><span class="label">联系电话</span><span class="value">${esc(card.emergency_contact_phone)}</span></div>` : ''}
+      ${card.notes ? `<div class="row"><span class="label">备注</span><span class="value">${esc(card.notes)}</span></div>` : ''}
+
+      <div class="actions">
+        <button class="call-btn" onclick="callEmergency()">📞 拨打 112</button>
+        ${card.emergency_contact_phone ? `<button class="contact-btn" onclick="callContact()">👨‍👩‍👧 联系家人</button>` : ''}
+      </div>
+    </div>
+  `;
 }
 
 function callEmergency() {
-if (navigator.vibrate) navigator.vibrate(20);
-if (confirm('确定要拨打西班牙急救电话 112 吗？')) location.href = 'tel:112';
+  if (navigator.vibrate) navigator.vibrate(20);
+  if (confirm('确定要拨打西班牙急救电话 112 吗？')) location.href = 'tel:112';
 }
 
 function callContact() {
-if (navigator.vibrate) navigator.vibrate(20);
-if (card && card.emergency_contact_phone) {
-if (confirm('确定要拨打 ' + card.emergency_contact_phone + ' 吗？')) {
-location.href = 'tel:' + card.emergency_contact_phone;
+  if (navigator.vibrate) navigator.vibrate(20);
+  if (card && card.emergency_contact_phone) {
+    if (confirm('确定要拨打 ' + card.emergency_contact_phone + ' 吗？')) {
+      location.href = 'tel:' + card.emergency_contact_phone;
+    }
+  }
 }
-}
+
+// ===== 编辑 =====
+function onPinProtectChange() {
+  const on = document.getElementById('pinProtect').checked;
+  document.getElementById('pinSetup').style.display = on ? 'block' : 'none';
+  if (!on) {
+    document.getElementById('pin1').value = '';
+    document.getElementById('pin2').value = '';
+  }
 }
 
 function openEdit() {
-const c = card || {};
-document.getElementById('full_name').value = c.full_name || '';
-document.getElementById('phone').value = c.phone || '';
-document.getElementById('passport').value = c.passport || '';
-document.getElementById('nie').value = c.nie || '';
-document.getElementById('emergency_contact_name').value = c.emergency_contact_name || '';
-document.getElementById('emergency_contact_phone').value = c.emergency_contact_phone || '';
-document.getElementById('notes').value = c.notes || '';
-document.getElementById('cloudSync').checked = !!c.cloud_sync;
-document.getElementById('faceIdProtect').checked = !!c.face_id_protected;
-document.getElementById('editModal').classList.add('show');
+  const c = card || {};
+  document.getElementById('full_name').value = c.full_name || '';
+  document.getElementById('phone').value = c.phone || '';
+  document.getElementById('passport').value = c.passport || '';
+  document.getElementById('nie').value = c.nie || '';
+  document.getElementById('emergency_contact_name').value = c.emergency_contact_name || '';
+  document.getElementById('emergency_contact_phone').value = c.emergency_contact_phone || '';
+  document.getElementById('notes').value = c.notes || '';
+  document.getElementById('pinProtect').checked = !!c.pin_protected;
+  document.getElementById('pin1').value = '';
+  document.getElementById('pin2').value = '';
+  onPinProtectChange();
+  document.getElementById('editModal').classList.add('show');
 }
 
 function closeEdit() {
-document.getElementById('editModal').classList.remove('show');
+  document.getElementById('editModal').classList.remove('show');
 }
 
 async function saveCard() {
-const payload = {
-full_name: document.getElementById('full_name').value.trim(),
-phone: document.getElementById('phone').value.trim(),
-passport: document.getElementById('passport').value.trim(),
-nie: document.getElementById('nie').value.trim(),
-emergency_contact_name: document.getElementById('emergency_contact_name').value.trim(),
-emergency_contact_phone: document.getElementById('emergency_contact_phone').value.trim(),
-notes: document.getElementById('notes').value.trim(),
-cloud_sync: document.getElementById('cloudSync').checked,
-face_id_protected: document.getElementById('faceIdProtect').checked
-};
+  const payload = {
+    full_name: document.getElementById('full_name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    passport: document.getElementById('passport').value.trim(),
+    nie: document.getElementById('nie').value.trim(),
+    emergency_contact_name: document.getElementById('emergency_contact_name').value.trim(),
+    emergency_contact_phone: document.getElementById('emergency_contact_phone').value.trim(),
+    notes: document.getElementById('notes').value.trim(),
+    pin_protected: document.getElementById('pinProtect').checked,
+    pin_hash: (card && card.pin_hash) || ''
+  };
 
-if (!payload.full_name) { alert('请填写姓名'); return; }
-if (navigator.vibrate) navigator.vibrate(15);
+  if (!payload.full_name) { alert('请填写姓名'); return; }
 
-localStorage.setItem(LOCAL_KEY, JSON.stringify(payload));
+  // 如果启用了 PIN 保护，处理 PIN
+  if (payload.pin_protected) {
+    const p1 = document.getElementById('pin1').value.trim();
+    const p2 = document.getElementById('pin2').value.trim();
+    if (p1 || p2) {
+      if (!/^\d{4}$/.test(p1)) { alert('PIN 必须是 4 位数字'); return; }
+      if (p1 !== p2) { alert('两次输入不一致'); return; }
+      payload.pin_hash = await sha256(p1);
+    } else if (!payload.pin_hash) {
+      alert('请设置 4 位 PIN 码');
+      return;
+    }
+  } else {
+    // 关了 PIN 保护，清掉 hash
+    payload.pin_hash = '';
+  }
 
-if (payload.cloud_sync) {
-try {
-await fetch('/api/emergency/save', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ email: MY_EMAIL, ...payload })
-});
-} catch(e) {}
-}
+  if (navigator.vibrate) navigator.vibrate(15);
+  localStorage.setItem(LOCAL_KEY, JSON.stringify(payload));
 
-// 保存后重新锁定（如果开了 Face ID）
-if (payload.face_id_protected) {
-localStorage.removeItem(LOCK_KEY);
-}
+  // 如果开了 PIN 保护，就立刻上锁
+  if (payload.pin_protected) {
+    localStorage.removeItem(LOCK_KEY);
+  } else {
+    localStorage.setItem(LOCK_KEY, '1');
+  }
 
-card = payload;
-cloudSync = payload.cloud_sync;
-closeEdit();
-renderCard();
-alert('✅ 已保存');
+  card = payload;
+  closeEdit();
+  renderCard();
+  alert('✅ 已保存（只保存在你的手机本地）');
 }
 
 async function deleteCard() {
-if (navigator.vibrate) navigator.vibrate(15);
-if (!confirm('确定删除所有急救卡数据吗？')) return;
+  if (navigator.vibrate) navigator.vibrate(15);
+  if (!confirm('确定删除所有急救卡数据吗？此操作不可恢复。')) return;
 
-localStorage.removeItem(LOCAL_KEY);
-localStorage.removeItem(LOCK_KEY);
-try {
-await fetch('/api/emergency/delete', {
-method: 'POST',
-headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({ email: MY_EMAIL })
-});
-} catch(e) {}
-
-card = null;
-renderCard();
-alert('✅ 已删除');
+  localStorage.removeItem(LOCAL_KEY);
+  localStorage.removeItem(LOCK_KEY);
+  card = null;
+  renderCard();
+  alert('✅ 已删除');
 }
 
 function goBack() {
-if (navigator.vibrate) navigator.vibrate(10);
-if (window.history.length > 1) window.history.back();
-else location.href = '/?tab=tools';
+  if (navigator.vibrate) navigator.vibrate(10);
+  if (window.history.length > 1) window.history.back();
+  else location.href = '/?tab=tools';
 }
 
 loadCard();
