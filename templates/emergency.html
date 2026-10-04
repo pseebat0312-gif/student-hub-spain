@@ -348,7 +348,7 @@ border: none; font-size: 14px; cursor: pointer;
 <!-- 首次使用 · 隐私说明 -->
 <div class="intro-overlay" id="introOverlay">
   <h2>🆘 急救卡 · 使用前请读</h2>
-  <div class="sub">这不是一份“收集你数据的表格”，而是一个“只在你手机本地存信息的小工具”</div>
+  <div class="sub">这不是一份"收集你数据的表格"，而是一个"只在你手机本地存信息的小工具"</div>
 
   <div class="block">
     <b>📱 信息存在哪？</b><br>
@@ -370,16 +370,16 @@ border: none; font-size: 14px; cursor: pointer;
 
   <div class="block">
     <b>🗑️ 删除自由</b><br>
-    点“删除我的所有数据”，本机存储里的急救卡内容会立刻清空。
-    你无需联系我们，也没有任何“注销申请”流程。
+    点"删除我的所有数据"，本机存储里的急救卡内容会立刻清空。
+    你无需联系我们，也没有任何"注销申请"流程。
   </div>
 
   <div class="block">
     <b class="warn">⚠️ 你必须知道的风险</b><br>
     · 急救卡仅存本地，<b>换手机、换浏览器、清缓存、卸载 PWA，数据都会丢</b>。<br>
     · <b>不要在公共设备（网吧、朋友手机）创建</b>，因为同一设备上的任何人都能看到本地数据。<br>
-    · <b>请谨慎存储敏感信息</b>。不要在这里存银行卡号、密码、身份证照片<br>。
-    · 请注意<b>。我们不会对你的本地数据做备份。</b>。
+    · <b>请谨慎存储敏感信息</b>。不要在这里存银行卡号、密码、身份证照片。<br>
+    · 请注意：<b>我们不会对你的本地数据做备份。</b>
   </div>
 
   <div class="agree-row">
@@ -428,7 +428,7 @@ border: none; font-size: 14px; cursor: pointer;
 
 <div class="checkbox-row">
 <input type="checkbox" id="pinProtect" onchange="onPinProtectChange()">
-<label for="pinProtect">启用 4 位 PIN 码保护（查看时需要输入）</label>
+<label for="pinProtect">启用 4 位 PIN 码保护（每次打开都需要输入）</label>
 </div>
 
 <div id="pinSetup" style="display:none;">
@@ -447,8 +447,6 @@ border: none; font-size: 14px; cursor: pointer;
 
 <script>
 const LOCAL_KEY = 'emergency_card_local_v2';
-const LOCK_KEY = 'emergency_card_unlocked';
-const INTRO_KEY = 'emergency_card_intro_ok';
 
 let card = null;
 
@@ -466,15 +464,13 @@ function loadCard() {
     if (local) card = JSON.parse(local);
   } catch (e) { card = null; }
 
-  // 如果开了 PIN 保护，并且当前未解锁 → 显示锁定页
+  // 每次打开页面，只要设置了 PIN，都要求重新输入
   if (card && card.pin_protected && card.pin_hash) {
-    if (localStorage.getItem(LOCK_KEY) !== '1') {
-      document.getElementById('lockedOverlay').classList.add('show');
-      setTimeout(() => {
-        const input = document.getElementById('pinInput');
-        if (input) input.focus();
-      }, 200);
-    }
+    document.getElementById('lockedOverlay').classList.add('show');
+    setTimeout(() => {
+      const input = document.getElementById('pinInput');
+      if (input) input.focus();
+    }, 200);
   }
 
   renderCard();
@@ -484,7 +480,6 @@ function loadCard() {
 function onPinInput(input) {
   input.value = input.value.replace(/\D/g, '');
   if (input.value.length === 4) {
-    // 自动提交
     setTimeout(unlockCard, 100);
   }
 }
@@ -500,15 +495,12 @@ async function unlockCard() {
     return;
   }
   if (!card || !card.pin_hash) {
-    // 没有 PIN，直接放行
-    localStorage.setItem(LOCK_KEY, '1');
     document.getElementById('lockedOverlay').classList.remove('show');
     return;
   }
   const hash = await sha256(pin);
   if (hash === card.pin_hash) {
     if (navigator.vibrate) navigator.vibrate(15);
-    localStorage.setItem(LOCK_KEY, '1');
     document.getElementById('lockedOverlay').classList.remove('show');
     input.value = '';
   } else {
@@ -521,8 +513,6 @@ async function unlockCard() {
 
 // ===== 隐私说明（每次创建都弹，不记忆） =====
 function startCreate() {
-  // 每次点“创建我的急救卡” → 都弹出隐私说明
-  // 不看有没有同意过，一律重新勾选
   document.getElementById('introOverlay').classList.add('show');
   document.getElementById('agreeCheck').checked = false;
   document.getElementById('continueBtn').disabled = true;
@@ -649,7 +639,6 @@ async function saveCard() {
 
   if (!payload.full_name) { alert('请填写姓名'); return; }
 
-  // 如果启用了 PIN 保护，处理 PIN
   if (payload.pin_protected) {
     const p1 = document.getElementById('pin1').value.trim();
     const p2 = document.getElementById('pin2').value.trim();
@@ -662,19 +651,11 @@ async function saveCard() {
       return;
     }
   } else {
-    // 关了 PIN 保护，清掉 hash
     payload.pin_hash = '';
   }
 
   if (navigator.vibrate) navigator.vibrate(15);
   localStorage.setItem(LOCAL_KEY, JSON.stringify(payload));
-
-  // 如果开了 PIN 保护，就立刻上锁
-  if (payload.pin_protected) {
-    localStorage.removeItem(LOCK_KEY);
-  } else {
-    localStorage.setItem(LOCK_KEY, '1');
-  }
 
   card = payload;
   closeEdit();
@@ -687,7 +668,6 @@ async function deleteCard() {
   if (!confirm('确定删除所有急救卡数据吗？此操作不可恢复。')) return;
 
   localStorage.removeItem(LOCAL_KEY);
-  localStorage.removeItem(LOCK_KEY);
   card = null;
   renderCard();
   alert('✅ 已删除');
@@ -707,11 +687,11 @@ function showInstallTip() {
     let tip = '';
 
     if (ua.includes('iphone') || ua.includes('ipad')) {
-      tip = '📱 苹果手机：\n\n1. 用safari浏览器打开网站，点底部中间的“分享”按钮（方框向上箭头）\n2. 往下滑，找到“添加到主屏幕”\n3. 点添加\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
+      tip = '📱 苹果手机：\n\n1. 用safari浏览器打开网站，点底部中间的"分享"按钮（方框向上箭头）\n2. 往下滑，找到"添加到主屏幕"\n3. 点添加\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
     } else if (ua.includes('android')) {
-      tip = '📱 安卓手机：\n\n1. 点右上角的三个点菜单\n2. 选“添加到主屏幕”或“安装应用”\n3. 点确认\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
+      tip = '📱 安卓手机：\n\n1. 点右上角的三个点菜单\n2. 选"添加到主屏幕"或"安装应用"\n3. 点确认\n\n完成后，桌面会出现一个图标，点一下直达急救卡。';
     } else {
-      tip = '请打开手机浏览器，用“分享 → 添加到主屏幕”功能，就能把急救卡放到桌面上。';
+      tip = '请打开手机浏览器，用"分享 → 添加到主屏幕"功能，就能把急救卡放到桌面上。';
     }
 
     alert(tip);
