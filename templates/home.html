@@ -611,34 +611,39 @@
 const ADMIN_EMAIL = "pseebat0312@gmail.com";
 
 // ===== 所有工具定义 =====
-// ===== 所有工具定义 =====
 const ALL_APPS = [
-// 学习类（蓝色）
-{ id: 'timetable', name: '我的课表', icon: '📅', url: '/timetable', color: 'color-blue' },
-{ id: 'contract', name: '合同分析', icon: '📄', url: '/contract', color: 'color-blue' },
-{ id: 'ai_detect', name: 'AI 检测', icon: '🔍', url: '/ai_detect', color: 'color-blue' },
-{ id: 'school', name: '学校导览', icon: '🏫', url: '/school', color: 'color-blue' },
-
-// 生活类（绿色）
-{ id: 'menu', name: '独家菜单', icon: '🍽️', url: '/menu', color: 'color-green' },
-{ id: 'currency', name: '记账汇率', icon: '💱', url: '/currency', color: 'color-green' },
-{ id: 'emergency_contacts', name: '通讯录', icon: '📞', url: '/emergency_contacts', color: 'color-green' },
-{ id: 'countdown', name: '倒数日', icon: '⏳', url: '/countdown', color: 'color-green' },
-
-// 社交类（粉色）
-{ id: 'community_hub', name: '交流社区', icon: '💬', url: '/community_hub', color: 'color-pink' },
-{ id: 'message', name: '留言板', icon: '✍️', url: '/message', color: 'color-pink' },
-{ id: 'memo', name: '备忘盒子', icon: '🗂️', url: '/memo', color: 'color-pink' },
-
-// 安全类（红色）
-{ id: 'emergency', name: '急救卡', icon: '🆘', url: '/emergency', color: 'color-red' },
-{ id: 'homesick', name: '想家急救包', icon: '🏠', url: '/homesick', color: 'color-red' },
-{ id: 'her', name: "Girl's Room", icon: '🎀', url: '/her', color: 'color-red' },
-
-// 其他类（金色）
-{ id: 'map', name: '探店地图', icon: '🗺️', url: '/map', color: 'color-gold' },
-{ id: 'travel', name: '足迹地图', icon: '🗺️', url: '/travel', color: 'color-gold' },
-{ id: 'affairs', name: '办事导览', icon: '📋', url: '/affairs', color: 'color-gold' }
+{ id: 'countdown', name: '倒数日', icon: '⏳', url: '/countdown', color: 'color-gold',
+  keywords: '倒数 倒计时 生日 纪念日 距离 日子' },
+{ id: 'menu', name: '独家菜单', icon: '🍽️', url: '/menu', color: 'color-pink',
+  keywords: '菜单 做饭 菜谱 食谱 点单 外卖 吃' },
+{ id: 'school', name: '学校导览', icon: '🏫', url: '/school', color: 'color-blue',
+  keywords: '学校 大学 校园 导览 位置' },
+{ id: 'affairs', name: '办事导览', icon: '📋', url: '/affairs', color: 'color-green',
+  keywords: '办事 流程 居留 银行卡 手机卡 医疗卡 手续 导览' },
+{ id: 'ai_detect', name: 'AI 检测（开发中）', icon: '🔍', url: '/ai_detect', color: 'color-purple',
+  keywords: 'ai 检测 论文 抄袭 生成 文本 chatgpt' },
+{ id: 'map', name: '探店地图', icon: '🗺️', url: '/map', color: 'color-red',
+  keywords: '探店 地图 餐厅 奶茶 咖啡 超市 店铺 美食 推荐 避雷' },
+{ id: 'message', name: '留言板', icon: '✍️', url: '/message', color: 'color-blue',
+  keywords: '留言 板 反馈 建议 站长 说说' },
+{ id: 'currency', name: '汇率换算与记账', icon: '💱', url: '/currency', color: 'color-purple',
+  keywords: '记账 汇率 换算 欧元 人民币 钱 花费' },
+{ id: 'homesick', name: '想家急救包', icon: '🏠', url: '/homesick', color: 'color-pink',
+  keywords: '想家 家书 信件 定时 寄出 家 思念' },
+{ id: 'emergency', name: '急救卡', icon: '🆘', url: '/emergency', color: 'color-red',
+  keywords: '急救 卡 护照 nie 紧急 联系人 医疗 医院 过敏 血型 身份证' },
+{ id: 'community_hub', name: '交流社区', icon: '💬', url: '/community_hub', color: 'color-green',
+  keywords: '社区 交流 二手 市场 树洞 匿名 互助 租房 拼单 拼车 求助 买卖 出售 求购' },
+{ id: 'her', name: "Girl's Room", icon: '🎀', url: '/her', color: 'color-pink',
+  keywords: 'girl 女孩 经期 月经 大姨妈 周期 心肝 追星 爱豆 遇险 暗号 女生 姨妈' },
+{ id: 'timetable', name: '我的课表', icon: '📅', url: '/timetable', color: 'color-blue',
+  keywords: '课表 课程 上课 教室 老师 星期 时间表' },
+{ id: 'contract', name: '合同分析', icon: '📄', url: '/contract', color: 'color-purple',
+  keywords: '合同 租房 保险 协议 条款 风险 签约' },
+{ id: 'memo', name: '备忘盒子', icon: '🗂️', url: '/memo', color: 'color-green',
+  keywords: '备忘 清单 待办 购物 礼物 行李 作业' },
+{ id: 'emergency_contacts', name: '通讯录', icon: '📞', url: '/emergency_contacts', color: 'color-red',
+  keywords: '电话 通讯录 联系人 紧急 拨打 号码' }
 ];
 
 const DEFAULT_ORDER = ALL_APPS.map(a => a.id);
@@ -653,10 +658,14 @@ function onAppSearchInput(input) {
   else clearBtn.classList.remove('show');
 
   if (searchQuery) {
-    const matched = ALL_APPS.filter(a =>
-      a.name.toLowerCase().includes(searchQuery) ||
-      a.id.toLowerCase().includes(searchQuery)
-    );
+    const matched = ALL_APPS.filter(a => {
+      const hay = (
+        (a.name || '') + ' ' +
+        (a.id || '') + ' ' +
+        (a.keywords || '')
+      ).toLowerCase();
+      return hay.includes(searchQuery);
+    });
     const grid = document.getElementById('appGrid');
     grid.innerHTML = '';
     matched.forEach(a => {
