@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<link rel="stylesheet" href="/static/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0c29">
+<title>交流社区 · 西班牙留学生工具站</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: #0f0c29; color: #fff;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+  }
+
+  #topBar {
+    padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to bottom, #0f0c29, transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  #topBar .back-btn {
+    background: rgba(255,255,255,0.08); border: none; color: #fff;
+    font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
+    cursor: pointer;
+  }
+  #topBar .back-btn:active { transform: scale(0.9); }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+
+  #content { padding: 0 16px 40px; }
+
+  /* Tab 切换 */
+  .hub-tabs {
+    display: flex; gap: 6px; margin-bottom: 16px;
+    background: rgba(255,255,255,0.04);
+    padding: 5px; border-radius: 999px;
+    position: sticky; top: 68px; z-index: 9;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .hub-tab {
+    flex: 1; padding: 11px;
+    border-radius: 999px; border: none;
+    background: transparent; color: #888;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .hub-tab.active {
+    background: linear-gradient(135deg, #a0d8b3, #7ab890);
+    color: #0f0c29;
+    font-weight: 700;
+  }
+  .hub-tab:active { transform: scale(0.96); }
+
+  .hub-panel { display: none; }
+  .hub-panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 通用按钮 */
+  .add-btn-top {
+    width: 100%; padding: 14px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    margin-bottom: 16px;
+  }
+  .add-btn-top:active { transform: scale(0.97); }
+
+  /* 卡片通用 */
+  .item-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .item-card .item-title {
+    font-size: 15px; font-weight: 700; color: #fff;
+    margin-bottom: 6px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .item-card .item-meta {
+    font-size: 11px; color: #666;
+    margin-bottom: 8px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .item-card .item-body {
+    font-size: 13px; color: #bbb; line-height: 1.6;
+  }
+  .item-card .item-actions {
+    display: flex; gap: 8px; margin-top: 12px;
+  }
+  .item-card .item-actions button {
+    padding: 8px 14px; border-radius: 10px; border: none;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+  }
+  .item-card .btn-reply {
+    background: rgba(160,216,179,0.15); color: #a0d8b3;
+  }
+  .item-card .btn-del {
+    background: rgba(255,107,107,0.12); color: #ff6b6b;
+  }
+  .item-card .btn-call {
+    background: rgba(160,216,179,0.15); color: #a0d8b3;
+  }
+
+  .empty-tip {
+    text-align: center; color: #666; font-size: 13px;
+    padding: 60px 20px; line-height: 1.8;
+  }
+
+  /* 弹窗 */
+  .modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    display: none; justify-content: center; align-items: flex-end;
+    z-index: 200; padding-top: 60px;
+  }
+  .modal.show { display: flex; }
+  .modal-content {
+    background: #1a1a2e; width: 100%; max-width: 500px;
+    border-radius: 25px 25px 0 0; padding: 20px 18px 30px;
+    max-height: 80vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-content h3 {
+    font-size: 17px; margin-bottom: 14px;
+    color: #a0d8b3; text-align: center;
+  }
+  .modal-content input, .modal-content textarea, .modal-content select {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 10px; font-family: inherit;
+  }
+  .modal-content textarea { height: 90px; resize: none; }
+  .modal-content input:focus, .modal-content textarea:focus { border-color: #a0d8b3; }
+  .form-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .form-actions button {
+    flex: 1; padding: 14px; border-radius: 12px; border: none;
+    font-size: 14px; font-weight: bold; cursor: pointer;
+    font-family: inherit;
+  }
+  .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+  .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+
+  /* 回复弹层 */
+  .reply-list {
+    max-height: 50vh; overflow-y: auto;
+    margin-bottom: 12px;
+  }
+  .reply-item {
+    background: rgba(255,255,255,0.04);
+    border-radius: 12px; padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .reply-item .r-name {
+    font-size: 11px; color: #a0d8b3; font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .reply-item .r-content { color: #ddd; }
+  .reply-item .r-time {
+    font-size: 10px; color: #666;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="topBar">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="title">💬 交流社区</div>
+</div>
+
+<div id="content">
+
+  <!-- Tab 切换 -->
+  <div class="hub-tabs">
+    <button class="hub-tab active" data-tab="market" onclick="switchHub('market', this)">🛒 二手</button>
+    <button class="hub-tab" data-tab="treehole" onclick="switchHub('treehole', this)">🌳 树洞</button>
+    <button class="hub-tab" data-tab="community" onclick="switchHub('community', this)">🤝 互助</button>
+  </div>
+
+  <!-- 二手市场 -->
+  <div class="hub-panel active" id="panel-market">
+    <button class="add-btn-top" onclick="openAddMarket()">➕ 发布二手</button>
+    <div id="marketList"><div class="empty-tip">加载中...</div></div>
+  </div>
+
+  <!-- 树洞 -->
+  <div class="hub-panel" id="panel-treehole">
+    <button class="add-btn-top" onclick="openAddTreehole()">➕ 发树洞</button>
+    <div id="treeholeList"><div class="empty-tip">加载中...</div></div>
+  </div>
+
+  <!-- 互助社区 -->
+  <div class="hub-panel" id="panel-community">
+    <button class="add-btn-top" onclick="openAddPost()">➕ 发帖</button>
+    <div id="communityList"><div class="empty-tip">加载中...</div></div>
+  </div>
+
+</div>
+
+<!-- 二手发布弹窗 -->
+<div class="modal" id="marketModal">
+  <div class="modal-content">
+    <h3>🛒 发布二手</h3>
+    <input type="text" id="mTitle" placeholder="物品名称 *">
+    <input type="text" id="mPrice" placeholder="价格（例：€10）">
+    <input type="text" id="mContact" placeholder="联系方式（微信/电话）">
+    <select id="mCategory">
+      <option value="">选择类别</option>
+      <option>家具</option>
+      <option>电器</option>
+      <option>书籍</option>
+      <option>衣物</option>
+      <option>其他</option>
+    </select>
+    <textarea id="mDesc" placeholder="物品描述"></textarea>
+    <div class="form-actions">
+      <button class="cancel" onclick="closeMarketModal()">取消</button>
+      <button class="submit" onclick="submitMarket()">发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- 树洞发布弹窗 -->
+<div class="modal" id="treeholeModal">
+  <div class="modal-content">
+    <h3>🌳 发树洞</h3>
+    <textarea id="tContent" placeholder="想说什么都可以（匿名）..." style="height:140px;"></textarea>
+    <div class="form-actions">
+      <button class="cancel" onclick="closeTreeholeModal()">取消</button>
+      <button class="submit" onclick="submitTreehole()">发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- 互助发帖弹窗 -->
+<div class="modal" id="postModal">
+  <div class="modal-content">
+    <h3>🤝 发帖</h3>
+    <input type="text" id="pTitle" placeholder="标题 *">
+    <select id="pCategory">
+      <option value="其他">其他</option>
+      <option>租房</option>
+      <option>拼单</option>
+      <option>拼车</option>
+      <option>求助</option>
+      <option>经验分享</option>
+    </select>
+    <textarea id="pContent" placeholder="内容 *" style="height:120px;"></textarea>
+    <div class="form-actions">
+      <button class="cancel" onclick="closePostModal()">取消</button>
+      <button class="submit" onclick="submitPost()">发布</button>
+    </div>
+  </div>
+</div>
+
+<!-- 树洞回复弹层 -->
+<div class="modal" id="replyModal">
+  <div class="modal-content">
+    <h3 id="replyTitle">💬 回复</h3>
+    <div class="reply-list" id="replyList"><div class="empty-tip">加载中...</div></div>
+    <input type="text" id="replyInput" placeholder="写点什么...">
+    <div class="form-actions">
+      <button class="cancel" onclick="closeReplyModal()">关闭</button>
+      <button class="submit" onclick="submitReply()">发送</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var el = function(id) { return document.getElementById(id); };
+  var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  function goBack() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (window.history.length > 1) window.history.back();
+    else location.href = '/';
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return '';
+    var d = new Date(dateStr);
+    var diff = Date.now() - d.getTime();
+    var m = Math.floor(diff / 60000);
+    if (m < 1) return '刚刚';
+    if (m < 60) return m + ' 分钟前';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + ' 小时前';
+    var days = Math.floor(h / 24);
+    if (days < 30) return days + ' 天前';
+    return d.toLocaleDateString('zh-CN');
+  }
+
+  // ===== Tab 切换 =====
+  function switchHub(tab, btn) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    document.querySelectorAll('.hub-panel').forEach(p => p.classList.remove('active'));
+    el('panel-' + tab).classList.add('active');
+    document.querySelectorAll('.hub-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (tab === 'market') loadMarket();
+    else if (tab === 'treehole') loadTreehole();
+    else if (tab === 'community') loadCommunity();
+  }
+
+  // ==================== 二手市场 ====================
+  async function loadMarket() {
+    var list = el('marketList');
+    list.innerHTML = '<div class="empty-tip">加载中...</div>';
+    try {
+      var r = await fetch('/api/market');
+      var data = await r.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        list.innerHTML = '<div class="empty-tip">还没有人发布二手物品</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.forEach(item => {
+        var card = document.createElement('div');
+        card.className = 'item-card';
+        var isMine = (item.user_email || '').toLowerCase() === MY_EMAIL;
+        card.innerHTML = `
+          <div class="item-title">${escapeHtml(item.title)}</div>
+          <div class="item-meta">
+            ${item.price ? `<span style="color:#a0d8b3;font-weight:700;">${escapeHtml(item.price)}</span>` : ''}
+            ${item.category ? `<span>${escapeHtml(item.category)}</span>` : ''}
+            <span style="margin-left:auto;">${timeAgo(item.created_at)}</span>
+          </div>
+          ${item.description ? `<div class="item-body">${escapeHtml(item.description)}</div>` : ''}
+          ${item.contact ? `<div class="item-body" style="margin-top:8px;color:#a0d8b3;">📞 ${escapeHtml(item.contact)}</div>` : ''}
+          <div class="item-actions">
+            ${isMine ? `<button class="btn-del" onclick="deleteMarket(${item.id})">删除</button>` : ''}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    } catch (e) {
+      list.innerHTML = '<div class="empty-tip">加载失败</div>';
+    }
+  }
+
+  function openAddMarket() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+    el('mTitle').value = '';
+    el('mPrice').value = '';
+    el('mContact').value = '';
+    el('mDesc').value = '';
+    el('marketModal').classList.add('show');
+  }
+  function closeMarketModal() { el('marketModal').classList.remove('show'); }
+
+  async function submitMarket() {
+    var title = el('mTitle').value.trim();
+    if (!title) { alert('请填物品名称'); return; }
+    try {
+      var r = await fetch('/api/market/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          title: title,
+          price: el('mPrice').value.trim(),
+          contact: el('mContact').value.trim(),
+          description: el('mDesc').value.trim(),
+          category: el('mCategory').value
+        })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      closeMarketModal();
+      loadMarket();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function deleteMarket(id) {
+    if (!confirm('确定删除？')) return;
+    try {
+      await fetch('/api/market/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, email: MY_EMAIL })
+      });
+      loadMarket();
+    } catch (e) {}
+  }
+
+  // ==================== 树洞 ====================
+  async function loadTreehole() {
+    var list = el('treeholeList');
+    list.innerHTML = '<div class="empty-tip">加载中...</div>';
+    try {
+      var r = await fetch('/api/treeholes');
+      var data = await r.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        list.innerHTML = '<div class="empty-tip">还没有树洞，发第一个吧</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.forEach(t => {
+        var card = document.createElement('div');
+        card.className = 'item-card';
+        card.innerHTML = `
+          <div class="item-body">${escapeHtml(t.content)}</div>
+          <div class="item-meta" style="margin-top:10px;">
+            <span>🌳 匿名</span>
+            <span style="margin-left:auto;">${timeAgo(t.created_at)}</span>
+          </div>
+          <div class="item-actions">
+            <button class="btn-reply" onclick="openReply(${t.id})">💬 查看回复</button>
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    } catch (e) {
+      list.innerHTML = '<div class="empty-tip">加载失败</div>';
+    }
+  }
+
+  function openAddTreehole() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+    el('tContent').value = '';
+    el('treeholeModal').classList.add('show');
+  }
+  function closeTreeholeModal() { el('treeholeModal').classList.remove('show'); }
+
+  async function submitTreehole() {
+    var content = el('tContent').value.trim();
+    if (!content) { alert('写点什么吧'); return; }
+    try {
+      var r = await fetch('/api/treeholes/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: MY_EMAIL, content: content })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      closeTreeholeModal();
+      loadTreehole();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  // ==================== 树洞回复 ====================
+  var currentTreeholeId = null;
+
+  async function openReply(tid) {
+    currentTreeholeId = tid;
+    el('replyModal').classList.add('show');
+    el('replyList').innerHTML = '<div class="empty-tip">加载中...</div>';
+    el('replyInput').value = '';
+    try {
+      var r = await fetch('/api/treeholes/replies?id=' + tid);
+      var data = await r.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        el('replyList').innerHTML = '<div class="empty-tip">还没有回复</div>';
+        return;
+      }
+      el('replyList').innerHTML = '';
+      data.forEach(rp => {
+        var div = document.createElement('div');
+        div.className = 'reply-item';
+        div.innerHTML = `
+          <div class="r-name">🌳 匿名</div>
+          <div class="r-content">${escapeHtml(rp.content)}</div>
+          <div class="r-time">${timeAgo(rp.created_at)}</div>
+        `;
+        el('replyList').appendChild(div);
+      });
+    } catch (e) {
+      el('replyList').innerHTML = '<div class="empty-tip">加载失败</div>';
+    }
+  }
+
+  function closeReplyModal() { el('replyModal').classList.remove('show'); }
+
+  async function submitReply() {
+    var content = el('replyInput').value.trim();
+    if (!content) { alert('写点什么吧'); return; }
+    try {
+      var r = await fetch('/api/treeholes/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          treehole_id: currentTreeholeId,
+          email: MY_EMAIL,
+          content: content
+        })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      el('replyInput').value = '';
+      openReply(currentTreeholeId);
+    } catch (e) { alert('网络错误'); }
+  }
+
+  // ==================== 互助社区 ====================
+  async function loadCommunity() {
+    var list = el('communityList');
+    list.innerHTML = '<div class="empty-tip">加载中...</div>';
+    try {
+      var r = await fetch('/api/community/posts');
+      var data = await r.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        list.innerHTML = '<div class="empty-tip">还没有帖子，发第一个吧</div>';
+        return;
+      }
+      list.innerHTML = '';
+      data.forEach(p => {
+        var card = document.createElement('div');
+        card.className = 'item-card';
+        var isMine = (p.user_email || '').toLowerCase() === MY_EMAIL;
+        card.innerHTML = `
+          <div class="item-title">${escapeHtml(p.title)}</div>
+          <div class="item-meta">
+            <span>${escapeHtml(p.category || '其他')}</span>
+            <span>💬 ${p.replies_count || 0}</span>
+            <span style="margin-left:auto;">${timeAgo(p.created_at)}</span>
+          </div>
+          <div class="item-body">${escapeHtml(p.content)}</div>
+          <div class="item-actions">
+            <button class="btn-reply" onclick="viewPost(${p.id})">💬 回复</button>
+            ${isMine ? `<button class="btn-del" onclick="deletePost(${p.id})">删除</button>` : ''}
+          </div>
+        `;
+        list.appendChild(card);
+      });
+    } catch (e) {
+      list.innerHTML = '<div class="empty-tip">加载失败</div>';
+    }
+  }
+
+  function openAddPost() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+    el('pTitle').value = '';
+    el('pContent').value = '';
+    el('postModal').classList.add('show');
+  }
+  function closePostModal() { el('postModal').classList.remove('show'); }
+
+  async function submitPost() {
+    var title = el('pTitle').value.trim();
+    var content = el('pContent').value.trim();
+    if (!title || !content) { alert('标题和内容都要填'); return; }
+    try {
+      var r = await fetch('/api/community/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL,
+          title: title,
+          content: content,
+          category: el('pCategory').value
+        })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      closePostModal();
+      loadCommunity();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function deletePost(id) {
+    if (!confirm('确定删除这个帖子吗？')) return;
+    try {
+      await fetch('/api/community/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, email: MY_EMAIL })
+      });
+      loadCommunity();
+    } catch (e) {}
+  }
+
+  // 查看帖子回复（复用 replyModal）
+  async function viewPost(pid) {
+    currentTreeholeId = null;
+    el('replyModal').classList.add('show');
+    el('replyList').innerHTML = '<div class="empty-tip">加载中...</div>';
+    el('replyInput').value = '';
+    el('replyInput').placeholder = '回复帖子...';
+    el('replyInput').setAttribute('data-post-id', pid);
+    try {
+      var r = await fetch('/api/community/replies?post_id=' + pid);
+      var data = await r.json();
+      if (!Array.isArray(data) || data.length === 0) {
+        el('replyList').innerHTML = '<div class="empty-tip">还没有回复</div>';
+        return;
+      }
+      el('replyList').innerHTML = '';
+      data.forEach(rp => {
+        var div = document.createElement('div');
+        div.className = 'reply-item';
+        div.innerHTML = `
+          <div class="r-name">${escapeHtml((rp.user_email || '').split('@')[0] || '匿名')}</div>
+          <div class="r-content">${escapeHtml(rp.content)}</div>
+          <div class="r-time">${timeAgo(rp.created_at)}</div>
+        `;
+        el('replyList').appendChild(div);
+      });
+    } catch (e) {
+      el('replyList').innerHTML = '<div class="empty-tip">加载失败</div>';
+    }
+  }
+
+  // 覆盖 submitReply，让它同时支持树洞和帖子
+  var _origSubmitReply = submitReply;
+  submitReply = async function() {
+    var content = el('replyInput').value.trim();
+    if (!content) { alert('写点什么吧'); return; }
+    var postId = el('replyInput').getAttribute('data-post-id');
+    if (postId) {
+      // 回复帖子
+      try {
+        var r = await fetch('/api/community/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            post_id: postId,
+            email: MY_EMAIL,
+            content: content
+          })
+        });
+        var d = await r.json();
+        if (d.error) { alert(d.error); return; }
+        el('replyInput').value = '';
+        viewPost(postId);
+      } catch (e) { alert('网络错误'); }
+    } else {
+      // 树洞回复
+      return _origSubmitReply();
+    }
+  };
+
+  // ===== 启动 =====
+  loadMarket();
+</script>
+<script src="/static/js/auth-gate.js"></script>
+</body>
+</html>

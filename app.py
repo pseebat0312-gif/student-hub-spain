@@ -99,13 +99,9 @@ def ai_detect():
 def affairs():
     return render_template("affairs.html")
 
-@app.route("/market")
-def market():
-    return render_template("market.html")
-
-@app.route("/community")
-def community():
-    return render_template("community.html")
+@app.route("/community_hub")
+def community_hub():
+    return render_template("community_hub.html")
 
 @app.route("/profile")
 def profile():
@@ -151,9 +147,6 @@ def emergency():
 def homesick():
     return render_template("homesick.html")
 
-@app.route("/treehole")
-def treehole():
-    return render_template("treehole.html")
 
 @app.route("/vip")
 def vip_page():

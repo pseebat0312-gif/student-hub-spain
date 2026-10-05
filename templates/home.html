@@ -44,11 +44,11 @@
 
 /* ===== 首页信息卡 ===== */
 .home-hero-card {
-  background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 22px;
   padding: 18px 20px 16px;
   margin-bottom: 12px;
-  box-shadow: 0 8px 24px rgba(74,124,89,0.25);
 }
 .home-hero-card .hh-date {
   font-size: 12px;
@@ -454,10 +454,8 @@
   </div>
 </div>
 
-<!-- 5. 进入工具箱 + 添加到桌面 -->
-<button class="big-btn" onclick="switchTab('tools')">进入工具箱</button>
-
-<button class="big-btn" onclick="toggleInstallGuide()" style="margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+<!-- 5. 添加到桌面（进入工具箱按钮已删） -->
+<button class="big-btn" onclick="toggleInstallGuide()" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
   <span style="font-size: 18px;">📱</span>
   <span>添加到手机桌面</span>
 </button>
@@ -538,14 +536,12 @@ const ALL_APPS = [
 { id: 'school', name: '学校导览', icon: '🏫', url: '/school', color: 'color-blue' },
 { id: 'affairs', name: '办事导览', icon: '📋', url: '/affairs', color: 'color-green' },
 { id: 'ai_detect', name: 'AI 检测（开发中）', icon: '🔍', url: '/ai_detect', color: 'color-purple' },
-{ id: 'market', name: '二手市场', icon: '🛒', url: '/market', color: 'color-orange' },
-{ id: 'community', name: '互助社区', icon: '💬', url: '/community', color: 'color-green' },
 { id: 'map', name: '探店地图', icon: '🗺️', url: '/map', color: 'color-red' },
 { id: 'message', name: '留言板', icon: '✍️', url: '/message', color: 'color-blue' },
 { id: 'currency', name: '汇率换算与记账', icon: '💱', url: '/currency', color: 'color-purple' },
 { id: 'homesick', name: '想家急救包', icon: '🏠', url: '/homesick', color: 'color-pink' },
 { id: 'emergency', name: '急救卡', icon: '🆘', url: '/emergency', color: 'color-red' },
-{ id: 'treehole', name: '匿名树洞', icon: '🌳', url: '/treehole', color: 'color-green' },
+{ id: 'community_hub', name: '交流社区', icon: '💬', url: '/community_hub', color: 'color-green' },
 { id: 'travel',name: '足迹地图', icon: '🗺️', url: '/travel', color: 'color-blue' },
 { id: 'her', name: "Girl's Room", icon: '🎀', url: '/her', color: 'color-pink' },
 { id: 'timetable', name: '我的课表', icon: '📅', url: '/timetable', color: 'color-blue' },
@@ -556,7 +552,20 @@ const ALL_APPS = [
 
 const DEFAULT_ORDER = ALL_APPS.map(a => a.id);
 
-// ===== 布局结构（新）：每一项是 "id" 或 { type:'folder', id, name, items } =====
+// ===== 工具：hex → rgba =====
+function hexToRgba(hex, alpha) {
+  if (!hex) hex = '#a0d8b3';
+  hex = hex.replace('#', '');
+  if (hex.length === 3) {
+    hex = hex.split('').map(function(x) { return x + x; }).join('');
+  }
+  var r = parseInt(hex.substring(0, 2), 16);
+  var g = parseInt(hex.substring(2, 4), 16);
+  var b = parseInt(hex.substring(4, 6), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+}
+
+// ===== 布局结构 =====
 function upgradeLayout(raw) {
   if (!Array.isArray(raw)) return DEFAULT_ORDER.slice();
   if (raw.some(item => item && typeof item === 'object' && item.type === 'folder')) {
@@ -941,9 +950,12 @@ async function loadTodaySchedule() {
 
     let html = '';
     todayCourses.forEach(c => {
+      const color = c.color || '#a0d8b3';
+      const bg = hexToRgba(color, 0.14);
+
       html += `
-        <div class="hh-row">
-          <div class="hh-time">${c.start_time} - ${c.end_time}</div>
+        <div class="hh-row" style="background:${bg}; border-left: 4px solid ${color}; border-radius: 10px; padding: 10px 12px; margin-bottom: 6px; border-bottom: none;">
+          <div class="hh-time" style="color:${color};">${c.start_time} - ${c.end_time}</div>
           <div class="hh-info">
             <div class="hh-name">${escapeHtml(c.course_name)}</div>
             ${c.room ? `<div class="hh-room">📍 ${escapeHtml(c.room)}</div>` : ''}
@@ -1037,7 +1049,6 @@ async function loadTodos() {
   const email = (localStorage.getItem('user_email') || '').toLowerCase();
   const token = localStorage.getItem('access_token');
 
-  // 未登录：读本地
   if (!email || !token) {
     let local = [];
     try { local = JSON.parse(localStorage.getItem('todos_local') || '[]'); } catch (e) {}
@@ -1087,7 +1098,6 @@ async function addTodo() {
   const token = localStorage.getItem('access_token');
 
   if (!email || !token) {
-    // 未登录：本地
     let local = [];
     try { local = JSON.parse(localStorage.getItem('todos_local') || '[]'); } catch (e) {}
     local.push({ id: 'local_' + Date.now(), content: content, done: false });
@@ -1369,7 +1379,7 @@ loadTodos();
 updateClock();
 setInterval(updateClock, 1000);
 setInterval(loadTodaySchedule, 60000);
-setInterval(loadWeather, 30 * 60 * 1000);  // 30 分钟刷一次天气
+setInterval(loadWeather, 30 * 60 * 1000);
 
 refreshLoginUI();
 
@@ -1701,6 +1711,7 @@ window.addEventListener('load', () => {
     document.getElementById('installGuideOverlay').style.display = 'none';
   }
 </script>
+
 <!-- ============ 更新说明弹窗 ============ -->
 <div id="updateOverlay" style="
   display: none;
@@ -1746,7 +1757,7 @@ window.addEventListener('load', () => {
       line-height: 1.9;
       margin-bottom: 20px;
     ">
-       <div style="color:#a0d8b3;font-weight:700;margin-bottom:8px;">✨本次新增功能：</div>
+      <div style="color:#a0d8b3;font-weight:700;margin-bottom:8px;">✨本次新增功能：</div>
       📞 <b>通讯录</b>：自动存入重要号码如112，一键拨号，可以自己加号码和分组<br>
       📅 <b>我的课表</b>：手动填课，彩色标记，一次加多天，可局部编辑<br>
       📄 <b>ai分析</b>：优化算法<br>
