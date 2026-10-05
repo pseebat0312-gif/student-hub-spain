@@ -1433,7 +1433,33 @@ function renderQuickSlots() {
     } else {
       slot.innerHTML = `<div class="qs-plus">＋</div>`;
     }
+
+    // ===== 点击：有功能就跳转，空就弹选择框 =====
+    let longPressed = false;
+    let pressTimer = null;
+
+    const startPress = () => {
+      longPressed = false;
+      pressTimer = setTimeout(() => {
+        longPressed = true;
+        if (navigator.vibrate) navigator.vibrate(20);
+        openQuickPicker(index);
+      }, 400);
+    };
+    const cancelPress = () => {
+      if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+    };
+
+    slot.addEventListener('touchstart', startPress, { passive: true });
+    slot.addEventListener('touchend', cancelPress);
+    slot.addEventListener('touchcancel', cancelPress);
+    slot.addEventListener('touchmove', cancelPress);
+    slot.addEventListener('mousedown', startPress);
+    slot.addEventListener('mouseup', cancelPress);
+    slot.addEventListener('mouseleave', cancelPress);
+
     slot.onclick = () => {
+      if (longPressed) { longPressed = false; return; }
       if (navigator.vibrate) navigator.vibrate(10);
       if (appId) {
         const app = ALL_APPS.find(a => a.id === appId);
@@ -1441,6 +1467,7 @@ function renderQuickSlots() {
       }
       openQuickPicker(index);
     };
+
     row.appendChild(slot);
   });
 }
