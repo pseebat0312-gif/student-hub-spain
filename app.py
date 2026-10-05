@@ -2470,6 +2470,117 @@ def api_rates():
     return jsonify({"EUR_TO_CNY": 7.85, "EUR_TO_USD": 1.08, "updated_at": "默认汇率"})
 
 
+
+# ==========================================================
+#                        今日天气（Open-Meteo，免费）
+# ==========================================================
+@app.route("/api/weather")
+def api_weather():
+    """按城市名查天气。默认马德里。"""
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    lat = request.args.get("lat", "40.4168")
+    lng = request.args.get("lng", "-3.7038")
+    try:
+        url = (
+            f"https://api.open-meteo.com/v1/forecast"
+            f"?latitude={lat}&longitude={lng}"
+            f"&current=temperature_2m,weather_code"
+            f"&daily=temperature_2m_max,temperature_2m_min,weather_code"
+            f"&timezone=Europe/Madrid&forecast_days=1"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "StudentHubSpain/1.0"})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            import json as _json
+            data = _json.loads(r.read().decode("utf-8"))
+        cur = data.get("current", {})
+        daily = data.get("daily", {})
+        return jsonify({
+            "success": True,
+            "temp": cur.get("temperature_2m"),
+            "code": cur.get("weather_code"),
+            "high": (daily.get("temperature_2m_max") or [None])[0],
+            "low": (daily.get("temperature_2m_min") or [None])[0],
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==========================================================
+#                        待办事项
+# ==========================================================
+@app.route("/api/todos")
+def api_todos_list():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    owner = request.args.get("owner", "").strip().lower()
+    if not owner:
+        return jsonify({"error": "缺少 owner"}), 400
+    try:
+        result = (
+            supabase.table("todos")
+            .select("*")
+            .eq("user_email", owner)
+            .order("done", desc=False)
+            .order("created_at", desc=False)
+            .limit(50)
+            .execute()
+        )
+        return jsonify(result.data or [])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/todos/add", methods=["POST"])
+def api_todos_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    email = data.get("email", "").strip().lower()
+    content = data.get("content", "").strip()
+    if not email or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("todos").insert({
+            "user_email": email,
+            "content": content,
+            "done": False,
+        }).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/todos/toggle", methods=["POST"])
+def api_todos_toggle():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    tid = data.get("id")
+    done = bool(data.get("done", False))
+    if not tid:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("todos").update({"done": done}).eq("id", tid).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/todos/delete", methods=["POST"])
+def api_todos_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    tid = data.get("id")
+    if not tid:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("todos").delete().eq("id", tid).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 # ==========================================================
 #                        记账
 # ==========================================================

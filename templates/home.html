@@ -42,6 +42,189 @@
   font-size: 18px; color: rgba(255, 255, 255, 0.55); flex-shrink: 0;
 }
 
+/* ===== 首页信息卡 ===== */
+.home-hero-card {
+  background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+  border-radius: 22px;
+  padding: 18px 20px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 8px 24px rgba(74,124,89,0.25);
+}
+.home-hero-card .hh-date {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 10px;
+  letter-spacing: 0.2px;
+}
+.home-hero-card .hh-body {
+  font-size: 14px;
+  color: #fff;
+  line-height: 1.7;
+}
+.home-hero-card .hh-row {
+  display: flex; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+.home-hero-card .hh-row:last-child { border-bottom: none; }
+.home-hero-card .hh-time {
+  font-size: 13px; font-weight: 700;
+  color: rgba(255,255,255,0.92);
+  flex-shrink: 0; width: 108px;
+}
+.home-hero-card .hh-info { flex: 1; }
+.home-hero-card .hh-name {
+  font-size: 14px; font-weight: 700; color: #fff;
+}
+.home-hero-card .hh-room {
+  font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px;
+}
+.home-hero-card .hh-countdown {
+  margin-top: 10px; font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.12);
+  padding: 6px 10px; border-radius: 10px;
+  display: inline-block;
+}
+.home-hero-card .hh-empty {
+  font-size: 14px; color: rgba(255,255,255,0.75);
+}
+
+/* 天气卡 */
+.weather-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.weather-card .wc-icon {
+  font-size: 36px; flex-shrink: 0;
+}
+.weather-card .wc-info { flex: 1; min-width: 0; }
+.weather-card .wc-temp {
+  font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;
+}
+.weather-card .wc-tip {
+  font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5;
+}
+
+/* 待办卡 */
+.todo-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+.todo-card .tc-title {
+  font-size: 13px; font-weight: 700; color: #a0d8b3;
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.todo-card .tc-add {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.todo-card .tc-add input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+  color: #fff; font-size: 13px; outline: none;
+  font-family: inherit;
+  min-width: 0;
+}
+.todo-card .tc-add input:focus { border-color: #a0d8b3; }
+.todo-card .tc-add button {
+  padding: 0 14px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+  color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  white-space: nowrap;
+}
+.todo-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.todo-item:last-child { border-bottom: none; }
+.todo-item .ti-check {
+  width: 20px; height: 20px;
+  border-radius: 6px;
+  border: 2px solid rgba(160,216,179,0.4);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  font-size: 12px; color: transparent;
+  transition: 0.15s;
+}
+.todo-item .ti-check.done {
+  background: #a0d8b3; border-color: #a0d8b3;
+  color: #1a0f14; font-weight: 700;
+}
+.todo-item .ti-text {
+  flex: 1; font-size: 13px; color: #ddd;
+  word-break: break-word; line-height: 1.4;
+}
+.todo-item .ti-text.done {
+  text-decoration: line-through;
+  color: #666;
+}
+.todo-item .ti-del {
+  background: none; border: none;
+  color: #666; font-size: 14px;
+  cursor: pointer; padding: 4px;
+  flex-shrink: 0;
+}
+.todo-item .ti-del:active { color: #ff6b6b; }
+.todo-empty {
+  text-align: center;
+  font-size: 12px; color: #666;
+  padding: 12px 0;
+}
+
+/* 底部小卡片行：每日更新 + 时钟 */
+.small-row {
+  display: flex; gap: 10px; margin-bottom: 12px;
+}
+.small-row .small-card {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: 0.15s;
+  text-align: center;
+}
+.small-row .small-card:active { transform: scale(0.97); }
+.small-row .small-card .sc-icon {
+  font-size: 20px; margin-bottom: 4px;
+}
+.small-row .small-card .sc-title {
+  font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px;
+}
+.small-row .small-card .sc-sub {
+  font-size: 10px; color: rgba(255,255,255,0.5);
+}
+.clock-mini {
+  display: flex; flex-direction: column; gap: 4px;
+  text-align: left;
+}
+.clock-mini .clock-row {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: rgba(255,255,255,0.7);
+}
+.clock-mini .clock-row .t {
+  font-family: ui-monospace, monospace;
+  color: #a0d8b3;
+  font-weight: 700;
+}
+
 /* ===== 拖拽相关 ===== */
 .app-icon-ghost {
   opacity: 0.25;
@@ -59,14 +242,9 @@
 .app-grid.editing .app-icon {
   animation: appWiggle 0.28s ease-in-out infinite;
 }
-.app-grid.editing .app-icon:nth-child(2n) {
-  animation-delay: 0.05s;
-}
-.app-grid.editing .app-icon:nth-child(3n) {
-  animation-delay: 0.10s;
-}
+.app-grid.editing .app-icon:nth-child(2n) { animation-delay: 0.05s; }
+.app-grid.editing .app-icon:nth-child(3n) { animation-delay: 0.10s; }
 
-/* ===== 文件夹图标 ===== */
 .app-icon.folder-icon .icon-box {
   position: relative;
   background: rgba(160,216,179,0.12);
@@ -94,7 +272,6 @@
   background: transparent;
 }
 
-/* ===== 和"进入工具箱"完全同参数的卡片 ===== */
 .card-tool-like {
   position: relative;
   width: 100%;
@@ -125,27 +302,18 @@
   background: rgba(255, 255, 255, 0.11);
   border-color: rgba(255, 255, 255, 0.4);
 }
-.card-tool-like .ct-icon {
-  font-size: 20px;
-  line-height: 1;
-  flex-shrink: 0;
-}
+.card-tool-like .ct-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
 .card-tool-like .ct-text { flex: 1; min-width: 0; }
 .card-tool-like .ct-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.2px;
-  margin-bottom: 2px;
+  font-size: 16px; font-weight: 700; color: #fff;
+  letter-spacing: -0.2px; margin-bottom: 2px;
 }
 .card-tool-like .ct-sub {
-  font-size: 12px;
-  font-weight: 400;
+  font-size: 12px; font-weight: 400;
   color: rgba(255, 255, 255, 0.55);
   letter-spacing: -0.1px;
 }
 
-/* ===== 文件夹弹层 ===== */
 #folderOverlay {
   display: none;
   position: fixed; inset: 0;
@@ -177,9 +345,7 @@
   letter-spacing: -0.3px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-#folderOverlay .folder-actions {
-  display: flex; gap: 8px;
-}
+#folderOverlay .folder-actions { display: flex; gap: 8px; }
 #folderOverlay .folder-actions button {
   padding: 8px 12px; border-radius: 10px; border: none;
   font-size: 12px; font-weight: 700;
@@ -246,30 +412,50 @@
   <div class="lb-arrow">→</div>
 </div>
 
-<div class="card" onclick="switchTab('tools')">
-<h3>👋 欢迎回来</h3>
-<p>这里是你的西班牙留学生一站式工具箱。点击底部标签，或者点这里进入工具箱。</p>
+<!-- 1. 今日课表 -->
+<div class="home-hero-card">
+  <div class="hh-date" id="todayDate">今天是 --</div>
+  <div class="hh-body" id="todaySchedule">
+    <div class="hh-empty">加载中...</div>
+  </div>
 </div>
 
-<div style="display: flex; gap: 12px; margin-bottom: 20px;">
-<div class="clock-card" style="flex: 1;">
-<div class="label">🇪🇸 西班牙</div>
-<div class="time" id="spainClock">--:--:--</div>
-</div>
-<div class="clock-card" style="flex: 1;">
-<div class="label">🇨🇳 中国</div>
-<div class="time" id="chinaClock">--:--:--</div>
-</div>
+<!-- 2. 天气 + 暖心提醒 -->
+<div class="weather-card" id="weatherCard">
+  <div class="wc-icon" id="weatherIcon">☀️</div>
+  <div class="wc-info">
+    <div class="wc-temp" id="weatherTemp">--°C</div>
+    <div class="wc-tip" id="weatherTip">正在获取天气...</div>
+  </div>
 </div>
 
+<!-- 3. 待办事项 -->
+<div class="todo-card">
+  <div class="tc-title">📝 今日待办</div>
+  <div class="tc-add">
+    <input type="text" id="todoInput" placeholder="添加一条待办..." maxlength="60" onkeypress="if(event.key==='Enter')addTodo()">
+    <button onclick="addTodo()">＋</button>
+  </div>
+  <div id="todoList"></div>
+</div>
+
+<!-- 4. 每日更新 + 时钟（变小） -->
+<div class="small-row">
+  <div class="small-card" onclick="location.href='/digest'">
+    <div class="sc-icon">📰</div>
+    <div class="sc-title">每日更新</div>
+    <div class="sc-sub">每天凌晨更新</div>
+  </div>
+  <div class="small-card" style="cursor:default;">
+    <div class="clock-mini">
+      <div class="clock-row"><span>🇪🇸 西班牙</span><span class="t" id="spainClock">--:--:--</span></div>
+      <div class="clock-row"><span>🇨🇳 中国</span><span class="t" id="chinaClock">--:--:--</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. 进入工具箱 + 添加到桌面 -->
 <button class="big-btn" onclick="switchTab('tools')">进入工具箱</button>
-<button class="big-btn" onclick="location.href='/digest'" style="margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-  <span style="font-size: 18px;">📰</span>
-  <span>每日更新</span>
-</button>
-<div style="font-size: 11px; color: rgba(255,255,255,0.35); text-align: center; margin-top: 6px; letter-spacing: 0.2px;">
-  每天凌晨自动更新当天资讯
-</div>
 
 <button class="big-btn" onclick="toggleInstallGuide()" style="margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
   <span style="font-size: 18px;">📱</span>
@@ -370,28 +556,18 @@ const ALL_APPS = [
 
 const DEFAULT_ORDER = ALL_APPS.map(a => a.id);
 
-// ===== 布局结构（新）：
-// 每一项可能是：
-//   "id"                            → 单个图标
-//   { type:'folder', id, name, items:["id1","id2"] }  → 文件夹
-// ================================================
-
-// ===== 旧结构（一维数组） → 新结构（含 folder） =====
+// ===== 布局结构（新）：每一项是 "id" 或 { type:'folder', id, name, items } =====
 function upgradeLayout(raw) {
   if (!Array.isArray(raw)) return DEFAULT_ORDER.slice();
-  // 已经是新结构（含有 object）就保留
   if (raw.some(item => item && typeof item === 'object' && item.type === 'folder')) {
     return raw;
   }
-  // 旧的一维数组 → 直接包一层
   return raw.filter(id => typeof id === 'string');
 }
 
-// ===== 校验布局完整性：补充缺失的 app / 去掉无效 app =====
 function normalizeLayout(layout) {
   const seen = new Set();
   const result = [];
-
   layout.forEach(item => {
     if (typeof item === 'string') {
       if (ALL_APPS.some(a => a.id === item) && !seen.has(item)) {
@@ -411,19 +587,15 @@ function normalizeLayout(layout) {
       }
     }
   });
-
-  // 补充未被放入的 app
   ALL_APPS.forEach(a => {
     if (!seen.has(a.id)) {
       result.push(a.id);
       seen.add(a.id);
     }
   });
-
   return result;
 }
 
-// ===== 布局读写 =====
 function getLocalLayout() {
   try {
     const raw = localStorage.getItem('app_layout');
@@ -467,7 +639,6 @@ async function saveCloudLayout(layout) {
   } catch (e) {}
 }
 
-// ===== 渲染工具图标（单个） =====
 function buildAppIcon(appId) {
   const app = ALL_APPS.find(a => a.id === appId);
   if (!app) return null;
@@ -482,22 +653,17 @@ function buildAppIcon(appId) {
   return div;
 }
 
-// ===== 渲染文件夹图标 =====
 function buildFolderIcon(folder) {
   const div = document.createElement('div');
   div.className = 'app-icon folder-icon';
   div.dataset.id = folder.id;
   div.dataset.kind = 'folder';
-
-  // 取前 4 个图标显示
   const miniIcons = folder.items.slice(0, 4).map(id => {
     const app = ALL_APPS.find(a => a.id === id);
     if (!app) return `<div class="mini-empty"></div>`;
     return `<div class="mini-icon">${app.icon}</div>`;
   });
-  // 补足 4 个格子
   while (miniIcons.length < 4) miniIcons.push(`<div class="mini-empty"></div>`);
-
   div.innerHTML = `
     <div class="icon-box">${miniIcons.join('')}</div>
     <div class="app-name">${folder.name}</div>
@@ -505,7 +671,6 @@ function buildFolderIcon(folder) {
   return div;
 }
 
-// ===== 渲染整个网格 =====
 function renderApps(layout) {
   if (!Array.isArray(layout)) layout = getLocalLayout();
   const grid = document.getElementById('appGrid');
@@ -522,13 +687,11 @@ function renderApps(layout) {
   initSortable();
 }
 
-// ===== 读取当前网格 → 生成 layout 数组 =====
 function readLayoutFromGrid() {
   const grid = document.getElementById('appGrid');
   const result = [];
   Array.from(grid.children).forEach(el => {
     if (el.dataset.kind === 'folder') {
-      // 文件夹 DOM 上挂了 items 数据
       const items = (el._folderItems || []).slice();
       result.push({
         type: 'folder',
@@ -543,7 +706,6 @@ function readLayoutFromGrid() {
   return result;
 }
 
-// ===== SortableJS =====
 let sortableInstance = null;
 
 function initSortable() {
@@ -567,51 +729,33 @@ function initSortable() {
     onEnd: (evt) => {
       grid.classList.remove('editing');
       if (navigator.vibrate) navigator.vibrate(10);
-
-      // 判断是否拖到另一个图标上（文件夹或单个图标）
       const from = evt.item;
       const to = evt.to;
-
-      // 找到落点位置上的兄弟节点（不考虑自己）
       const children = Array.from(to.children);
       const fromIndex = children.indexOf(from);
       let targetEl = null;
       if (fromIndex > 0) targetEl = children[fromIndex - 1];
       else if (children.length > 1) targetEl = children[1];
-      // 避免把 folder 拖到自己身上
       if (targetEl === from) targetEl = null;
 
-      // 判断是否要合并成文件夹：
-      // - 目标是一个文件夹 → 把它移进去
-      // - 目标是一个普通图标 → 两个合并成新文件夹
       if (targetEl && targetEl.dataset.kind === 'folder') {
-        // 移到文件夹里
         addToFolder(targetEl, from);
         return;
       }
       if (targetEl && targetEl.dataset.kind === 'app' && from.dataset.kind === 'app') {
-        // 两个 app → 弹出命名对话框，合并成文件夹
         const name = prompt('给这个文件夹起个名字：', '新文件夹');
-        if (!name) {
-          // 用户取消 → 不合并
-          return;
-        }
+        if (!name) return;
         mergeToFolder(targetEl, from, name);
         return;
       }
-
-      // 普通排序
       const layout = readLayoutFromGrid();
       setLocalLayout(layout);
       saveCloudLayout(layout);
     }
   });
-
-  // 恢复已有文件夹的 items
   restoreFolderItems();
 }
 
-// 渲染时把已存在文件夹的 items 挂到 DOM 上
 function restoreFolderItems() {
   const grid = document.getElementById('appGrid');
   const layout = getLocalLayout();
@@ -624,44 +768,28 @@ function restoreFolderItems() {
   });
 }
 
-// ===== 合并两个 app 为新文件夹 =====
 function mergeToFolder(appEl1, appEl2, name) {
   const id1 = appEl1.dataset.id;
   const id2 = appEl2.dataset.id;
-
-  // 用 DOM 的方式：删掉两个图标，插入一个文件夹
   const grid = document.getElementById('appGrid');
   const folderId = 'f_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-
   const folderEl = buildFolderIcon({ id: folderId, name: name, items: [id1, id2] });
   folderEl._folderItems = [id1, id2];
-
-  // 用 folder 替换第一个图标的位置
   grid.insertBefore(folderEl, appEl1);
   grid.removeChild(appEl1);
   grid.removeChild(appEl2);
-
   if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
-
   const layout = readLayoutFromGrid();
   setLocalLayout(layout);
   saveCloudLayout(layout);
 }
 
-// ===== 把 app 拖进文件夹 =====
 function addToFolder(folderEl, appEl) {
   if (!folderEl._folderItems) folderEl._folderItems = [];
   const id = appEl.dataset.id;
-  if (folderEl._folderItems.includes(id)) {
-    // 已经在里面，忽略
-    return;
-  }
+  if (folderEl._folderItems.includes(id)) return;
   folderEl._folderItems.push(id);
-
-  // 删掉 appEl
   appEl.parentNode.removeChild(appEl);
-
-  // 重新渲染文件夹内容
   const folderData = {
     id: folderEl.dataset.id,
     name: folderEl.querySelector('.app-name').textContent,
@@ -670,22 +798,18 @@ function addToFolder(folderEl, appEl) {
   const newEl = buildFolderIcon(folderData);
   newEl._folderItems = folderEl._folderItems.slice();
   folderEl.parentNode.replaceChild(newEl, folderEl);
-
   if (navigator.vibrate) navigator.vibrate(15);
-
   const layout = readLayoutFromGrid();
   setLocalLayout(layout);
   saveCloudLayout(layout);
 }
 
-// ===== 打开文件夹弹层 =====
 let currentFolderEl = null;
 
 function openFolder(folderEl) {
   currentFolderEl = folderEl;
   const items = folderEl._folderItems || [];
   document.getElementById('folderName').textContent = folderEl.querySelector('.app-name').textContent;
-
   const grid = document.getElementById('folderGrid');
   grid.innerHTML = '';
   items.forEach(id => {
@@ -704,7 +828,6 @@ function openFolder(folderEl) {
     };
     grid.appendChild(item);
   });
-
   document.getElementById('folderOverlay').classList.add('show');
 }
 
@@ -720,7 +843,6 @@ function renameFolder() {
   if (!newName || newName === oldName) return;
   currentFolderEl.querySelector('.app-name').textContent = newName;
   document.getElementById('folderName').textContent = newName;
-
   const layout = readLayoutFromGrid();
   setLocalLayout(layout);
   saveCloudLayout(layout);
@@ -730,11 +852,8 @@ function renameFolder() {
 function dissolveFolder() {
   if (!currentFolderEl) return;
   if (!confirm('确定解散这个文件夹吗？里面的图标会回到桌面上。')) return;
-
   const items = (currentFolderEl._folderItems || []).slice();
   const grid = document.getElementById('appGrid');
-
-  // 把文件夹替换成第一个 app，然后在它后面依次插入其他 app
   let anchor = currentFolderEl;
   items.forEach(id => {
     const appEl = buildAppIcon(id);
@@ -743,25 +862,19 @@ function dissolveFolder() {
     anchor = appEl;
   });
   grid.removeChild(currentFolderEl);
-
   closeFolder();
   if (navigator.vibrate) navigator.vibrate([10, 40, 10]);
-
   const layout = readLayoutFromGrid();
   setLocalLayout(layout);
   saveCloudLayout(layout);
 }
 
-// ===== 点击事件：区分「点击 app」「点击 folder」「编辑模式」 =====
 document.addEventListener('click', (e) => {
   const grid = document.getElementById('appGrid');
   if (!grid) return;
   const icon = e.target.closest('.app-icon');
   if (!icon) return;
-
-  // 编辑模式（Sortable 拖拽中）不触发点击
   if (grid.classList.contains('editing')) return;
-
   if (icon.dataset.kind === 'folder') {
     e.stopPropagation();
     if (navigator.vibrate) navigator.vibrate(10);
@@ -776,7 +889,6 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// ===== 首次加载 =====
 (async function initLayout() {
   renderApps(getLocalLayout());
   const cloud = await loadCloudLayout();
@@ -786,7 +898,265 @@ document.addEventListener('click', (e) => {
   }
 })();
 
-// ===== Tab 切换 =====
+// ==================== 今日课表 ====================
+function getTodayWeekday() {
+  let d = new Date().getDay();
+  return d === 0 ? 7 : d;
+}
+
+async function loadTodaySchedule() {
+  const el = document.getElementById('todaySchedule');
+  const dateEl = document.getElementById('todayDate');
+  if (!el) return;
+  const now = new Date();
+  const weekdayNames = ['', '周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+  if (dateEl) {
+    dateEl.textContent = '今天是 ' + (now.getMonth()+1) + '月' + now.getDate() + '日 · ' + weekdayNames[getTodayWeekday()];
+  }
+
+  const email = (localStorage.getItem('user_email') || '').toLowerCase();
+  const token = localStorage.getItem('access_token');
+
+  if (!email || !token) {
+    el.innerHTML = '<div class="hh-empty">登录后可查看今天的课表 📅</div>';
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/timetable?owner=' + encodeURIComponent(email));
+    const data = await r.json();
+    if (!Array.isArray(data)) {
+      el.innerHTML = '<div class="hh-empty">加载失败，下拉刷新试试</div>';
+      return;
+    }
+    const today = getTodayWeekday();
+    const todayCourses = data.filter(c => c.weekday === today);
+
+    if (todayCourses.length === 0) {
+      el.innerHTML = '<div class="hh-empty">今天没有课 🎉 好好休息</div>';
+      return;
+    }
+
+    todayCourses.sort((a, b) => a.start_time.localeCompare(b.start_time));
+
+    let html = '';
+    todayCourses.forEach(c => {
+      html += `
+        <div class="hh-row">
+          <div class="hh-time">${c.start_time} - ${c.end_time}</div>
+          <div class="hh-info">
+            <div class="hh-name">${escapeHtml(c.course_name)}</div>
+            ${c.room ? `<div class="hh-room">📍 ${escapeHtml(c.room)}</div>` : ''}
+          </div>
+        </div>
+      `;
+    });
+
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const next = todayCourses.find(c => {
+      const [h, m] = c.start_time.split(':').map(Number);
+      return h * 60 + m > nowMin;
+    });
+    if (next) {
+      const [h, m] = next.start_time.split(':').map(Number);
+      const diff = h * 60 + m - nowMin;
+      const hours = Math.floor(diff / 60);
+      const mins = diff % 60;
+      html += `<div class="hh-countdown">⏰ 下一节课还有 ${hours > 0 ? hours + ' 小时 ' : ''}${mins} 分钟</div>`;
+    }
+
+    el.innerHTML = html;
+  } catch (e) {
+    el.innerHTML = '<div class="hh-empty">加载失败</div>';
+  }
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ==================== 今日天气 + 暖心提醒 ====================
+function weatherIconFromCode(code) {
+  if (code === 0) return '☀️';
+  if (code <= 2) return '🌤️';
+  if (code === 3) return '☁️';
+  if (code === 45 || code === 48) return '🌫️';
+  if (code >= 51 && code <= 67) return '🌧️';
+  if (code >= 71 && code <= 77) return '❄️';
+  if (code >= 80 && code <= 82) return '🌧️';
+  if (code >= 95) return '⛈️';
+  return '🌡️';
+}
+
+function buildWarmTip(weather) {
+  const now = new Date();
+  const hour = now.getHours();
+  const parts = [];
+
+  if (weather.temp !== null && weather.temp !== undefined) {
+    if (weather.temp <= 5) parts.push('今天很冷，记得穿厚外套 🧥');
+    else if (weather.temp <= 12) parts.push('今天有点凉，出门加件外套');
+    else if (weather.temp >= 30) parts.push('今天很热，多喝水 🥤');
+    else parts.push('今天气温舒服，适合出门');
+  }
+
+  if (weather.code >= 51 && weather.code <= 67) parts.push('要下雨了，记得带伞 ☔');
+  if (weather.code >= 95) parts.push('可能有雷暴，注意安全 ⛈️');
+
+  if (hour >= 6 && hour < 10) parts.push('早安，新的一天加油 💪');
+  else if (hour >= 22 || hour < 6) parts.push('该休息啦，别熬夜 🌙');
+
+  return parts.join(' · ') || '祝你今天顺利 💗';
+}
+
+async function loadWeather() {
+  const iconEl = document.getElementById('weatherIcon');
+  const tempEl = document.getElementById('weatherTemp');
+  const tipEl = document.getElementById('weatherTip');
+  if (!iconEl) return;
+  try {
+    const r = await fetch('/api/weather');
+    const d = await r.json();
+    if (d.error) throw new Error(d.error);
+    iconEl.textContent = weatherIconFromCode(d.code);
+    tempEl.textContent = (d.temp !== null && d.temp !== undefined ? Math.round(d.temp) : '--') + '°C';
+    const extra = (d.high !== null && d.low !== null && d.high !== undefined && d.low !== undefined)
+      ? `最高 ${Math.round(d.high)}° · 最低 ${Math.round(d.low)}° · ` : '';
+    tipEl.textContent = extra + buildWarmTip(d);
+  } catch (e) {
+    iconEl.textContent = '🌡️';
+    tempEl.textContent = '--°C';
+    tipEl.textContent = '天气加载失败';
+  }
+}
+
+// ==================== 待办事项 ====================
+async function loadTodos() {
+  const list = document.getElementById('todoList');
+  if (!list) return;
+  const email = (localStorage.getItem('user_email') || '').toLowerCase();
+  const token = localStorage.getItem('access_token');
+
+  // 未登录：读本地
+  if (!email || !token) {
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('todos_local') || '[]'); } catch (e) {}
+    renderTodos(local, false);
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/todos?owner=' + encodeURIComponent(email));
+    const data = await r.json();
+    if (Array.isArray(data)) {
+      renderTodos(data, true);
+    } else {
+      list.innerHTML = '<div class="todo-empty">加载失败</div>';
+    }
+  } catch (e) {
+    list.innerHTML = '<div class="todo-empty">加载失败</div>';
+  }
+}
+
+function renderTodos(todos, isCloud) {
+  const list = document.getElementById('todoList');
+  if (!todos || todos.length === 0) {
+    list.innerHTML = '<div class="todo-empty">还没有待办，添加一条吧</div>';
+    return;
+  }
+  list.innerHTML = '';
+  todos.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'todo-item';
+    div.innerHTML = `
+      <div class="ti-check ${t.done ? 'done' : ''}" data-toggle="${t.id}">✓</div>
+      <div class="ti-text ${t.done ? 'done' : ''}">${escapeHtml(t.content)}</div>
+      <button class="ti-del" data-del="${t.id}">✕</button>
+    `;
+    div.querySelector('[data-toggle]').onclick = () => toggleTodo(t.id, !t.done, isCloud);
+    div.querySelector('[data-del]').onclick = () => deleteTodo(t.id, isCloud);
+    list.appendChild(div);
+  });
+}
+
+async function addTodo() {
+  const input = document.getElementById('todoInput');
+  const content = input.value.trim();
+  if (!content) return;
+  const email = (localStorage.getItem('user_email') || '').toLowerCase();
+  const token = localStorage.getItem('access_token');
+
+  if (!email || !token) {
+    // 未登录：本地
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('todos_local') || '[]'); } catch (e) {}
+    local.push({ id: 'local_' + Date.now(), content: content, done: false });
+    localStorage.setItem('todos_local', JSON.stringify(local));
+    input.value = '';
+    loadTodos();
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/todos/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, content: content })
+    });
+    const d = await r.json();
+    if (d.error) { alert(d.error); return; }
+    input.value = '';
+    loadTodos();
+  } catch (e) { alert('网络错误'); }
+}
+
+async function toggleTodo(id, done, isCloud) {
+  const email = (localStorage.getItem('user_email') || '').toLowerCase();
+  const token = localStorage.getItem('access_token');
+
+  if (!isCloud || !email || !token) {
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('todos_local') || '[]'); } catch (e) {}
+    local = local.map(t => t.id === id ? { ...t, done: done } : t);
+    localStorage.setItem('todos_local', JSON.stringify(local));
+    loadTodos();
+    return;
+  }
+
+  try {
+    await fetch('/api/todos/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id, done: done })
+    });
+    loadTodos();
+  } catch (e) {}
+}
+
+async function deleteTodo(id, isCloud) {
+  const email = (localStorage.getItem('user_email') || '').toLowerCase();
+  const token = localStorage.getItem('access_token');
+
+  if (!isCloud || !email || !token) {
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('todos_local') || '[]'); } catch (e) {}
+    local = local.filter(t => t.id !== id);
+    localStorage.setItem('todos_local', JSON.stringify(local));
+    loadTodos();
+    return;
+  }
+
+  try {
+    await fetch('/api/todos/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: id })
+    });
+    loadTodos();
+  } catch (e) {}
+}
+
+// ==================== Tab 切换 ====================
 function switchTab(tabName) {
   document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + tabName).classList.add('active');
@@ -796,6 +1166,10 @@ function switchTab(tabName) {
   refreshLoginUI();
   if (tabName === 'messages') {
     loadNotifications();
+  }
+  if (tabName === 'home') {
+    loadTodaySchedule();
+    loadTodos();
   }
 }
 
@@ -982,11 +1356,20 @@ function updateClock() {
   const chinaTime = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Shanghai" }));
   const pad = (n) => String(n).padStart(2, '0');
   const fmt = (d) => pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
-  document.getElementById('spainClock').textContent = fmt(spainTime);
-  document.getElementById('chinaClock').textContent = fmt(chinaTime);
+  const spainEl = document.getElementById('spainClock');
+  const chinaEl = document.getElementById('chinaClock');
+  if (spainEl) spainEl.textContent = fmt(spainTime);
+  if (chinaEl) chinaEl.textContent = fmt(chinaTime);
 }
+
+// ===== 启动 =====
+loadTodaySchedule();
+loadWeather();
+loadTodos();
 updateClock();
 setInterval(updateClock, 1000);
+setInterval(loadTodaySchedule, 60000);
+setInterval(loadWeather, 30 * 60 * 1000);  // 30 分钟刷一次天气
 
 refreshLoginUI();
 
@@ -1353,7 +1736,6 @@ window.addEventListener('load', () => {
       </div>
     </div>
 
-    <!-- 👇👇👇 这段就是你要改的地方 👇👇👇 -->
     <div style="
       background: rgba(160,216,179,0.08);
       border: 1px solid rgba(160,216,179,0.2);
@@ -1364,13 +1746,17 @@ window.addEventListener('load', () => {
       line-height: 1.9;
       margin-bottom: 20px;
     ">
-      <div style="color:#a0d8b3;font-weight:700;margin-bottom:8px;">✨本次新增功能：</div>
+       <div style="color:#a0d8b3;font-weight:700;margin-bottom:8px;">✨本次新增功能：</div>
       📞 <b>通讯录</b>：自动存入重要号码如112，一键拨号，可以自己加号码和分组<br>
       📅 <b>我的课表</b>：手动填课，彩色标记，一次加多天，可局部编辑<br>
       📄 <b>ai分析</b>：优化算法<br>
       🗂️ <b>备忘盒子</b>：无限清单，打勾、导出<br>
       ⭐ <b>追星专区</b>：新增自主添加<br>
       🎨 <b>桌面文件夹</b>：长按图标拖到另一个上，就能建文件夹
+      🏠 <b>首页大改</b>：现在打开就是「今日课表 + 天气 + 待办 + 每日更新」<br>
+      📅 <b>今日课表</b>：一眼看到今天上什么课、下一节几点<br>
+      ☀️ <b>今日天气</b>：马德里实时天气 + 暖心提醒<br>
+      📝 <b>待办事项</b>：可以直接在首页加、勾、删
     </div>
 
     <button onclick="closeUpdate()" style="
@@ -1392,10 +1778,7 @@ window.addEventListener('load', () => {
 </style>
 
 <script>
-  // ============ 更新说明控制 ============
-  // 👇👇👇 以后发新版，只改这一行（随便改成一个新字符串） 👇👇👇
-  const UPDATE_VERSION = 'v1';
-
+  const UPDATE_VERSION = 'v2';
   const UPDATE_SEEN_KEY = 'update_seen_version';
 
   (function showUpdateIfNeeded() {
