@@ -225,6 +225,78 @@
   font-weight: 700;
 }
 
+/* ===== 搜索框 ===== */
+.search-box {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+.search-box .s-icon {
+  font-size: 16px; color: rgba(255,255,255,0.5); flex-shrink: 0;
+}
+.search-box input {
+  flex: 1;
+  background: transparent; border: none; outline: none;
+  color: #fff; font-size: 14px; font-family: inherit;
+  min-width: 0;
+}
+.search-box input::placeholder { color: rgba(255,255,255,0.4); }
+.search-box .s-clear {
+  background: rgba(255,255,255,0.1);
+  border: none; color: #ccc;
+  width: 22px; height: 22px; border-radius: 50%;
+  font-size: 11px; cursor: pointer;
+  display: none;
+  align-items: center; justify-content: center;
+}
+.search-box .s-clear.show { display: flex; }
+
+/* ===== 彩色图标 ===== */
+.app-icon .icon-box {
+  position: relative;
+  width: 66px; height: 66px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  background: #1a1a1d;
+  border: 1px solid rgba(255,255,255,0.12);
+  margin-bottom: 10px;
+}
+.icon-box.color-blue {
+  background: linear-gradient(135deg, rgba(78,161,255,0.28), rgba(78,161,255,0.08)) !important;
+  border-color: rgba(78,161,255,0.4) !important;
+}
+.icon-box.color-green {
+  background: linear-gradient(135deg, rgba(111,191,142,0.28), rgba(111,191,142,0.08)) !important;
+  border-color: rgba(111,191,142,0.4) !important;
+}
+.icon-box.color-pink {
+  background: linear-gradient(135deg, rgba(232,168,184,0.28), rgba(232,168,184,0.08)) !important;
+  border-color: rgba(232,168,184,0.4) !important;
+}
+.icon-box.color-red {
+  background: linear-gradient(135deg, rgba(255,107,107,0.28), rgba(255,107,107,0.08)) !important;
+  border-color: rgba(255,107,107,0.4) !important;
+}
+.icon-box.color-gold {
+  background: linear-gradient(135deg, rgba(255,196,0,0.28), rgba(255,196,0,0.08)) !important;
+  border-color: rgba(255,196,0,0.4) !important;
+}
+.icon-box.color-purple {
+  background: linear-gradient(135deg, rgba(192,132,252,0.28), rgba(192,132,252,0.08)) !important;
+  border-color: rgba(192,132,252,0.4) !important;
+}
+.icon-box.color-orange {
+  background: linear-gradient(135deg, rgba(255,140,105,0.28), rgba(255,140,105,0.08)) !important;
+  border-color: rgba(255,140,105,0.4) !important;
+}
+
+
 /* ===== 拖拽相关 ===== */
 .app-icon-ghost {
   opacity: 0.25;
@@ -463,7 +535,16 @@
 </div>
 
 <div class="tab-page" id="tab-tools">
-<div class="app-grid" id="appGrid"></div>
+  <div class="search-box">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="appSearchInput" placeholder="搜索功能，比如：记账、树洞、课表" oninput="onAppSearchInput(this)">
+    <button class="s-clear" id="appSearchClear" onclick="clearAppSearch()">✕</button>
+  </div>
+
+  <div class="app-grid" id="appGrid"></div>
+  <div id="noSearchResult" style="display:none;font-size:13px;color:#666;text-align:center;padding:40px 20px;">
+    没有找到相关功能
+  </div>
 <div style="font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 8px; padding-bottom: 12px;">
   长按图标可拖动排序；拖到另一个图标上建文件夹（登录后会自动同步到云端）
 </div>
@@ -530,27 +611,71 @@
 const ADMIN_EMAIL = "pseebat0312@gmail.com";
 
 // ===== 所有工具定义 =====
+// ===== 所有工具定义 =====
 const ALL_APPS = [
-{ id: 'countdown', name: '倒数日', icon: '⏳', url: '/countdown', color: 'color-gold' },
-{ id: 'menu', name: '独家菜单', icon: '🍽️', url: '/menu', color: 'color-pink' },
-{ id: 'school', name: '学校导览', icon: '🏫', url: '/school', color: 'color-blue' },
-{ id: 'affairs', name: '办事导览', icon: '📋', url: '/affairs', color: 'color-green' },
-{ id: 'ai_detect', name: 'AI 检测（开发中）', icon: '🔍', url: '/ai_detect', color: 'color-purple' },
-{ id: 'map', name: '探店地图', icon: '🗺️', url: '/map', color: 'color-red' },
-{ id: 'message', name: '留言板', icon: '✍️', url: '/message', color: 'color-blue' },
-{ id: 'currency', name: '汇率换算与记账', icon: '💱', url: '/currency', color: 'color-purple' },
-{ id: 'homesick', name: '想家急救包', icon: '🏠', url: '/homesick', color: 'color-pink' },
-{ id: 'emergency', name: '急救卡', icon: '🆘', url: '/emergency', color: 'color-red' },
-{ id: 'community_hub', name: '交流社区', icon: '💬', url: '/community_hub', color: 'color-green' },
-{ id: 'travel',name: '足迹地图', icon: '🗺️', url: '/travel', color: 'color-blue' },
-{ id: 'her', name: "Girl's Room", icon: '🎀', url: '/her', color: 'color-pink' },
+// 学习类（蓝色）
 { id: 'timetable', name: '我的课表', icon: '📅', url: '/timetable', color: 'color-blue' },
-{ id: 'contract', name: '合同分析', icon: '📄', url: '/contract', color: 'color-purple' },
-{ id: 'memo', name: '备忘盒子', icon: '🗂️', url: '/memo', color: 'color-green' },
-{ id: 'emergency_contacts', name: '通讯录', icon: '📞', url: '/emergency_contacts', color: 'color-red' }
+{ id: 'contract', name: '合同分析', icon: '📄', url: '/contract', color: 'color-blue' },
+{ id: 'ai_detect', name: 'AI 检测', icon: '🔍', url: '/ai_detect', color: 'color-blue' },
+{ id: 'school', name: '学校导览', icon: '🏫', url: '/school', color: 'color-blue' },
+
+// 生活类（绿色）
+{ id: 'menu', name: '独家菜单', icon: '🍽️', url: '/menu', color: 'color-green' },
+{ id: 'currency', name: '记账汇率', icon: '💱', url: '/currency', color: 'color-green' },
+{ id: 'emergency_contacts', name: '通讯录', icon: '📞', url: '/emergency_contacts', color: 'color-green' },
+{ id: 'countdown', name: '倒数日', icon: '⏳', url: '/countdown', color: 'color-green' },
+
+// 社交类（粉色）
+{ id: 'community_hub', name: '交流社区', icon: '💬', url: '/community_hub', color: 'color-pink' },
+{ id: 'message', name: '留言板', icon: '✍️', url: '/message', color: 'color-pink' },
+{ id: 'memo', name: '备忘盒子', icon: '🗂️', url: '/memo', color: 'color-pink' },
+
+// 安全类（红色）
+{ id: 'emergency', name: '急救卡', icon: '🆘', url: '/emergency', color: 'color-red' },
+{ id: 'homesick', name: '想家急救包', icon: '🏠', url: '/homesick', color: 'color-red' },
+{ id: 'her', name: "Girl's Room", icon: '🎀', url: '/her', color: 'color-red' },
+
+// 其他类（金色）
+{ id: 'map', name: '探店地图', icon: '🗺️', url: '/map', color: 'color-gold' },
+{ id: 'travel', name: '足迹地图', icon: '🗺️', url: '/travel', color: 'color-gold' },
+{ id: 'affairs', name: '办事导览', icon: '📋', url: '/affairs', color: 'color-gold' }
 ];
 
 const DEFAULT_ORDER = ALL_APPS.map(a => a.id);
+
+// ===== 搜索 =====
+let searchQuery = '';
+
+function onAppSearchInput(input) {
+  searchQuery = (input.value || '').trim().toLowerCase();
+  const clearBtn = document.getElementById('appSearchClear');
+  if (searchQuery) clearBtn.classList.add('show');
+  else clearBtn.classList.remove('show');
+
+  if (searchQuery) {
+    const matched = ALL_APPS.filter(a =>
+      a.name.toLowerCase().includes(searchQuery) ||
+      a.id.toLowerCase().includes(searchQuery)
+    );
+    const grid = document.getElementById('appGrid');
+    grid.innerHTML = '';
+    matched.forEach(a => {
+      const el = buildAppIcon(a.id);
+      if (el) grid.appendChild(el);
+    });
+    if (sortableInstance) { sortableInstance.destroy(); sortableInstance = null; }
+    document.getElementById('noSearchResult').style.display = matched.length ? 'none' : 'block';
+  } else {
+    document.getElementById('noSearchResult').style.display = 'none';
+    renderApps(getLocalLayout());
+  }
+}
+
+function clearAppSearch() {
+  document.getElementById('appSearchInput').value = '';
+  onAppSearchInput(document.getElementById('appSearchInput'));
+}
+
 
 // ===== 工具：hex → rgba =====
 function hexToRgba(hex, alpha) {

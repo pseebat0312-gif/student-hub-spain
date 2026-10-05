@@ -152,45 +152,7 @@ def homesick():
 def vip_page():
     return render_template("vip.html")
 
-@app.route("/travel")
-def travel():
-    return """
-    <html>
-    <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>足迹地图 · 维护中</title>
-    <style>
-      body {
-        background: #0f0c29; color: #fff;
-        font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-        display: flex; justify-content: center; align-items: center;
-        min-height: 100vh; margin: 0; padding: 24px;
-        text-align: center;
-      }
-      .box { max-width: 360px; }
-      .icon { font-size: 56px; margin-bottom: 16px; }
-      h1 { font-size: 20px; font-weight: 800; margin-bottom: 12px; color: #a0d8b3; }
-      p { font-size: 14px; color: #888; line-height: 1.7; margin-bottom: 24px; }
-      a {
-        display: inline-block; padding: 12px 24px;
-        border-radius: 999px; text-decoration: none;
-        background: rgba(160,216,179,0.15);
-        border: 1px solid rgba(160,216,179,0.3);
-        color: #a0d8b3; font-weight: 700; font-size: 14px;
-      }
-    </style>
-    </head>
-    <body>
-      <div class="box">
-        <div class="icon">🛠️</div>
-        <h1>足迹地图维护中</h1>
-        <p>我们正在升级地图服务，暂时无法使用。<br>预计很快恢复，感谢理解。</p>
-        <a href="/">← 返回首页</a>
-      </div>
-    </body>
-    </html>
-    """, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
 
 @app.route("/her")
 def her():
