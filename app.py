@@ -2476,35 +2476,28 @@ def api_rates():
 # ==========================================================
 @app.route("/api/weather")
 def api_weather():
-    """按城市名查天气。默认马德里。"""
+    """用 wttr.in 查天气（免费、无需 Key）"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
-    lat = request.args.get("lat", "40.4168")
-    lng = request.args.get("lng", "-3.7038")
+    city = request.args.get("city", "Madrid")
     try:
-        url = (
-            f"https://api.open-meteo.com/v1/forecast"
-            f"?latitude={lat}&longitude={lng}"
-            f"&current=temperature_2m,weather_code"
-            f"&daily=temperature_2m_max,temperature_2m_min,weather_code"
-            f"&timezone=Europe/Madrid&forecast_days=1"
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": "StudentHubSpain/1.0"})
+        url = f"https://wttr.in/{city}?format=j1"
+        req = urllib.request.Request(url, headers={"User-Agent": "curl/7.68.0"})
         with urllib.request.urlopen(req, timeout=8) as r:
             import json as _json
             data = _json.loads(r.read().decode("utf-8"))
-        cur = data.get("current", {})
-        daily = data.get("daily", {})
+        cur = data.get("current_condition", [{}])[0]
+        today = data.get("weather", [{}])[0]
+        code = int(cur.get("weatherCode", "0"))
         return jsonify({
             "success": True,
-            "temp": cur.get("temperature_2m"),
-            "code": cur.get("weather_code"),
-            "high": (daily.get("temperature_2m_max") or [None])[0],
-            "low": (daily.get("temperature_2m_min") or [None])[0],
+            "temp": float(cur.get("temp_C", 0)),
+            "code": code,
+            "high": float(today.get("maxtempC", 0)),
+            "low": float(today.get("mintempC", 0)),
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 # ==========================================================
 #                        待办事项

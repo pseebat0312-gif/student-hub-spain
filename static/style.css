@@ -469,7 +469,6 @@ body {
 
 /* 覆盖常见的卡片类名 */
 .card,
-[class*="card"],
 [class*="msg-card"],
 [class*="item-card"],
 [class*="post-card"],
