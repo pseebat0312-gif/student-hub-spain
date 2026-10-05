@@ -965,6 +965,7 @@ def api_market_add():
             "contact": data.get("contact", ""),
             "image_url": data.get("image_url", ""),
             "category": data.get("category", ""),
+            "type": data.get("type", "sell"),
         }).execute()
         return jsonify({"success": True})
     except Exception as e:

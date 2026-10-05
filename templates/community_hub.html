@@ -67,6 +67,60 @@
   }
   .add-btn-top:active { transform: scale(0.97); }
 
+  /* 出售 / 求购 切换 */
+  .type-switch {
+    display: flex; gap: 8px; margin-bottom: 10px;
+  }
+  .type-switch label {
+    flex: 1; padding: 10px; text-align: center;
+    background: rgba(255,255,255,0.06);
+    border-radius: 12px;
+    font-size: 13px; cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .type-switch input { display: none; }
+  .type-switch label:has(input:checked) {
+    border-color: #a0d8b3;
+    background: rgba(160,216,179,0.15);
+    color: #a0d8b3;
+    font-weight: 700;
+  }
+
+  /* 图片上传 */
+  .upload-box {
+    padding: 14px; border-radius: 12px;
+    border: 2px dashed rgba(160, 216, 179, 0.3);
+    background: rgba(160, 216, 179, 0.05);
+    text-align: center;
+    font-size: 13px; color: #a0d8b3;
+    cursor: pointer;
+    margin-bottom: 10px;
+  }
+  .upload-box:active { transform: scale(0.98); }
+  .upload-preview {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  .upload-preview::-webkit-scrollbar { display: none; }
+  .upload-thumb {
+    position: relative; flex-shrink: 0;
+  }
+  .upload-thumb img {
+    width: 70px; height: 70px;
+    border-radius: 10px;
+    object-fit: cover;
+    display: block;
+  }
+  .upload-thumb .rm {
+    position: absolute; top: -6px; right: -6px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: #ff4444; color: #fff;
+    font-size: 13px; line-height: 20px;
+    text-align: center; cursor: pointer;
+  }
+
   /* 卡片通用 */
   .item-card {
     background: rgba(255,255,255,0.05);
@@ -105,6 +159,45 @@
   }
   .item-card .btn-call {
     background: rgba(160,216,179,0.15); color: #a0d8b3;
+  }
+
+  /* 二手图片 */
+  .market-badge {
+    display: inline-block;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 8px;
+    margin-right: 6px;
+  }
+  .market-badge.sell {
+    background: rgba(160,216,179,0.15);
+    color: #a0d8b3;
+  }
+  .market-badge.want {
+    background: rgba(244,184,208,0.15);
+    color: #f4b8d0;
+  }
+  .market-images {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+  .market-images::-webkit-scrollbar { display: none; }
+  .market-images img {
+    flex-shrink: 0;
+    width: 100px; height: 100px;
+    border-radius: 10px;
+    object-fit: cover;
+    cursor: pointer;
+  }
+  .market-price {
+    color: #a0d8b3; font-weight: 700;
+    font-size: 14px;
+  }
+  .market-contact {
+    color: #a0d8b3;
+    margin-top: 6px;
+    font-size: 12px;
   }
 
   .empty-tip {
@@ -189,7 +282,7 @@
 
   <!-- 二手市场 -->
   <div class="hub-panel active" id="panel-market">
-    <button class="add-btn-top" onclick="openAddMarket()">➕ 发布二手</button>
+    <button class="add-btn-top" onclick="openAddMarket()">➕ 发布</button>
     <div id="marketList"><div class="empty-tip">加载中...</div></div>
   </div>
 
@@ -210,19 +303,42 @@
 <!-- 二手发布弹窗 -->
 <div class="modal" id="marketModal">
   <div class="modal-content">
-    <h3>🛒 发布二手</h3>
+    <h3 id="marketModalTitle">🛒 发布二手</h3>
+
+    <div class="type-switch">
+      <label><input type="radio" name="mType" value="sell" checked><span>💰 出售</span></label>
+      <label><input type="radio" name="mType" value="want"><span>🔍 求购</span></label>
+    </div>
+
     <input type="text" id="mTitle" placeholder="物品名称 *">
-    <input type="text" id="mPrice" placeholder="价格（例：€10）">
-    <input type="text" id="mContact" placeholder="联系方式（微信/电话）">
-    <select id="mCategory">
-      <option value="">选择类别</option>
-      <option>家具</option>
-      <option>电器</option>
-      <option>书籍</option>
-      <option>衣物</option>
-      <option>其他</option>
-    </select>
     <textarea id="mDesc" placeholder="物品描述"></textarea>
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="number" id="mPrice" placeholder="价格" step="0.01" min="0" style="flex:1;margin-bottom:0;">
+      <select id="mCurrency" style="width:110px;margin-bottom:0;">
+        <option value="EUR">💶 €</option>
+        <option value="CNY">💰 ¥</option>
+      </select>
+    </div>
+
+    <input type="text" id="mContact" placeholder="联系方式（微信/WhatsApp）*">
+
+    <div class="upload-box" onclick="document.getElementById('mImages').click()">
+      📷 点击上传图片（可多选，每张最大 10MB）
+    </div>
+    <input type="file" id="mImages" accept="image/*" multiple style="display:none" onchange="onMarketImagesSelected(event)">
+    <div class="upload-preview" id="uploadPreview"></div>
+
+    <select id="mCategory">
+      <option value="">📂 选择分类</option>
+      <option value="家具">🛋️ 家具</option>
+      <option value="教材">📚 教材</option>
+      <option value="电子产品">💻 电子产品</option>
+      <option value="生活用品">🧴 生活用品</option>
+      <option value="出行工具">🚲 出行工具</option>
+      <option value="其他">📦 其他</option>
+    </select>
+
     <div class="form-actions">
       <button class="cancel" onclick="closeMarketModal()">取消</button>
       <button class="submit" onclick="submitMarket()">发布</button>
@@ -263,7 +379,7 @@
   </div>
 </div>
 
-<!-- 树洞回复弹层 -->
+<!-- 回复弹层 -->
 <div class="modal" id="replyModal">
   <div class="modal-content">
     <h3 id="replyTitle">💬 回复</h3>
@@ -304,6 +420,66 @@
     return d.toLocaleDateString('zh-CN');
   }
 
+  // ===== 价格工具 =====
+  function parsePrice(raw) {
+    if (!raw) return { currency: 'EUR', amount: '' };
+    var s = String(raw);
+    if (s.includes(':')) {
+      var parts = s.split(':');
+      return { currency: parts[0] === 'CNY' ? 'CNY' : 'EUR', amount: parts[1] };
+    }
+    return { currency: 'EUR', amount: s };
+  }
+  function formatPrice(raw) {
+    var p = parsePrice(raw);
+    if (!p.amount) return '';
+    var sym = p.currency === 'CNY' ? '¥' : '€';
+    return sym + p.amount;
+  }
+
+  // ===== 图片上传 =====
+  var uploadedImages = [];
+
+  async function onMarketImagesSelected(event) {
+    var files = Array.from(event.target.files || []);
+    for (var i = 0; i < files.length; i++) {
+      var f = files[i];
+      if (!f.type.startsWith('image/')) continue;
+      if (f.size > 10 * 1024 * 1024) { alert(f.name + ' 超过 10MB，已跳过'); continue; }
+      var fd = new FormData();
+      fd.append('file', f);
+      fd.append('bucket', 'market');
+      try {
+        var resp = await fetch('/api/upload', { method: 'POST', body: fd });
+        var data = await resp.json();
+        if (data.url) {
+          uploadedImages.push(data.url);
+          renderUploadPreview();
+        } else if (data.error) {
+          alert('上传失败：' + data.error);
+        }
+      } catch (e) { alert('网络错误'); }
+    }
+    event.target.value = '';
+  }
+
+  function renderUploadPreview() {
+    var box = el('uploadPreview');
+    box.innerHTML = '';
+    uploadedImages.forEach(function(u, i) {
+      var div = document.createElement('div');
+      div.className = 'upload-thumb';
+      div.innerHTML = '<img src="' + u + '" alt=""><span class="rm" onclick="removeUpload(' + i + ')">×</span>';
+      box.appendChild(div);
+    });
+  }
+
+  function removeUpload(i) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    uploadedImages.splice(i, 1);
+    renderUploadPreview();
+  }
+
   // ===== Tab 切换 =====
   function switchHub(tab, btn) {
     if (navigator.vibrate) navigator.vibrate(8);
@@ -324,27 +500,43 @@
       var r = await fetch('/api/market');
       var data = await r.json();
       if (!Array.isArray(data) || data.length === 0) {
-        list.innerHTML = '<div class="empty-tip">还没有人发布二手物品</div>';
+        list.innerHTML = '<div class="empty-tip">还没有人发布</div>';
         return;
       }
       list.innerHTML = '';
-      data.forEach(item => {
+      data.forEach(function(item) {
         var card = document.createElement('div');
         card.className = 'item-card';
         var isMine = (item.user_email || '').toLowerCase() === MY_EMAIL;
-        card.innerHTML = `
-          <div class="item-title">${escapeHtml(item.title)}</div>
-          <div class="item-meta">
-            ${item.price ? `<span style="color:#a0d8b3;font-weight:700;">${escapeHtml(item.price)}</span>` : ''}
-            ${item.category ? `<span>${escapeHtml(item.category)}</span>` : ''}
-            <span style="margin-left:auto;">${timeAgo(item.created_at)}</span>
-          </div>
-          ${item.description ? `<div class="item-body">${escapeHtml(item.description)}</div>` : ''}
-          ${item.contact ? `<div class="item-body" style="margin-top:8px;color:#a0d8b3;">📞 ${escapeHtml(item.contact)}</div>` : ''}
-          <div class="item-actions">
-            ${isMine ? `<button class="btn-del" onclick="deleteMarket(${item.id})">删除</button>` : ''}
-          </div>
-        `;
+        var isSell = (item.type || 'sell') === 'sell';
+        var badge = isSell
+          ? '<span class="market-badge sell">💰 出售</span>'
+          : '<span class="market-badge want">🔍 求购</span>';
+        var priceText = formatPrice(item.price);
+
+        // 图片
+        var urls = (item.image_url || '').split(',').filter(Boolean);
+        var imgsHtml = '';
+        if (urls.length) {
+          imgsHtml = '<div class="market-images">' + urls.map(function(u) {
+            return '<img src="' + escapeHtml(u) + '" onclick="window.open(\'' + escapeHtml(u) + '\',\'_blank\')" alt="">';
+          }).join('') + '</div>';
+        }
+
+        card.innerHTML =
+          '<div class="item-title">' + badge + escapeHtml(item.title) + '</div>' +
+          '<div class="item-meta">' +
+            (priceText ? '<span class="market-price">' + escapeHtml(priceText) + '</span>' : '') +
+            (item.category ? '<span>' + escapeHtml(item.category) + '</span>' : '') +
+            '<span style="margin-left:auto;">' + timeAgo(item.created_at) + '</span>' +
+          '</div>' +
+          imgsHtml +
+          (item.description ? '<div class="item-body">' + escapeHtml(item.description) + '</div>' : '') +
+          (item.contact ? '<div class="market-contact">📞 ' + escapeHtml(item.contact) + '</div>' : '') +
+          '<div class="item-actions">' +
+            (isMine ? '<button class="btn-del" onclick="deleteMarket(' + item.id + ')">删除</button>' : '') +
+          '</div>';
+
         list.appendChild(card);
       });
     } catch (e) {
@@ -359,13 +551,25 @@
     el('mPrice').value = '';
     el('mContact').value = '';
     el('mDesc').value = '';
+    el('mCurrency').value = 'EUR';
+    el('mCategory').value = '';
+    uploadedImages = [];
+    renderUploadPreview();
+    // 默认出售
+    document.querySelector('input[name="mType"][value="sell"]').checked = true;
     el('marketModal').classList.add('show');
   }
   function closeMarketModal() { el('marketModal').classList.remove('show'); }
 
   async function submitMarket() {
     var title = el('mTitle').value.trim();
-    if (!title) { alert('请填物品名称'); return; }
+    var contact = el('mContact').value.trim();
+    if (!title || !contact) { alert('名称和联系方式不能为空'); return; }
+    var priceRaw = el('mPrice').value.trim();
+    var currency = el('mCurrency').value;
+    var priceStored = priceRaw ? (currency + ':' + priceRaw) : '';
+    var type = document.querySelector('input[name="mType"]:checked').value;
+
     try {
       var r = await fetch('/api/market/add', {
         method: 'POST',
@@ -373,10 +577,12 @@
         body: JSON.stringify({
           email: MY_EMAIL,
           title: title,
-          price: el('mPrice').value.trim(),
-          contact: el('mContact').value.trim(),
+          price: priceStored,
+          contact: contact,
           description: el('mDesc').value.trim(),
-          category: el('mCategory').value
+          image_url: uploadedImages.join(','),
+          category: el('mCategory').value,
+          type: type
         })
       });
       var d = await r.json();
@@ -410,19 +616,18 @@
         return;
       }
       list.innerHTML = '';
-      data.forEach(t => {
+      data.forEach(function(t) {
         var card = document.createElement('div');
         card.className = 'item-card';
-        card.innerHTML = `
-          <div class="item-body">${escapeHtml(t.content)}</div>
-          <div class="item-meta" style="margin-top:10px;">
-            <span>🌳 匿名</span>
-            <span style="margin-left:auto;">${timeAgo(t.created_at)}</span>
-          </div>
-          <div class="item-actions">
-            <button class="btn-reply" onclick="openReply(${t.id})">💬 查看回复</button>
-          </div>
-        `;
+        card.innerHTML =
+          '<div class="item-body">' + escapeHtml(t.content) + '</div>' +
+          '<div class="item-meta" style="margin-top:10px;">' +
+            '<span>🌳 匿名</span>' +
+            '<span style="margin-left:auto;">' + timeAgo(t.created_at) + '</span>' +
+          '</div>' +
+          '<div class="item-actions">' +
+            '<button class="btn-reply" onclick="openReply(' + t.id + ')">💬 查看回复</button>' +
+          '</div>';
         list.appendChild(card);
       });
     } catch (e) {
@@ -462,6 +667,8 @@
     el('replyModal').classList.add('show');
     el('replyList').innerHTML = '<div class="empty-tip">加载中...</div>';
     el('replyInput').value = '';
+    el('replyInput').removeAttribute('data-post-id');
+    el('replyInput').placeholder = '写点什么...';
     try {
       var r = await fetch('/api/treeholes/replies?id=' + tid);
       var data = await r.json();
@@ -470,14 +677,13 @@
         return;
       }
       el('replyList').innerHTML = '';
-      data.forEach(rp => {
+      data.forEach(function(rp) {
         var div = document.createElement('div');
         div.className = 'reply-item';
-        div.innerHTML = `
-          <div class="r-name">🌳 匿名</div>
-          <div class="r-content">${escapeHtml(rp.content)}</div>
-          <div class="r-time">${timeAgo(rp.created_at)}</div>
-        `;
+        div.innerHTML =
+          '<div class="r-name">🌳 匿名</div>' +
+          '<div class="r-content">' + escapeHtml(rp.content) + '</div>' +
+          '<div class="r-time">' + timeAgo(rp.created_at) + '</div>';
         el('replyList').appendChild(div);
       });
     } catch (e) {
@@ -490,21 +696,42 @@
   async function submitReply() {
     var content = el('replyInput').value.trim();
     if (!content) { alert('写点什么吧'); return; }
-    try {
-      var r = await fetch('/api/treeholes/reply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          treehole_id: currentTreeholeId,
-          email: MY_EMAIL,
-          content: content
-        })
-      });
-      var d = await r.json();
-      if (d.error) { alert(d.error); return; }
-      el('replyInput').value = '';
-      openReply(currentTreeholeId);
-    } catch (e) { alert('网络错误'); }
+    var postId = el('replyInput').getAttribute('data-post-id');
+    if (postId) {
+      // 回复帖子
+      try {
+        var r = await fetch('/api/community/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            post_id: postId,
+            email: MY_EMAIL,
+            content: content
+          })
+        });
+        var d = await r.json();
+        if (d.error) { alert(d.error); return; }
+        el('replyInput').value = '';
+        viewPost(postId);
+      } catch (e) { alert('网络错误'); }
+    } else {
+      // 树洞回复
+      try {
+        var r2 = await fetch('/api/treeholes/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            treehole_id: currentTreeholeId,
+            email: MY_EMAIL,
+            content: content
+          })
+        });
+        var d2 = await r2.json();
+        if (d2.error) { alert(d2.error); return; }
+        el('replyInput').value = '';
+        openReply(currentTreeholeId);
+      } catch (e) { alert('网络错误'); }
+    }
   }
 
   // ==================== 互助社区 ====================
@@ -519,23 +746,22 @@
         return;
       }
       list.innerHTML = '';
-      data.forEach(p => {
+      data.forEach(function(p) {
         var card = document.createElement('div');
         card.className = 'item-card';
         var isMine = (p.user_email || '').toLowerCase() === MY_EMAIL;
-        card.innerHTML = `
-          <div class="item-title">${escapeHtml(p.title)}</div>
-          <div class="item-meta">
-            <span>${escapeHtml(p.category || '其他')}</span>
-            <span>💬 ${p.replies_count || 0}</span>
-            <span style="margin-left:auto;">${timeAgo(p.created_at)}</span>
-          </div>
-          <div class="item-body">${escapeHtml(p.content)}</div>
-          <div class="item-actions">
-            <button class="btn-reply" onclick="viewPost(${p.id})">💬 回复</button>
-            ${isMine ? `<button class="btn-del" onclick="deletePost(${p.id})">删除</button>` : ''}
-          </div>
-        `;
+        card.innerHTML =
+          '<div class="item-title">' + escapeHtml(p.title) + '</div>' +
+          '<div class="item-meta">' +
+            '<span>' + escapeHtml(p.category || '其他') + '</span>' +
+            '<span>💬 ' + (p.replies_count || 0) + '</span>' +
+            '<span style="margin-left:auto;">' + timeAgo(p.created_at) + '</span>' +
+          '</div>' +
+          '<div class="item-body">' + escapeHtml(p.content) + '</div>' +
+          '<div class="item-actions">' +
+            '<button class="btn-reply" onclick="viewPost(' + p.id + ')">💬 回复</button>' +
+            (isMine ? '<button class="btn-del" onclick="deletePost(' + p.id + ')">删除</button>' : '') +
+          '</div>';
         list.appendChild(card);
       });
     } catch (e) {
@@ -586,7 +812,6 @@
     } catch (e) {}
   }
 
-  // 查看帖子回复（复用 replyModal）
   async function viewPost(pid) {
     currentTreeholeId = null;
     el('replyModal').classList.add('show');
@@ -602,49 +827,19 @@
         return;
       }
       el('replyList').innerHTML = '';
-      data.forEach(rp => {
+      data.forEach(function(rp) {
         var div = document.createElement('div');
         div.className = 'reply-item';
-        div.innerHTML = `
-          <div class="r-name">${escapeHtml((rp.user_email || '').split('@')[0] || '匿名')}</div>
-          <div class="r-content">${escapeHtml(rp.content)}</div>
-          <div class="r-time">${timeAgo(rp.created_at)}</div>
-        `;
+        div.innerHTML =
+          '<div class="r-name">' + escapeHtml((rp.user_email || '').split('@')[0] || '匿名') + '</div>' +
+          '<div class="r-content">' + escapeHtml(rp.content) + '</div>' +
+          '<div class="r-time">' + timeAgo(rp.created_at) + '</div>';
         el('replyList').appendChild(div);
       });
     } catch (e) {
       el('replyList').innerHTML = '<div class="empty-tip">加载失败</div>';
     }
   }
-
-  // 覆盖 submitReply，让它同时支持树洞和帖子
-  var _origSubmitReply = submitReply;
-  submitReply = async function() {
-    var content = el('replyInput').value.trim();
-    if (!content) { alert('写点什么吧'); return; }
-    var postId = el('replyInput').getAttribute('data-post-id');
-    if (postId) {
-      // 回复帖子
-      try {
-        var r = await fetch('/api/community/reply', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            post_id: postId,
-            email: MY_EMAIL,
-            content: content
-          })
-        });
-        var d = await r.json();
-        if (d.error) { alert(d.error); return; }
-        el('replyInput').value = '';
-        viewPost(postId);
-      } catch (e) { alert('网络错误'); }
-    } else {
-      // 树洞回复
-      return _origSubmitReply();
-    }
-  };
 
   // ===== 启动 =====
   loadMarket();
