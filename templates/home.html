@@ -42,52 +42,125 @@
   font-size: 18px; color: rgba(255, 255, 255, 0.55); flex-shrink: 0;
 }
 
-/* ===== 首页信息卡 ===== */
-.home-hero-card {
+/* ===== 首页：今日概览 ===== */
+.overview-card {
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 22px;
   padding: 18px 20px 16px;
   margin-bottom: 12px;
 }
-.home-hero-card .hh-date {
+.overview-card .ov-date {
   font-size: 12px;
   color: rgba(255,255,255,0.7);
   margin-bottom: 10px;
   letter-spacing: 0.2px;
 }
-.home-hero-card .hh-body {
-  font-size: 14px;
-  color: #fff;
-  line-height: 1.7;
+.overview-card .ov-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #a0d8b3;
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
 }
-.home-hero-card .hh-row {
+.overview-card .ov-section-title.todo-title {
+  color: #f4b8d0;
+}
+.overview-card .hh-row {
   display: flex; gap: 10px;
   padding: 8px 0;
   border-bottom: 1px solid rgba(255,255,255,0.12);
 }
-.home-hero-card .hh-row:last-child { border-bottom: none; }
-.home-hero-card .hh-time {
+.overview-card .hh-row:last-child { border-bottom: none; }
+.overview-card .hh-time {
   font-size: 13px; font-weight: 700;
   color: rgba(255,255,255,0.92);
   flex-shrink: 0; width: 108px;
 }
-.home-hero-card .hh-info { flex: 1; }
-.home-hero-card .hh-name {
+.overview-card .hh-info { flex: 1; }
+.overview-card .hh-name {
   font-size: 14px; font-weight: 700; color: #fff;
 }
-.home-hero-card .hh-room {
+.overview-card .hh-room {
   font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px;
 }
-.home-hero-card .hh-countdown {
+.overview-card .hh-countdown {
   margin-top: 10px; font-size: 12px;
   color: rgba(255,255,255,0.9);
   background: rgba(255,255,255,0.12);
   padding: 6px 10px; border-radius: 10px;
   display: inline-block;
 }
-.home-hero-card .hh-empty {
+.overview-card .hh-empty {
   font-size: 14px; color: rgba(255,255,255,0.75);
+}
+.overview-card .ov-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 14px 0;
+}
+
+/* 待办（概览内） */
+.ov-todo-add {
+  display: flex; gap: 8px; margin-bottom: 8px;
+}
+.ov-todo-add input {
+  flex: 1;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+  color: #fff; font-size: 13px; outline: none;
+  font-family: inherit;
+  min-width: 0;
+}
+.ov-todo-add input:focus { border-color: #f4b8d0; }
+.ov-todo-add button {
+  padding: 0 14px; border-radius: 10px; border: none;
+  background: linear-gradient(135deg, #b06a85, #8a4a63);
+  color: #fff; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  white-space: nowrap;
+}
+.ov-todo-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ov-todo-item:last-child { border-bottom: none; }
+.ov-todo-item .ti-check {
+  width: 20px; height: 20px;
+  border-radius: 6px;
+  border: 2px solid rgba(244,184,208,0.4);
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; flex-shrink: 0;
+  font-size: 12px; color: transparent;
+  transition: 0.15s;
+}
+.ov-todo-item .ti-check.done {
+  background: #f4b8d0; border-color: #f4b8d0;
+  color: #1a0f14; font-weight: 700;
+}
+.ov-todo-item .ti-text {
+  flex: 1; font-size: 13px; color: #ddd;
+  word-break: break-word; line-height: 1.4;
+}
+.ov-todo-item .ti-text.done {
+  text-decoration: line-through;
+  color: #666;
+}
+.ov-todo-item .ti-del {
+  background: none; border: none;
+  color: #666; font-size: 14px;
+  cursor: pointer; padding: 4px;
+  flex-shrink: 0;
+}
+.ov-todo-item .ti-del:active { color: #ff6b6b; }
+.ov-todo-empty {
+  text-align: center;
+  font-size: 12px; color: #666;
+  padding: 8px 0;
 }
 
 /* 天气卡 */
@@ -110,81 +183,6 @@
 }
 .weather-card .wc-tip {
   font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5;
-}
-
-/* 待办卡 */
-.todo-card {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 18px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-}
-.todo-card .tc-title {
-  font-size: 13px; font-weight: 700; color: #a0d8b3;
-  margin-bottom: 10px;
-  display: flex; align-items: center; gap: 6px;
-}
-.todo-card .tc-add {
-  display: flex; gap: 8px; margin-bottom: 10px;
-}
-.todo-card .tc-add input {
-  flex: 1;
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.06);
-  color: #fff; font-size: 13px; outline: none;
-  font-family: inherit;
-  min-width: 0;
-}
-.todo-card .tc-add input:focus { border-color: #a0d8b3; }
-.todo-card .tc-add button {
-  padding: 0 14px; border-radius: 10px; border: none;
-  background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-  color: #fff; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: inherit;
-  white-space: nowrap;
-}
-.todo-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-.todo-item:last-child { border-bottom: none; }
-.todo-item .ti-check {
-  width: 20px; height: 20px;
-  border-radius: 6px;
-  border: 2px solid rgba(160,216,179,0.4);
-  background: transparent;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; flex-shrink: 0;
-  font-size: 12px; color: transparent;
-  transition: 0.15s;
-}
-.todo-item .ti-check.done {
-  background: #a0d8b3; border-color: #a0d8b3;
-  color: #1a0f14; font-weight: 700;
-}
-.todo-item .ti-text {
-  flex: 1; font-size: 13px; color: #ddd;
-  word-break: break-word; line-height: 1.4;
-}
-.todo-item .ti-text.done {
-  text-decoration: line-through;
-  color: #666;
-}
-.todo-item .ti-del {
-  background: none; border: none;
-  color: #666; font-size: 14px;
-  cursor: pointer; padding: 4px;
-  flex-shrink: 0;
-}
-.todo-item .ti-del:active { color: #ff6b6b; }
-.todo-empty {
-  text-align: center;
-  font-size: 12px; color: #666;
-  padding: 12px 0;
 }
 
 /* 底部小卡片行：每日更新 + 时钟 */
@@ -223,6 +221,126 @@
   font-family: ui-monospace, monospace;
   color: #a0d8b3;
   font-weight: 700;
+}
+
+/* ===== 快捷方式（第四层） ===== */
+.quick-row {
+  display: flex; gap: 10px;
+  margin-bottom: 12px;
+}
+.quick-slot {
+  flex: 1;
+  aspect-ratio: 1 / 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(255,255,255,0.18);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: 0.15s;
+  padding: 6px;
+  box-sizing: border-box;
+}
+.quick-slot:active { transform: scale(0.95); }
+.quick-slot.filled {
+  border-style: solid;
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+}
+.quick-slot .qs-plus {
+  font-size: 22px;
+  color: rgba(255,255,255,0.35);
+  line-height: 1;
+}
+.quick-slot .qs-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+.quick-slot .qs-name {
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* 快捷方式选择弹层 */
+#quickPicker {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 99998;
+  justify-content: center; align-items: flex-end;
+  padding: 0;
+}
+#quickPicker.show { display: flex; }
+#quickPicker .qp-panel {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  background: #1c1c1e;
+  border-radius: 26px 26px 0 0;
+  padding: 22px 18px 28px;
+  border: 1px solid rgba(255,255,255,0.1);
+  max-height: 70vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+#quickPicker .qp-title {
+  font-size: 16px; font-weight: 800; color: #fff;
+  margin-bottom: 4px;
+}
+#quickPicker .qp-sub {
+  font-size: 12px; color: rgba(255,255,255,0.5);
+  margin-bottom: 16px;
+}
+#quickPicker .qp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+#quickPicker .qp-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+#quickPicker .qp-item:active { transform: scale(0.92); }
+#quickPicker .qp-item .qp-icon {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+}
+#quickPicker .qp-item .qp-name {
+  font-size: 10px; color: #ccc;
+  text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 100%;
+}
+#quickPicker .qp-cancel {
+  width: 100%; padding: 14px; border-radius: 14px; border: none;
+  background: rgba(255,255,255,0.08); color: #ccc;
+  font-size: 14px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+#quickPicker .qp-remove {
+  width: 100%; padding: 12px; border-radius: 14px; border: none;
+  background: rgba(255,107,107,0.12); color: #ff6b6b;
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  margin-bottom: 10px;
 }
 
 /* ===== 搜索框 ===== */
@@ -442,15 +560,26 @@
   <div class="lb-arrow">→</div>
 </div>
 
-<!-- 1. 今日课表 -->
-<div class="home-hero-card">
-  <div class="hh-date" id="todayDate">今天是 --</div>
-  <div class="hh-body" id="todaySchedule">
+<!-- 1. 今日概览（课表 + 待办） -->
+<div class="overview-card">
+  <div class="ov-date" id="todayDate">今天是 --</div>
+
+  <div class="ov-section-title">📅 今日课表</div>
+  <div id="todaySchedule">
     <div class="hh-empty">加载中...</div>
   </div>
+
+  <div class="ov-divider"></div>
+
+  <div class="ov-section-title todo-title">📝 今日待办</div>
+  <div class="ov-todo-add">
+    <input type="text" id="todoInput" placeholder="添加一条待办..." maxlength="60" onkeypress="if(event.key==='Enter')addTodo()">
+    <button onclick="addTodo()">＋</button>
+  </div>
+  <div id="todoList"></div>
 </div>
 
-<!-- 2. 天气 + 暖心提醒 -->
+<!-- 2. 天气 -->
 <div class="weather-card" id="weatherCard">
   <div class="wc-icon" id="weatherIcon">☀️</div>
   <div class="wc-info">
@@ -459,17 +588,7 @@
   </div>
 </div>
 
-<!-- 3. 待办事项 -->
-<div class="todo-card">
-  <div class="tc-title">📝 今日待办</div>
-  <div class="tc-add">
-    <input type="text" id="todoInput" placeholder="添加一条待办..." maxlength="60" onkeypress="if(event.key==='Enter')addTodo()">
-    <button onclick="addTodo()">＋</button>
-  </div>
-  <div id="todoList"></div>
-</div>
-
-<!-- 4. 每日更新 + 时钟（变小） -->
+<!-- 3. 每日更新 + 时钟 -->
 <div class="small-row">
   <div class="small-card" onclick="location.href='/digest'">
     <div class="sc-icon">📰</div>
@@ -484,7 +603,10 @@
   </div>
 </div>
 
-<!-- 5. 添加到桌面（进入工具箱按钮已删） -->
+<!-- 4. 快捷方式（4 个可自定义） -->
+<div class="quick-row" id="quickRow"></div>
+
+<!-- 5. 添加到桌面 -->
 <button class="big-btn" onclick="toggleInstallGuide()" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
   <span style="font-size: 18px;">📱</span>
   <span>添加到手机桌面</span>
@@ -562,6 +684,17 @@
     </div>
     <div class="folder-grid" id="folderGrid"></div>
     <button class="close-btn" onclick="closeFolder()">关闭</button>
+  </div>
+</div>
+
+<!-- 快捷方式选择弹层 -->
+<div id="quickPicker">
+  <div class="qp-panel">
+    <div class="qp-title" id="qpTitle">选择一个功能</div>
+    <div class="qp-sub">放到首页快捷方式</div>
+    <div class="qp-grid" id="qpGrid"></div>
+    <button class="qp-remove" id="qpRemove" onclick="removeQuickSlot()" style="display:none;">移除这个快捷方式</button>
+    <button class="qp-cancel" onclick="closeQuickPicker()">取消</button>
   </div>
 </div>
 
@@ -1154,23 +1287,23 @@ async function loadTodos() {
     if (Array.isArray(data)) {
       renderTodos(data, true);
     } else {
-      list.innerHTML = '<div class="todo-empty">加载失败</div>';
+      list.innerHTML = '<div class="ov-todo-empty">加载失败</div>';
     }
   } catch (e) {
-    list.innerHTML = '<div class="todo-empty">加载失败</div>';
+    list.innerHTML = '<div class="ov-todo-empty">加载失败</div>';
   }
 }
 
 function renderTodos(todos, isCloud) {
   const list = document.getElementById('todoList');
   if (!todos || todos.length === 0) {
-    list.innerHTML = '<div class="todo-empty">还没有待办，添加一条吧</div>';
+    list.innerHTML = '<div class="ov-todo-empty">还没有待办，添加一条吧</div>';
     return;
   }
   list.innerHTML = '';
   todos.forEach(t => {
     const div = document.createElement('div');
-    div.className = 'todo-item';
+    div.className = 'ov-todo-item';
     div.innerHTML = `
       <div class="ti-check ${t.done ? 'done' : ''}" data-toggle="${t.id}">✓</div>
       <div class="ti-text ${t.done ? 'done' : ''}">${escapeHtml(t.content)}</div>
@@ -1256,6 +1389,104 @@ async function deleteTodo(id, isCloud) {
     });
     loadTodos();
   } catch (e) {}
+}
+
+// ==================== 快捷方式（首页 4 个可自定义） ====================
+const QUICK_KEY = 'home_quick_slots';
+const QUICK_COUNT = 4;
+
+function getQuickSlots() {
+  try {
+    const raw = localStorage.getItem(QUICK_KEY);
+    if (!raw) return new Array(QUICK_COUNT).fill(null);
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) return new Array(QUICK_COUNT).fill(null);
+    while (arr.length < QUICK_COUNT) arr.push(null);
+    return arr.slice(0, QUICK_COUNT);
+  } catch (e) {
+    return new Array(QUICK_COUNT).fill(null);
+  }
+}
+
+function setQuickSlots(slots) {
+  try { localStorage.setItem(QUICK_KEY, JSON.stringify(slots)); } catch (e) {}
+}
+
+function renderQuickSlots() {
+  const row = document.getElementById('quickRow');
+  if (!row) return;
+  const slots = getQuickSlots();
+  row.innerHTML = '';
+  slots.forEach((appId, index) => {
+    const slot = document.createElement('div');
+    slot.className = 'quick-slot' + (appId ? ' filled' : '');
+    if (appId) {
+      const app = ALL_APPS.find(a => a.id === appId);
+      if (app) {
+        slot.innerHTML = `
+          <div class="qs-icon">${app.icon}</div>
+          <div class="qs-name">${app.name}</div>
+        `;
+      } else {
+        slot.innerHTML = `<div class="qs-plus">＋</div>`;
+      }
+    } else {
+      slot.innerHTML = `<div class="qs-plus">＋</div>`;
+    }
+    slot.onclick = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      if (appId) {
+        const app = ALL_APPS.find(a => a.id === appId);
+        if (app) { location.href = app.url; return; }
+      }
+      openQuickPicker(index);
+    };
+    row.appendChild(slot);
+  });
+}
+
+let currentQuickIndex = -1;
+
+function openQuickPicker(index) {
+  currentQuickIndex = index;
+  const slots = getQuickSlots();
+  const current = slots[index];
+  const grid = document.getElementById('qpGrid');
+  grid.innerHTML = '';
+  ALL_APPS.forEach(app => {
+    const item = document.createElement('div');
+    item.className = 'qp-item';
+    item.innerHTML = `
+      <div class="qp-icon">${app.icon}</div>
+      <div class="qp-name">${app.name}</div>
+    `;
+    item.onclick = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      const s = getQuickSlots();
+      s[index] = app.id;
+      setQuickSlots(s);
+      renderQuickSlots();
+      closeQuickPicker();
+    };
+    grid.appendChild(item);
+  });
+  const removeBtn = document.getElementById('qpRemove');
+  removeBtn.style.display = current ? 'block' : 'none';
+  document.getElementById('quickPicker').classList.add('show');
+}
+
+function closeQuickPicker() {
+  document.getElementById('quickPicker').classList.remove('show');
+  currentQuickIndex = -1;
+}
+
+function removeQuickSlot() {
+  if (currentQuickIndex < 0) return;
+  const s = getQuickSlots();
+  s[currentQuickIndex] = null;
+  setQuickSlots(s);
+  renderQuickSlots();
+  closeQuickPicker();
 }
 
 // ==================== Tab 切换 ====================
@@ -1468,6 +1699,7 @@ function updateClock() {
 loadTodaySchedule();
 loadWeather();
 loadTodos();
+renderQuickSlots();
 updateClock();
 setInterval(updateClock, 1000);
 setInterval(loadTodaySchedule, 60000);
