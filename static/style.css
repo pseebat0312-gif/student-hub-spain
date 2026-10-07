@@ -84,7 +84,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
-  padding-bottom: 260px;   /* 保证最底部按钮能划出来 */
+  padding-bottom: 360px;   /* 保证最底部按钮能划出来 */
 }
 
 /* ============ 顶部栏 ============ */
