@@ -544,7 +544,10 @@
 
 <div id="topBar">
 <div class="title" id="topTitle">西班牙留学生工具站</div>
-<div class="user" id="userDisplay">登录 →</div>
+<div class="top-right">
+  <button id="wallpaperBtn" onclick="openWallpaperPanel()" title="更换壁纸">🎨</button>
+  <div class="user" id="userDisplay">登录 →</div>
+</div>
 </div>
 
 <div id="mainContent">
@@ -695,6 +698,24 @@
     <div class="qp-grid" id="qpGrid"></div>
     <button class="qp-remove" id="qpRemove" onclick="removeQuickSlot()" style="display:none;">移除这个快捷方式</button>
     <button class="qp-cancel" onclick="closeQuickPicker()">取消</button>
+  </div>
+</div>
+
+<!-- 壁纸面板 -->
+<div id="wallpaperPanel">
+  <div class="wp-sheet">
+    <div class="wp-title">🎨 更换壁纸</div>
+    <div class="wp-sub">选一张素材，或从相册上传你自己的图片</div>
+
+    <div class="wp-section-label">素材库</div>
+    <div class="wp-swatches" id="wpSwatches"></div>
+
+    <div class="wp-section-label">自定义</div>
+    <button class="wp-upload" onclick="document.getElementById('wpFileInput').click()">📷 从相册选择图片</button>
+    <input type="file" id="wpFileInput" accept="image/*" style="display:none" onchange="onWallpaperFile(event)">
+
+    <button class="wp-reset" onclick="resetWallpaper()">恢复默认黑底</button>
+    <button class="wp-close" onclick="closeWallpaperPanel()">关闭</button>
   </div>
 </div>
 
@@ -1721,6 +1742,222 @@ function updateClock() {
   if (spainEl) spainEl.textContent = fmt(spainTime);
   if (chinaEl) chinaEl.textContent = fmt(chinaTime);
 }
+
+// ==================== 壁纸系统 ====================
+const WALLPAPER_KEY = 'app_wallpaper_v1';
+
+const WALLPAPER_PRESETS = [
+  { id: 'black',  name: '黑底',   css: '#000000' },
+  { id: 'white',  name: '白底',   css: '#f5f5f7' },
+  { id: 'blue',   name: '浅蓝',   css: '#cfe3f5' },
+  { id: 'gray',   name: '浅灰',   css: '#d8d8dc' },
+  { id: 'beige',  name: '米色',   css: '#efe6d5' },
+];
+
+function wpHexToRgb(hex) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+  return [r, g, b];
+}
+
+function wpExtractDominantColor(img) {
+  try {
+    const size = 60;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, size, size);
+    const data = ctx.getImageData(0, 0, size, size).data;
+
+    const buckets = {};
+    for (let i = 0; i < data.length; i += 4) {
+      const pr = data[i], pg = data[i+1], pb = data[i+2], pa = data[i+3];
+      if (pa < 128) continue;
+      const max = Math.max(pr, pg, pb), min = Math.min(pr, pg, pb);
+      if (max < 30 || min > 235) continue;
+
+      let hue;
+      const mx = Math.max(pr, pg, pb), mn = Math.min(pr, pg, pb);
+      if (mx === mn) hue = 0;
+      else {
+        const d = mx - mn;
+        let h;
+        if (mx === pr) h = ((pg - pb) / d) % 6;
+        else if (mx === pg) h = (pb - pr) / d + 2;
+        else h = (pr - pg) / d + 4;
+        h = Math.round(h * 60);
+        if (h < 0) h += 360;
+        hue = h;
+      }
+      const key = Math.floor(hue / 30);
+      if (!buckets[key]) buckets[key] = { r: 0, g: 0, b: 0, n: 0 };
+      buckets[key].r += pr;
+      buckets[key].g += pg;
+      buckets[key].b += pb;
+      buckets[key].n += 1;
+    }
+
+    let best = null;
+    for (const k in buckets) {
+      if (!best || buckets[k].n > best.n) best = buckets[k];
+    }
+    if (!best) return [180, 180, 190];
+    return [
+      Math.round(best.r / best.n),
+      Math.round(best.g / best.n),
+      Math.round(best.b / best.n)
+    ];
+  } catch (e) {
+    return [180, 180, 190];
+  }
+}
+
+function wpApplyWallpaper(data) {
+  const root = document.documentElement;
+
+  if (!data || data.type === 'default') {
+    root.style.setProperty('--wallpaper-image', 'none');
+    root.style.setProperty('--wallpaper-tint', '0');
+    root.style.setProperty('--wallpaper-accent', '255, 255, 255');
+    document.body.style.background = '';
+    document.body.style.color = '';
+    return;
+  }
+
+  if (data.type === 'color') {
+    root.style.setProperty('--wallpaper-image', 'none');
+    root.style.setProperty('--wallpaper-tint', '0');
+    document.body.style.background = data.value;
+
+    const [r, g, b] = wpHexToRgb(data.value);
+    const isLight = (r * 0.299 + g * 0.587 + b * 0.114) > 160;
+    if (isLight) {
+      root.style.setProperty('--wallpaper-accent',
+        `${Math.max(0, r-120)}, ${Math.max(0, g-120)}, ${Math.max(0, b-120)}`);
+      document.body.style.color = '#1a1a1a';
+    } else {
+      root.style.setProperty('--wallpaper-accent', '255, 255, 255');
+      document.body.style.color = '#ffffff';
+    }
+    return;
+  }
+
+  if (data.type === 'image') {
+    document.body.style.background = '';
+    root.style.setProperty('--wallpaper-image', `url("${data.value}")`);
+    root.style.setProperty('--wallpaper-tint', '0.55');
+
+    const img = new Image();
+    img.onload = () => {
+      const [r, g, b] = wpExtractDominantColor(img);
+      const bright = 0.85;
+      root.style.setProperty('--wallpaper-accent',
+        `${Math.round(r*bright)}, ${Math.round(g*bright)}, ${Math.round(b*bright)}`);
+    };
+    img.src = data.value;
+  }
+}
+
+function wpSaveWallpaper(data) {
+  try { localStorage.setItem(WALLPAPER_KEY, JSON.stringify(data)); } catch (e) {}
+}
+
+function wpLoadWallpaper() {
+  try {
+    const raw = localStorage.getItem(WALLPAPER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) { return null; }
+}
+
+function openWallpaperPanel() {
+  if (navigator.vibrate) navigator.vibrate(10);
+  wpRenderSwatches();
+  document.getElementById('wallpaperPanel').classList.add('show');
+}
+
+function closeWallpaperPanel() {
+  document.getElementById('wallpaperPanel').classList.remove('show');
+}
+
+function wpRenderSwatches() {
+  const box = document.getElementById('wpSwatches');
+  if (!box) return;
+  box.innerHTML = '';
+  const current = wpLoadWallpaper();
+  WALLPAPER_PRESETS.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'wp-swatch';
+    el.style.background = p.css;
+    if (current && current.type === 'color' && current.value === p.css) {
+      el.classList.add('selected');
+    }
+    el.onclick = () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      const data = { type: 'color', value: p.css };
+      wpSaveWallpaper(data);
+      wpApplyWallpaper(data);
+      wpRenderSwatches();
+    };
+    box.appendChild(el);
+  });
+}
+
+function onWallpaperFile(evt) {
+  const file = evt.target.files && evt.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { alert('请选择图片文件'); return; }
+  if (file.size > 10 * 1024 * 1024) { alert('图片不能超过 10MB'); return; }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const originalDataUrl = e.target.result;
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 1080;
+      let w = img.width, h = img.height;
+      if (w > maxW) {
+        h = Math.round(h * (maxW / w));
+        w = maxW;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', 0.85);
+
+      const data = { type: 'image', value: compressed };
+      try { wpSaveWallpaper(data); } catch (err) {
+        alert('图片太大，存储失败，换一张小一点的试试');
+        return;
+      }
+      wpApplyWallpaper(data);
+      closeWallpaperPanel();
+    };
+    img.src = originalDataUrl;
+  };
+  reader.readAsDataURL(file);
+  evt.target.value = '';
+}
+
+function resetWallpaper() {
+  if (navigator.vibrate) navigator.vibrate(10);
+  localStorage.removeItem(WALLPAPER_KEY);
+  document.body.style.background = '';
+  document.body.style.color = '';
+  wpApplyWallpaper(null);
+  wpRenderSwatches();
+}
+
+(function wpInitWallpaper() {
+  const data = wpLoadWallpaper();
+  wpApplyWallpaper(data);
+})();
 
 // ===== 启动 =====
 loadTodaySchedule();

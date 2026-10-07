@@ -1,10 +1,16 @@
 /* ============================================================
    trans-spain-tools · Solid Glass（实色 + 清晰描边版）
    无渐变 · 黑白灰 · 通透玻璃
+   + 壁纸系统
    ============================================================ */
 
 :root {
   --bg: #000000;
+
+  /* 壁纸相关（由 JS 动态设置） */
+  --wallpaper-image: none;
+  --wallpaper-tint: 0;
+  --wallpaper-accent: 255, 255, 255;
 
   /* 玻璃填充（实色，无渐变） */
   --fill-0: rgba(255, 255, 255, 0.025);
@@ -49,7 +55,14 @@
 html, body { height: 100%; }
 
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(0,0,0,var(--wallpaper-tint)), rgba(0,0,0,var(--wallpaper-tint))),
+    var(--wallpaper-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text",
                "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
@@ -102,6 +115,35 @@ body {
   background: var(--fill-2);
 }
 
+/* 右上角容器：壁纸 + 登录 */
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 右上角壁纸按钮 */
+#wallpaperBtn {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid var(--line-2);
+  background: var(--fill-1);
+  color: var(--text);
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.25s var(--ease-spring), background 0.2s;
+  flex-shrink: 0;
+}
+#wallpaperBtn:active {
+  transform: scale(0.9);
+  background: var(--fill-2);
+}
+
 /* ============ 主内容 ============ */
 .main-content,
 #mainContent {
@@ -144,14 +186,13 @@ body {
   letter-spacing: -0.1px;
 }
 
-/* 兼容旧 class */
 .card-spain-red,
 .card-spain-gold {
   background: var(--fill-1);
   border-color: var(--line-2);
 }
 
-/* ============ 主按钮（实色玻璃胶囊） ============ */
+/* ============ 主按钮 ============ */
 .big-btn,
 .btn-primary {
   position: relative;
@@ -199,7 +240,7 @@ body {
 }
 .input::placeholder { color: var(--text-3); }
 
-/* ============ 时钟卡（实色 + 清晰描边） ============ */
+/* ============ 时钟卡 ============ */
 .clock-card {
   position: relative;
   background: var(--fill-1);
@@ -225,7 +266,7 @@ body {
   letter-spacing: -0.6px;
 }
 
-/* ============ 底部导航（实色 + 清晰描边） ============ */
+/* ============ 底部导航 ============ */
 .nav-bar,
 #navBar {
   position: fixed;
@@ -282,7 +323,6 @@ body {
 }
 .nav-item:active { transform: scale(0.88); }
 
-/* 未读红点 */
 .nav-item .nav-badge {
   position: absolute;
   top: 6px;
@@ -291,7 +331,7 @@ body {
   min-width: 18px;
   height: 18px;
   border-radius: 9px;
-  background: #ffffff;
+  background: rgb(var(--wallpaper-accent));
   color: #000000;
   font-size: 10px;
   font-weight: 700;
@@ -343,7 +383,6 @@ body {
   letter-spacing: -0.2px;
 }
 
-/* App 图标颜色变体全部统一 */
 .color-green,
 .color-blue,
 .color-pink,
@@ -397,7 +436,7 @@ body {
   top: 16px; right: 16px;
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: #ffffff;
+  background: rgb(var(--wallpaper-accent));
 }
 
 /* ============ 标题 ============ */
@@ -447,10 +486,8 @@ body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ============ 滚动条隐藏 ============ */
 ::-webkit-scrollbar { width: 0; height: 0; }
 
-/* ============ 减少动效 ============ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -460,14 +497,13 @@ body {
 
 /* ============================================================
    强制覆盖：覆盖所有页面自带的旧样式
+   （注意：不再对 body 背景用 !important，否则壁纸会被黑底盖住）
    ============================================================ */
 
 body {
-  background: #000000 !important;
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
-/* 覆盖常见的卡片类名 */
 .card,
 [class*="msg-card"],
 [class*="item-card"],
@@ -483,7 +519,6 @@ body {
   -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
 }
 
-/* 覆盖所有按钮 */
 button,
 [class*="btn"],
 [class*="button"] {
@@ -492,10 +527,6 @@ button,
   transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-
-
-
-/* 覆盖输入框、文本域、下拉框 */
 input,
 textarea,
 select,
@@ -512,13 +543,11 @@ textarea::placeholder {
   color: rgba(255, 255, 255, 0.5) !important;
 }
 
-/* 覆盖文字颜色 */
 h1, h2, h3, h4, h5, h6 {
   color: #ffffff !important;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif !important;
 }
 
-/* 覆盖抹茶绿 / 蓝色 / 旧粉色 */
 [style*="#4a7c59"], [style*="#2d5a3d"],
 [style*="#a0d8b3"],
 .big-btn,
@@ -539,7 +568,6 @@ h1, h2, h3, h4, h5, h6 {
   transform: scale(1.08) !important;
 }
 
-/* iOS 抖动效果 */
 @keyframes appWiggle {
   0%, 100% { transform: rotate(-1.5deg); }
   50% { transform: rotate(1.5deg); }
@@ -552,4 +580,115 @@ h1, h2, h3, h4, h5, h6 {
 }
 .app-grid.editing .app-icon:nth-child(3n) {
   animation-delay: 0.10s;
+}
+
+/* ============================================================
+   壁纸面板（CSS 只写样式，不写 JS）
+   ============================================================ */
+#wallpaperPanel {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99998;
+  justify-content: center;
+  align-items: flex-end;
+}
+#wallpaperPanel.show { display: flex; }
+
+#wallpaperPanel .wp-sheet {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  background: #141416;
+  border-radius: 28px 28px 0 0;
+  padding: 22px 20px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: none;
+  box-sizing: border-box;
+  max-height: 82vh;
+  overflow-y: auto;
+  animation: wpSlideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes wpSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+#wallpaperPanel .wp-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+#wallpaperPanel .wp-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  margin-bottom: 18px;
+}
+#wallpaperPanel .wp-section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 10px;
+  letter-spacing: 0.4px;
+}
+#wallpaperPanel .wp-swatches {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+#wallpaperPanel .wp-swatch {
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+#wallpaperPanel .wp-swatch:active { transform: scale(0.92); }
+#wallpaperPanel .wp-swatch.selected {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+#wallpaperPanel .wp-upload {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+#wallpaperPanel .wp-upload:active { background: rgba(255, 255, 255, 0.08); }
+#wallpaperPanel .wp-reset {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 107, 107, 0.25);
+  background: rgba(255, 107, 107, 0.08);
+  color: #ff8a8a;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+#wallpaperPanel .wp-reset:active { background: rgba(255, 107, 107, 0.16); }
+#wallpaperPanel .wp-close {
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
 }
