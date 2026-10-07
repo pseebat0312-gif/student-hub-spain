@@ -12,6 +12,17 @@
   --wallpaper-tint: 0;
   --wallpaper-accent: 255, 255, 255;
 
+    /* 壁纸主题变量（默认深色） */
+  --wallpaper-text: #ffffff;
+  --wallpaper-text-2: rgba(255, 255, 255, 0.6);
+  --wallpaper-text-3: rgba(255, 255, 255, 0.34);
+  --wallpaper-line-1: rgba(255, 255, 255, 0.10);
+  --wallpaper-line-2: rgba(255, 255, 255, 0.16);
+  --wallpaper-line-3: rgba(255, 255, 255, 0.24);
+  --wallpaper-fill-1: rgba(255, 255, 255, 0.045);
+  --wallpaper-fill-2: rgba(255, 255, 255, 0.075);
+  --wallpaper-fill-3: rgba(255, 255, 255, 0.11);
+
   /* 玻璃填充（实色，无渐变） */
   --fill-0: rgba(255, 255, 255, 0.025);
   --fill-1: rgba(255, 255, 255, 0.045);
@@ -501,7 +512,7 @@ body {
    ============================================================ */
 
 body {
-  color: #ffffff;
+  color: var(--wallpaper-text, #ffffff);
 }
 
 .card,
@@ -512,8 +523,8 @@ body {
 [class*="shop-card"],
 [class*="record-item"],
 [class*="notif-item"] {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--wallpaper-fill-1, rgba(255, 255, 255, 0.06)) !important;
+  border: 1px solid var(--wallpaper-line-2, rgba(255, 255, 255, 0.08)) !important;
   border-radius: 22px !important;
   backdrop-filter: blur(30px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(30px) saturate(180%) !important;
@@ -531,20 +542,20 @@ input,
 textarea,
 select,
 [class*="input"] {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background: var(--wallpaper-fill-1, rgba(255, 255, 255, 0.06)) !important;
+  border: 1px solid var(--wallpaper-line-2, rgba(255, 255, 255, 0.08)) !important;
   border-radius: 16px !important;
-  color: #ffffff !important;
+  color: var(--wallpaper-text, #ffffff) !important;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: var(--wallpaper-text-2, rgba(255, 255, 255, 0.5)) !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color: #ffffff !important;
+  color: var(--wallpaper-text, #ffffff) !important;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", sans-serif !important;
 }
 

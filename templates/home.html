@@ -1819,12 +1819,51 @@ function wpExtractDominantColor(img) {
 function wpApplyWallpaper(data) {
   const root = document.documentElement;
 
+  // 深色主题
+  const DARK = {
+    text: '#ffffff',
+    text2: 'rgba(255,255,255,0.6)',
+    text3: 'rgba(255,255,255,0.34)',
+    line1: 'rgba(255,255,255,0.10)',
+    line2: 'rgba(255,255,255,0.16)',
+    line3: 'rgba(255,255,255,0.24)',
+    fill1: 'rgba(255,255,255,0.045)',
+    fill2: 'rgba(255,255,255,0.075)',
+    fill3: 'rgba(255,255,255,0.11)',
+    accent: '255, 255, 255',
+  };
+  // 浅色主题
+  const LIGHT = {
+    text: '#1a1a1a',
+    text2: 'rgba(0,0,0,0.6)',
+    text3: 'rgba(0,0,0,0.4)',
+    line1: 'rgba(0,0,0,0.08)',
+    line2: 'rgba(0,0,0,0.14)',
+    line3: 'rgba(0,0,0,0.22)',
+    fill1: 'rgba(0,0,0,0.04)',
+    fill2: 'rgba(0,0,0,0.07)',
+    fill3: 'rgba(0,0,0,0.11)',
+    accent: '60, 60, 60',
+  };
+
+  function applyTheme(theme) {
+    root.style.setProperty('--wallpaper-text', theme.text);
+    root.style.setProperty('--wallpaper-text-2', theme.text2);
+    root.style.setProperty('--wallpaper-text-3', theme.text3);
+    root.style.setProperty('--wallpaper-line-1', theme.line1);
+    root.style.setProperty('--wallpaper-line-2', theme.line2);
+    root.style.setProperty('--wallpaper-line-3', theme.line3);
+    root.style.setProperty('--wallpaper-fill-1', theme.fill1);
+    root.style.setProperty('--wallpaper-fill-2', theme.fill2);
+    root.style.setProperty('--wallpaper-fill-3', theme.fill3);
+    root.style.setProperty('--wallpaper-accent', theme.accent);
+  }
+
   if (!data || data.type === 'default') {
     root.style.setProperty('--wallpaper-image', 'none');
     root.style.setProperty('--wallpaper-tint', '0');
-    root.style.setProperty('--wallpaper-accent', '255, 255, 255');
+    applyTheme(DARK);
     document.body.style.background = '';
-    document.body.style.color = '';
     return;
   }
 
@@ -1835,14 +1874,7 @@ function wpApplyWallpaper(data) {
 
     const [r, g, b] = wpHexToRgb(data.value);
     const isLight = (r * 0.299 + g * 0.587 + b * 0.114) > 160;
-    if (isLight) {
-      root.style.setProperty('--wallpaper-accent',
-        `${Math.max(0, r-120)}, ${Math.max(0, g-120)}, ${Math.max(0, b-120)}`);
-      document.body.style.color = '#1a1a1a';
-    } else {
-      root.style.setProperty('--wallpaper-accent', '255, 255, 255');
-      document.body.style.color = '#ffffff';
-    }
+    applyTheme(isLight ? LIGHT : DARK);
     return;
   }
 
@@ -1854,24 +1886,11 @@ function wpApplyWallpaper(data) {
     const img = new Image();
     img.onload = () => {
       const [r, g, b] = wpExtractDominantColor(img);
-      const bright = 0.85;
-      root.style.setProperty('--wallpaper-accent',
-        `${Math.round(r*bright)}, ${Math.round(g*bright)}, ${Math.round(b*bright)}`);
+      const isLight = (r * 0.299 + g * 0.587 + b * 0.114) > 160;
+      applyTheme(isLight ? LIGHT : DARK);
     };
     img.src = data.value;
   }
-}
-
-function wpSaveWallpaper(data) {
-  try { localStorage.setItem(WALLPAPER_KEY, JSON.stringify(data)); } catch (e) {}
-}
-
-function wpLoadWallpaper() {
-  try {
-    const raw = localStorage.getItem(WALLPAPER_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch (e) { return null; }
 }
 
 function openWallpaperPanel() {
