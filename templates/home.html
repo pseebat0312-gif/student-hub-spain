@@ -538,6 +538,100 @@
   font-size: 14px; font-weight: 700;
   cursor: pointer; font-family: inherit;
 }
+
+/* 壁纸面板（前端兜底样式，防止 style.css 没加载到） */
+#wallpaperPanel {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99999;
+  justify-content: center; align-items: flex-end;
+}
+#wallpaperPanel.show { display: flex; }
+#wallpaperPanel .wp-sheet {
+  width: 100%; max-width: 500px;
+  margin: 0 auto;
+  background: #141416;
+  border-radius: 28px 28px 0 0;
+  padding: 22px 20px 30px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-bottom: none;
+  box-sizing: border-box;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+#wallpaperPanel .wp-title {
+  font-size: 17px; font-weight: 800; color: #fff;
+  margin-bottom: 4px;
+}
+#wallpaperPanel .wp-sub {
+  font-size: 12px; color: rgba(255,255,255,0.45);
+  margin-bottom: 18px;
+}
+#wallpaperPanel .wp-section-label {
+  font-size: 12px; font-weight: 700;
+  color: rgba(255,255,255,0.65);
+  margin-bottom: 10px;
+  letter-spacing: 0.4px;
+}
+#wallpaperPanel .wp-swatches {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+#wallpaperPanel .wp-swatch {
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+}
+#wallpaperPanel .wp-swatch:active { transform: scale(0.92); }
+#wallpaperPanel .wp-swatch.selected {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+}
+#wallpaperPanel .wp-upload {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+#wallpaperPanel .wp-reset {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,107,107,0.25);
+  background: rgba(255,107,107,0.08);
+  color: #ff8a8a;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+#wallpaperPanel .wp-close {
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: #ccc;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+}
 </style>
 </head>
 <body>
@@ -1177,8 +1271,14 @@ async function loadTodaySchedule() {
     return;
   }
 
+  el.innerHTML = '<div class="hh-empty">加载中...</div>';
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 6000);
+
   try {
-    const r = await fetch('/api/timetable?owner=' + encodeURIComponent(email));
+    const r = await fetch('/api/timetable?owner=' + encodeURIComponent(email), { signal: controller.signal });
+    clearTimeout(timer);
     const data = await r.json();
     if (!Array.isArray(data)) {
       el.innerHTML = '<div class="hh-empty">加载失败，下拉刷新试试</div>';
@@ -1225,7 +1325,8 @@ async function loadTodaySchedule() {
 
     el.innerHTML = html;
   } catch (e) {
-    el.innerHTML = '<div class="hh-empty">加载失败</div>';
+    clearTimeout(timer);
+    el.innerHTML = '<div class="hh-empty">' + (e.name === 'AbortError' ? '加载超时，请下拉刷新' : '加载失败') + '</div>';
   }
 }
 
@@ -1272,8 +1373,14 @@ async function loadWeather() {
   const tempEl = document.getElementById('weatherTemp');
   const tipEl = document.getElementById('weatherTip');
   if (!iconEl) return;
+
+  // AbortController 强制 5 秒超时，避免占着浏览器的 6 个并发连接
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+
   try {
-    const r = await fetch('/api/weather');
+    const r = await fetch('/api/weather', { signal: controller.signal });
+    clearTimeout(timer);
     const d = await r.json();
     if (d.error) throw new Error(d.error);
     iconEl.textContent = weatherIconFromCode(d.code);
@@ -1282,9 +1389,10 @@ async function loadWeather() {
       ? `最高 ${Math.round(d.high)}° · 最低 ${Math.round(d.low)}° · ` : '';
     tipEl.textContent = extra + buildWarmTip(d);
   } catch (e) {
+    clearTimeout(timer);
     iconEl.textContent = '🌡️';
     tempEl.textContent = '--°C';
-    tipEl.textContent = '天气加载失败';
+    tipEl.textContent = '天气加载失败，稍后重试';
   }
 }
 
@@ -1455,7 +1563,6 @@ function renderQuickSlots() {
       slot.innerHTML = `<div class="qs-plus">＋</div>`;
     }
 
-    // ===== 点击：有功能就跳转，空就弹选择框 =====
     let longPressed = false;
     let pressTimer = null;
 
@@ -1741,6 +1848,10 @@ function updateClock() {
   const chinaEl = document.getElementById('chinaClock');
   if (spainEl) spainEl.textContent = fmt(spainTime);
   if (chinaEl) chinaEl.textContent = fmt(chinaTime);
+  else {
+    // DOM 还没就绪 → 200ms 后重试，保证时钟一定能显示
+    setTimeout(updateClock, 200);
+  }
 }
 
 // ==================== 壁纸系统 ====================
@@ -1893,14 +2004,29 @@ function wpApplyWallpaper(data) {
   }
 }
 
+function wpSaveWallpaper(data) {
+  try { localStorage.setItem(WALLPAPER_KEY, JSON.stringify(data)); } catch (e) {}
+}
+
+function wpLoadWallpaper() {
+  try {
+    const raw = localStorage.getItem(WALLPAPER_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch (e) { return null; }
+}
+
 function openWallpaperPanel() {
   if (navigator.vibrate) navigator.vibrate(10);
+  const panel = document.getElementById('wallpaperPanel');
+  if (!panel) { alert('壁纸面板未加载，请刷新页面'); return; }
   wpRenderSwatches();
-  document.getElementById('wallpaperPanel').classList.add('show');
+  panel.classList.add('show');
 }
 
 function closeWallpaperPanel() {
-  document.getElementById('wallpaperPanel').classList.remove('show');
+  const panel = document.getElementById('wallpaperPanel');
+  if (panel) panel.classList.remove('show');
 }
 
 function wpRenderSwatches() {

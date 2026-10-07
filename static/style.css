@@ -12,7 +12,7 @@
   --wallpaper-tint: 0;
   --wallpaper-accent: 255, 255, 255;
 
-    /* 壁纸主题变量（默认深色） */
+  /* 壁纸主题变量（默认深色） */
   --wallpaper-text: #ffffff;
   --wallpaper-text-2: rgba(255, 255, 255, 0.6);
   --wallpaper-text-3: rgba(255, 255, 255, 0.34);
@@ -84,7 +84,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
-  padding-bottom: 160px;
+  padding-bottom: 220px;   /* 改：160px → 220px，保证最底部按钮能划出来 */
 }
 
 /* ============ 顶部栏 ============ */
@@ -158,7 +158,7 @@ body {
 /* ============ 主内容 ============ */
 .main-content,
 #mainContent {
-  padding: 92px 20px 40px;
+  padding: 92px 20px 60px;   /* 改：40px → 60px，底部再多留一点 */
   min-height: 100vh;
 }
 
