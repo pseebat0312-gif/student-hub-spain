@@ -32,14 +32,14 @@
 .login-banner .lb-icon { font-size: 26px; line-height: 1; flex-shrink: 0; }
 .login-banner .lb-text { flex: 1; text-align: left; }
 .login-banner .lb-title {
-  font-size: 15px; font-weight: 700; color: #fff;
+  font-size: 15px; font-weight: 700; color: var(--wallpaper-text, #fff);
   letter-spacing: -0.3px; margin-bottom: 3px;
 }
 .login-banner .lb-sub {
-  font-size: 12px; color: rgba(255, 255, 255, 0.6); line-height: 1.4;
+  font-size: 12px; color: var(--wallpaper-text-2, rgba(255, 255, 255, 0.6)); line-height: 1.4;
 }
 .login-banner .lb-arrow {
-  font-size: 18px; color: rgba(255, 255, 255, 0.55); flex-shrink: 0;
+  font-size: 18px; color: var(--wallpaper-text-3, rgba(255, 255, 255, 0.55)); flex-shrink: 0;
 }
 
 /* ===== 首页：今日概览 ===== */
@@ -52,7 +52,7 @@
 }
 .overview-card .ov-date {
   font-size: 12px;
-  color: rgba(255,255,255,0.7);
+  color: var(--wallpaper-text-2, rgba(255,255,255,0.7));
   margin-bottom: 10px;
   letter-spacing: 0.2px;
 }
@@ -74,25 +74,25 @@
 .overview-card .hh-row:last-child { border-bottom: none; }
 .overview-card .hh-time {
   font-size: 13px; font-weight: 700;
-  color: rgba(255,255,255,0.92);
+  color: var(--wallpaper-text-2, rgba(255,255,255,0.92));
   flex-shrink: 0; width: 108px;
 }
 .overview-card .hh-info { flex: 1; }
 .overview-card .hh-name {
-  font-size: 14px; font-weight: 700; color: #fff;
+  font-size: 14px; font-weight: 700; color: var(--wallpaper-text, #fff);
 }
 .overview-card .hh-room {
-  font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 2px;
+  font-size: 11px; color: var(--wallpaper-text-2, rgba(255,255,255,0.6)); margin-top: 2px;
 }
 .overview-card .hh-countdown {
   margin-top: 10px; font-size: 12px;
-  color: rgba(255,255,255,0.9);
+  color: var(--wallpaper-text, rgba(255,255,255,0.9));
   background: rgba(255,255,255,0.12);
   padding: 6px 10px; border-radius: 10px;
   display: inline-block;
 }
 .overview-card .hh-empty {
-  font-size: 14px; color: rgba(255,255,255,0.75);
+  font-size: 14px; color: var(--wallpaper-text-2, rgba(255,255,255,0.75));
 }
 .overview-card .ov-divider {
   height: 1px;
@@ -110,7 +110,7 @@
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.06);
-  color: #fff; font-size: 13px; outline: none;
+  color: var(--wallpaper-text, #fff); font-size: 13px; outline: none;
   font-family: inherit;
   min-width: 0;
 }
@@ -143,7 +143,7 @@
   color: #1a0f14; font-weight: 700;
 }
 .ov-todo-item .ti-text {
-  flex: 1; font-size: 13px; color: #ddd;
+  flex: 1; font-size: 13px; color: var(--wallpaper-text-2, #ddd);
   word-break: break-word; line-height: 1.4;
 }
 .ov-todo-item .ti-text.done {
@@ -159,7 +159,7 @@
 .ov-todo-item .ti-del:active { color: #ff6b6b; }
 .ov-todo-empty {
   text-align: center;
-  font-size: 12px; color: #666;
+  font-size: 12px; color: var(--wallpaper-text-3, #666);
   padding: 8px 0;
 }
 
@@ -179,10 +179,10 @@
 }
 .weather-card .wc-info { flex: 1; min-width: 0; }
 .weather-card .wc-temp {
-  font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 2px;
+  font-size: 20px; font-weight: 800; color: var(--wallpaper-text, #fff); margin-bottom: 2px;
 }
 .weather-card .wc-tip {
-  font-size: 12px; color: rgba(255,255,255,0.7); line-height: 1.5;
+  font-size: 12px; color: var(--wallpaper-text-2, rgba(255,255,255,0.7)); line-height: 1.5;
 }
 
 /* 底部小卡片行：每日更新 + 时钟 */
@@ -204,10 +204,10 @@
   font-size: 20px; margin-bottom: 4px;
 }
 .small-row .small-card .sc-title {
-  font-size: 12px; font-weight: 700; color: #fff; margin-bottom: 2px;
+  font-size: 12px; font-weight: 700; color: var(--wallpaper-text, #fff); margin-bottom: 2px;
 }
 .small-row .small-card .sc-sub {
-  font-size: 10px; color: rgba(255,255,255,0.5);
+  font-size: 10px; color: var(--wallpaper-text-3, rgba(255,255,255,0.5));
 }
 .clock-mini {
   display: flex; flex-direction: column; gap: 4px;
@@ -215,7 +215,7 @@
 }
 .clock-mini .clock-row {
   display: flex; justify-content: space-between;
-  font-size: 11px; color: rgba(255,255,255,0.7);
+  font-size: 11px; color: var(--wallpaper-text-2, rgba(255,255,255,0.7));
 }
 .clock-mini .clock-row .t {
   font-family: ui-monospace, monospace;
@@ -252,7 +252,7 @@
 }
 .quick-slot .qs-plus {
   font-size: 22px;
-  color: rgba(255,255,255,0.35);
+  color: var(--wallpaper-text-3, rgba(255,255,255,0.35));
   line-height: 1;
 }
 .quick-slot .qs-icon {
@@ -261,7 +261,7 @@
 }
 .quick-slot .qs-name {
   font-size: 10px;
-  color: rgba(255,255,255,0.7);
+  color: var(--wallpaper-text-2, rgba(255,255,255,0.7));
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -353,15 +353,15 @@
   margin-bottom: 16px;
 }
 .search-box .s-icon {
-  font-size: 16px; color: rgba(255,255,255,0.5); flex-shrink: 0;
+  font-size: 16px; color: var(--wallpaper-text-3, rgba(255,255,255,0.5)); flex-shrink: 0;
 }
 .search-box input {
   flex: 1;
   background: transparent; border: none; outline: none;
-  color: #fff; font-size: 14px; font-family: inherit;
+  color: var(--wallpaper-text, #fff); font-size: 14px; font-family: inherit;
   min-width: 0;
 }
-.search-box input::placeholder { color: rgba(255,255,255,0.4); }
+.search-box input::placeholder { color: var(--wallpaper-text-3, rgba(255,255,255,0.4)); }
 .search-box .s-clear {
   background: rgba(255,255,255,0.1);
   border: none; color: #ccc;
@@ -427,7 +427,7 @@
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.30);
   background: rgba(255, 255, 255, 0.075);
-  color: #fff;
+  color: var(--wallpaper-text, #fff);
   font-family: inherit;
   font-size: 16px;
   font-weight: 700;
@@ -453,12 +453,12 @@
 .card-tool-like .ct-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
 .card-tool-like .ct-text { flex: 1; min-width: 0; }
 .card-tool-like .ct-title {
-  font-size: 16px; font-weight: 700; color: #fff;
+  font-size: 16px; font-weight: 700; color: var(--wallpaper-text, #fff);
   letter-spacing: -0.2px; margin-bottom: 2px;
 }
 .card-tool-like .ct-sub {
   font-size: 12px; font-weight: 400;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--wallpaper-text-2, rgba(255, 255, 255, 0.55));
   letter-spacing: -0.1px;
 }
 
@@ -539,7 +539,7 @@
   cursor: pointer; font-family: inherit;
 }
 
-/* 壁纸面板（前端兜底样式，防止 style.css 没加载到） */
+/* 壁纸面板（前端兜底样式） */
 #wallpaperPanel {
   display: none;
   position: fixed; inset: 0;
@@ -722,7 +722,7 @@
   <div id="noSearchResult" style="display:none;font-size:13px;color:#666;text-align:center;padding:40px 20px;">
     没有找到相关功能
   </div>
-<div style="font-size: 11px; color: rgba(255,255,255,0.3); text-align: center; margin-top: 8px; padding-bottom: 12px;">
+<div style="font-size: 11px; color: var(--wallpaper-text-3, rgba(255,255,255,0.3)); text-align: center; margin-top: 8px; padding-bottom: 12px;">
   长按图标可拖动排序；拖到另一个图标上建文件夹（登录后会自动同步到云端）
 </div>
 </div>
@@ -745,7 +745,7 @@
 <p>仅管理员可见。</p>
 </div>
 <div class="card" onclick="logout()">
-<h3 style="color:rgba(255,255,255,0.85);">🚪 退出登录</h3>
+<h3 style="color:var(--wallpaper-text-2, rgba(255,255,255,0.85));">🚪 退出登录</h3>
 <p>点了就会退出当前账号</p>
 </div>
 </div>
@@ -1798,15 +1798,15 @@ async function loadNotifications() {
   const email = localStorage.getItem('user_email');
   const token = localStorage.getItem('access_token');
   if (!token || !email) {
-    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">登录后查看消息</div>';
+    list.innerHTML = '<div style="text-align:center;color:var(--wallpaper-text-3, rgba(255,255,255,0.4));padding:40px 20px;font-size:14px;">登录后查看消息</div>';
     return;
   }
-  list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载中...</div>';
+  list.innerHTML = '<div style="text-align:center;color:var(--wallpaper-text-3, rgba(255,255,255,0.4));padding:20px;font-size:13px;">加载中...</div>';
   try {
     const resp = await fetch('/api/notifications?owner=' + encodeURIComponent(email));
     const data = await resp.json();
     if (!Array.isArray(data) || data.length === 0) {
-      list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:40px 20px;font-size:14px;">还没有消息</div>';
+      list.innerHTML = '<div style="text-align:center;color:var(--wallpaper-text-3, rgba(255,255,255,0.4));padding:40px 20px;font-size:14px;">还没有消息</div>';
       return;
     }
     list.innerHTML = '';
@@ -1834,7 +1834,7 @@ async function loadNotifications() {
       document.getElementById('navBadge').classList.remove('show');
     }
   } catch (e) {
-    list.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);padding:20px;font-size:13px;">加载失败</div>';
+    list.innerHTML = '<div style="text-align:center;color:var(--wallpaper-text-3, rgba(255,255,255,0.4));padding:20px;font-size:13px;">加载失败</div>';
   }
 }
 
@@ -1849,7 +1849,6 @@ function updateClock() {
   if (spainEl) spainEl.textContent = fmt(spainTime);
   if (chinaEl) chinaEl.textContent = fmt(chinaTime);
   else {
-    // DOM 还没就绪 → 200ms 后重试，保证时钟一定能显示
     setTimeout(updateClock, 200);
   }
 }

@@ -23,23 +23,23 @@
   --wallpaper-fill-2: rgba(255, 255, 255, 0.075);
   --wallpaper-fill-3: rgba(255, 255, 255, 0.11);
 
-  /* 玻璃填充（实色，无渐变） */
+  /* 玻璃填充（读壁纸变量，深色下与原值完全一致） */
   --fill-0: rgba(255, 255, 255, 0.025);
-  --fill-1: rgba(255, 255, 255, 0.045);
-  --fill-2: rgba(255, 255, 255, 0.075);
-  --fill-3: rgba(255, 255, 255, 0.11);
+  --fill-1: var(--wallpaper-fill-1, rgba(255, 255, 255, 0.045));
+  --fill-2: var(--wallpaper-fill-2, rgba(255, 255, 255, 0.075));
+  --fill-3: var(--wallpaper-fill-3, rgba(255, 255, 255, 0.11));
   --fill-nav: rgba(20, 20, 22, 0.78);
 
-  /* 描边（清晰、干净） */
-  --line-1: rgba(255, 255, 255, 0.10);
-  --line-2: rgba(255, 255, 255, 0.16);
-  --line-3: rgba(255, 255, 255, 0.24);
-  --line-strong: rgba(255, 255, 255, 0.30);
+  /* 描边（读壁纸变量） */
+  --line-1: var(--wallpaper-line-1, rgba(255, 255, 255, 0.10));
+  --line-2: var(--wallpaper-line-2, rgba(255, 255, 255, 0.16));
+  --line-3: var(--wallpaper-line-3, rgba(255, 255, 255, 0.24));
+  --line-strong: var(--wallpaper-line-3, rgba(255, 255, 255, 0.30));
 
-  /* 文字 */
-  --text: #ffffff;
-  --text-2: rgba(255, 255, 255, 0.60);
-  --text-3: rgba(255, 255, 255, 0.34);
+  /* 文字（读壁纸变量） */
+  --text:   var(--wallpaper-text,   #ffffff);
+  --text-2: var(--wallpaper-text-2, rgba(255, 255, 255, 0.60));
+  --text-3: var(--wallpaper-text-3, rgba(255, 255, 255, 0.34));
 
   /* 强调 = 纯白 */
   --accent: #ffffff;
@@ -84,7 +84,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
-  padding-bottom: 220px;   /* 改：160px → 220px，保证最底部按钮能划出来 */
+  padding-bottom: 260px;   /* 保证最底部按钮能划出来 */
 }
 
 /* ============ 顶部栏 ============ */
@@ -158,7 +158,7 @@ body {
 /* ============ 主内容 ============ */
 .main-content,
 #mainContent {
-  padding: 92px 20px 60px;   /* 改：40px → 60px，底部再多留一点 */
+  padding: 92px 20px 60px;
   min-height: 100vh;
 }
 
@@ -387,7 +387,7 @@ body {
 .app-icon .app-name {
   font-size: 11.5px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--wallpaper-text-2, rgba(255, 255, 255, 0.85));
   text-align: center;
   line-height: 1.3;
   word-break: keep-all;
