@@ -84,7 +84,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 100vh;
-  padding-bottom: 1000px;   /* 保证最底部按钮能划出来 */
+  padding-bottom: 240px;   /* 保证最底部按钮能划出来 */
 }
 
 /* ============ 顶部栏 ============ */
@@ -217,6 +217,7 @@ body {
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.2px;
+  margin-bottom: 120px;   /* 按钮和底栏之间的间隔 */
   cursor: pointer;
   transition:
     transform 0.3s var(--ease-spring),
