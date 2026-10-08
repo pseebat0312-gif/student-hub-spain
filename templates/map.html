@@ -42,9 +42,7 @@
     z-index: 1;
   }
 
-  .action-row {
-    display: flex; gap: 10px; margin-bottom: 14px;
-  }
+  .action-row { display: flex; gap: 10px; margin-bottom: 14px; }
   .publish-btn {
     flex: 1; padding: 14px; border-radius: 14px;
     border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
@@ -125,13 +123,8 @@
   }
   .pick-hint b { color: #fff; }
 
-  .coord-row {
-    display: flex; gap: 8px; margin-bottom: 10px;
-  }
-  .coord-row input {
-    flex: 1; margin-bottom: 0 !important;
-    font-size: 12px !important;
-  }
+  .coord-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .coord-row input { flex: 1; margin-bottom: 0 !important; font-size: 12px !important; }
 
   .form-actions { display: flex; gap: 10px; margin-top: 6px; }
   .form-actions button {
@@ -225,31 +218,37 @@
     white-space: nowrap;
   }
 
+  /* ============ 扁平式评论（一层竖线） ============ */
   .comment-list { padding-left: 0; }
 
-  /* 楼中楼：每层缩进 */
   .comment-item {
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    align-items: flex-start;
   }
   .comment-item:last-child { border-bottom: none; }
-  .comment-item .c-head {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 4px;
-  }
+
   .comment-item .c-avatar {
-    width: 26px; height: 26px; border-radius: 50%;
+    width: 32px; height: 32px; border-radius: 50%;
     background: rgba(160,216,179,0.18);
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; color: #a0d8b3; font-weight: 700;
+    font-size: 13px; color: #a0d8b3; font-weight: 700;
     flex-shrink: 0;
   }
+  .comment-item .c-main { flex: 1; min-width: 0; }
+  .comment-item .c-head {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
   .comment-item .c-name {
-    font-size: 12px; color: #a0d8b3; font-weight: 600;
+    font-size: 13px; color: #a0d8b3; font-weight: 700;
     max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .comment-item .c-reply-to {
-    font-size: 11px; color: #888;
+    font-size: 12px; color: #888;
   }
   .comment-item .c-reply-to b {
     color: #f4b8d0; font-weight: 600;
@@ -257,39 +256,37 @@
   .comment-item .c-time {
     font-size: 11px; color: #666;
     margin-left: auto;
+    flex-shrink: 0;
   }
   .comment-item .c-content {
-    font-size: 13px; color: #ddd;
-    line-height: 1.6; padding-left: 34px;
-    word-break: break-word;
+    font-size: 14px; color: #e0e0e0;
+    line-height: 1.55; word-break: break-word;
+    margin-bottom: 6px;
   }
   .comment-item .c-actions {
-    display: flex; gap: 12px;
-    padding-left: 34px; margin-top: 4px;
+    display: flex; gap: 14px;
+    font-size: 12px;
   }
   .comment-item .c-actions button {
     background: none; border: none;
-    color: #666; font-size: 11px;
+    color: #888; font-size: 12px;
     cursor: pointer; font-family: inherit;
-    padding: 0;
+    padding: 2px 0;
   }
   .comment-item .c-actions button:active { color: #a0d8b3; }
   .comment-item .c-actions button.danger { color: #ff6b6b; }
 
-  /* 子评论容器：递归缩进 */
-  .comment-item .c-children {
-    margin-left: 34px;
-    margin-top: 6px;
+  /* 楼中楼：子评论被一条竖线包住，内部不再缩进 */
+  .comment-children {
+    margin-left: 42px;
+    margin-top: 4px;
     padding-left: 12px;
-    border-left: 2px solid rgba(160,216,179,0.15);
-  }
-  .comment-item .c-children .comment-item .c-content,
-  .comment-item .c-children .comment-item .c-actions {
-    padding-left: 34px;
+    border-left: 2px solid rgba(160,216,179,0.18);
   }
 
   .inline-reply {
-    margin-left: 34px; margin-top: 8px;
+    margin-left: 42px;
+    margin-top: 8px;
     display: none;
   }
   .inline-reply.open { display: flex; gap: 8px; }
@@ -647,7 +644,7 @@
     }
   }
 
-  // ============ 楼中楼：递归渲染 ============
+  // ============ 楼中楼：方案 A（一层竖线） ============
   function renderComments(shopId, all) {
     var listEl = el('cmt-list-' + shopId);
     if (!listEl) return;
@@ -657,7 +654,6 @@
       return;
     }
 
-    // 建索引 + 建树
     var map = {};
     all.forEach(function(c) {
       map[c.id] = Object.assign({}, c, { children: [] });
@@ -674,59 +670,63 @@
 
     listEl.innerHTML = '';
     roots.forEach(function(root) {
-      listEl.appendChild(buildCommentNode(shopId, root, 0));
+      listEl.appendChild(buildCommentNode(shopId, root));
     });
   }
 
-  // 递归渲染单条评论（含所有子评论）
-  function buildCommentNode(shopId, c, depth) {
-    var item = document.createElement('div');
-    item.className = 'comment-item';
+  function buildCommentNode(shopId, c) {
+    var wrap = document.createElement('div');
 
     var isMine = (c.user_email || '').toLowerCase() === MY_EMAIL;
     var name = (c.user_email || '匿名').split('@')[0];
     var avatarChar = name.charAt(0).toUpperCase();
     var time = timeAgo(c.created_at);
 
-    // 是否显示「回复 @xxx」
     var replyToHtml = '';
     if (c.parent_id && c.parent_user_email) {
       var parentName = (c.parent_user_email || '').split('@')[0];
       replyToHtml = '<span class="c-reply-to">回复 <b>' + escapeHtml(parentName) + '</b></span>';
     }
 
-    // 每层都用同一套结构：head / content / actions / inline-reply
-    var html =
-      '<div class="c-head">' +
-        '<div class="c-avatar">' + escapeHtml(avatarChar) + '</div>' +
-        '<div class="c-name">' + escapeHtml(name) + '</div>' +
-        replyToHtml +
-        '<div class="c-time">' + time + '</div>' +
-      '</div>' +
-      '<div class="c-content">' + escapeHtml(c.content) + '</div>' +
-      '<div class="c-actions">' +
-        '<button data-reply="' + c.id + '">回复</button>' +
-        (isMine ? '<button class="danger" data-cdel="' + c.id + '">删除</button>' : '') +
-      '</div>' +
-      '<div class="inline-reply" id="reply-' + c.id + '">' +
-        '<input type="text" id="reply-input-' + c.id + '" placeholder="回复 @' + escapeHtml(name) + '...">' +
-        '<button data-reply-send="' + c.id + '" data-shop="' + shopId + '">发送</button>' +
+    var item = document.createElement('div');
+    item.className = 'comment-item';
+    item.innerHTML =
+      '<div class="c-avatar">' + escapeHtml(avatarChar) + '</div>' +
+      '<div class="c-main">' +
+        '<div class="c-head">' +
+          '<span class="c-name">' + escapeHtml(name) + '</span>' +
+          replyToHtml +
+          '<span class="c-time">' + time + '</span>' +
+        '</div>' +
+        '<div class="c-content">' + escapeHtml(c.content) + '</div>' +
+        '<div class="c-actions">' +
+          '<button data-reply="' + c.id + '">回复</button>' +
+          (isMine ? '<button class="danger" data-cdel="' + c.id + '">删除</button>' : '') +
+        '</div>' +
       '</div>';
 
-    // 递归子评论（用 .c-children 包住，缩进一层）
+    wrap.appendChild(item);
+
+    // 内联回复框
+    var replyBox = document.createElement('div');
+    replyBox.className = 'inline-reply';
+    replyBox.id = 'reply-' + c.id;
+    replyBox.innerHTML =
+      '<input type="text" id="reply-input-' + c.id + '" placeholder="回复 @' + escapeHtml(name) + '...">' +
+      '<button data-reply-send="' + c.id + '" data-shop="' + shopId + '">发送</button>';
+    wrap.appendChild(replyBox);
+
+    // 子评论：用 .comment-children 包住（一条竖线），内部不再缩进
     if (c.children && c.children.length > 0) {
       var childrenWrapper = document.createElement('div');
-      childrenWrapper.className = 'c-children';
+      childrenWrapper.className = 'comment-children';
       c.children.forEach(function(ch) {
-        childrenWrapper.appendChild(buildCommentNode(shopId, ch, depth + 1));
+        childrenWrapper.appendChild(buildCommentNode(shopId, ch));
       });
-      item.innerHTML = html;
-      item.appendChild(childrenWrapper);
-    } else {
-      item.innerHTML = html;
+      wrap.appendChild(childrenWrapper);
     }
 
-    return item;
+    return wrap;
   }
 
   async function sendComment(shopId, parentId) {
@@ -841,7 +841,6 @@
     if (!el('publishForm').classList.contains('show')) exitPickMode();
   }
 
-  // ===== 解析地址 =====
   async function resolveAddress() {
     var addr = el('addrInput').value.trim();
     if (!addr) { alert('请输入地址'); return; }
