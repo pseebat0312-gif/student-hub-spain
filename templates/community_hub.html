@@ -65,9 +65,7 @@
   }
   .add-btn-top:active { transform: scale(0.97); }
 
-  .type-switch {
-    display: flex; gap: 8px; margin-bottom: 10px;
-  }
+  .type-switch { display: flex; gap: 8px; margin-bottom: 10px; }
   .type-switch label {
     flex: 1; padding: 10px; text-align: center;
     background: rgba(255,255,255,0.06);
@@ -100,9 +98,7 @@
     margin-bottom: 10px;
   }
   .upload-preview::-webkit-scrollbar { display: none; }
-  .upload-thumb {
-    position: relative; flex-shrink: 0;
-  }
+  .upload-thumb { position: relative; flex-shrink: 0; }
   .upload-thumb img {
     width: 70px; height: 70px;
     border-radius: 10px;
@@ -146,12 +142,8 @@
     font-size: 12px; font-weight: 600;
     cursor: pointer; font-family: inherit;
   }
-  .item-card .btn-reply {
-    background: rgba(160,216,179,0.15); color: #a0d8b3;
-  }
-  .item-card .btn-del {
-    background: rgba(255,107,107,0.12); color: #ff6b6b;
-  }
+  .item-card .btn-reply { background: rgba(160,216,179,0.15); color: #a0d8b3; }
+  .item-card .btn-del { background: rgba(255,107,107,0.12); color: #ff6b6b; }
 
   .market-badge {
     display: inline-block;
@@ -159,14 +151,8 @@
     padding: 3px 8px; border-radius: 8px;
     margin-right: 6px;
   }
-  .market-badge.sell {
-    background: rgba(160,216,179,0.15);
-    color: #a0d8b3;
-  }
-  .market-badge.want {
-    background: rgba(244,184,208,0.15);
-    color: #f4b8d0;
-  }
+  .market-badge.sell { background: rgba(160,216,179,0.15); color: #a0d8b3; }
+  .market-badge.want { background: rgba(244,184,208,0.15); color: #f4b8d0; }
   .market-images {
     display: flex; gap: 8px;
     overflow-x: auto;
@@ -181,75 +167,98 @@
     object-fit: cover;
     cursor: pointer;
   }
-  .market-price {
-    color: #a0d8b3; font-weight: 700;
-    font-size: 14px;
-  }
-  .market-contact {
-    color: #a0d8b3;
-    margin-top: 6px;
-    font-size: 12px;
-  }
+  .market-price { color: #a0d8b3; font-weight: 700; font-size: 14px; }
+  .market-contact { color: #a0d8b3; margin-top: 6px; font-size: 12px; }
 
   .empty-tip {
     text-align: center; color: #666; font-size: 13px;
     padding: 60px 20px; line-height: 1.8;
   }
 
+  /* ============ 扁平评论（全部并排，无缩进） ============ */
   .reply-thread {
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid rgba(255,255,255,0.06);
   }
-  .reply-node {
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 10px;
-    margin-bottom: 8px;
-    font-size: 13px;
-    line-height: 1.55;
-    position: relative;
+  .comment-block {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 4px;
   }
-  .reply-node.depth-1 { margin-left: 0; background: rgba(160,216,179,0.06); }
-  .reply-node.depth-2 { margin-left: 16px; background: rgba(160,216,179,0.04); }
-  .reply-node.depth-3 { margin-left: 32px; background: rgba(160,216,179,0.03); }
-  .reply-node.depth-4 { margin-left: 48px; background: rgba(160,216,179,0.02); }
-  .reply-node.depth-5 { margin-left: 56px; background: rgba(160,216,179,0.02); }
-  .reply-node.depth-6 { margin-left: 64px; background: rgba(160,216,179,0.02); }
+  .comment-block:last-child { border-bottom: none; }
+
+  .reply-node {
+    display: flex;
+    gap: 10px;
+    padding: 12px 0;
+    font-size: 14px;
+    line-height: 1.55;
+    align-items: flex-start;
+  }
+  .reply-node .r-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(160,216,179,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: #a0d8b3; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .reply-node .r-main { flex: 1; min-width: 0; }
   .reply-node .r-head {
     display: flex; align-items: center; gap: 6px;
-    font-size: 11px; margin-bottom: 4px;
+    font-size: 13px; margin-bottom: 4px;
+    flex-wrap: wrap;
   }
   .reply-node .r-name {
     color: #a0d8b3; font-weight: 700;
+    max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .reply-node .r-reply-to {
-    color: #888;
-    font-size: 10px;
-  }
-  .reply-node .r-reply-to b {
-    color: #f4b8d0;
-    font-weight: 600;
+  .reply-node .r-reply-to { color: #888; font-size: 12px; }
+  .reply-node .r-reply-to b { color: #f4b8d0; font-weight: 600; }
+  .reply-node .r-time {
+    margin-left: auto;
+    font-size: 11px; color: #666;
+    flex-shrink: 0;
   }
   .reply-node .r-content {
-    color: #ddd;
+    color: #e0e0e0;
     word-break: break-word;
+    margin-bottom: 6px;
+    font-size: 14px;
   }
   .reply-node .r-foot {
-    display: flex; align-items: center; gap: 10px;
-    margin-top: 6px;
-    font-size: 10px; color: #666;
+    display: flex; align-items: center; gap: 14px;
+    font-size: 12px;
   }
   .reply-node .r-btn {
     background: none; border: none;
-    color: #a0d8b3; font-size: 11px;
-    cursor: pointer; padding: 2px 6px;
-    border-radius: 6px;
+    color: #888; font-size: 12px;
+    cursor: pointer; padding: 2px 0;
     font-family: inherit;
   }
-  .reply-node .r-btn:active { background: rgba(160,216,179,0.12); }
+  .reply-node .r-btn:active { color: #a0d8b3; }
   .reply-node .r-btn.danger { color: #ff6b6b; }
-  .reply-node .r-btn.danger:active { background: rgba(255,107,107,0.12); }
+
+  .reply-children {
+    margin-left: 42px;
+    padding-left: 12px;
+    border-left: 2px solid rgba(160,216,179,0.18);
+  }
+  .reply-children .reply-node { padding: 10px 0; }
+
+  .comment-toggle {
+    display: block;
+    margin-left: 42px;
+    padding: 8px 0;
+    color: #a0d8b3;
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+  }
+  .comment-toggle:active { opacity: 0.7; }
 
   #replyComposer {
     position: fixed;
@@ -268,9 +277,7 @@
     margin-bottom: 6px;
     display: flex; align-items: center; gap: 6px;
   }
-  #replyComposer .composer-to b {
-    color: #f4b8d0;
-  }
+  #replyComposer .composer-to b { color: #f4b8d0; }
   #replyComposer .composer-row {
     display: flex; gap: 8px;
     align-items: center;
@@ -465,6 +472,9 @@
   var currentParentReplyId = null;
   var currentReplyToName = '';
 
+  var expandedParents = {};
+  var COLLAPSE_LIMIT = 2;
+
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (window.history.length > 1) window.history.back();
@@ -489,7 +499,6 @@
     return d.toLocaleDateString('zh-CN');
   }
 
-  // ============ 昵称：树洞里全部匿名 ============
   function nickName(email) {
     if (currentContext && currentContext.type === 'treehole') {
       return '匿名';
@@ -705,7 +714,6 @@
       data.forEach(function(t) {
         var card = document.createElement('div');
         card.className = 'item-card';
-        // 树洞卡片：只显示内容和时间，不显示任何 id 或昵称
         card.innerHTML =
           '<div class="item-body">' + escapeHtml(t.content) + '</div>' +
           '<div class="item-meta" style="margin-top:10px;">' +
@@ -905,35 +913,77 @@
   function renderReplyTree(nodes, depth) {
     if (!nodes || nodes.length === 0) return '';
     var html = '';
-    nodes.forEach(function(node) {
-      var d = depth > 6 ? 6 : depth;
-      var targetEmail = node.user_email || '';
-      var nick = nickName(targetEmail);   // 树洞里自动返回「匿名」
-      var parentNick = '';
-      if (node.parent_id && node.parent_user_email) {
-        parentNick = nickName(node.parent_user_email);  // 树洞里也自动「匿名」
-      }
-      var isMine = (node.user_email || '').toLowerCase() === MY_EMAIL;
+    nodes.forEach(function(root) {
+      html += renderCommentBlock(root);
+    });
+    return html;
+  }
 
-      html += '<div class="reply-node depth-' + d + '" data-id="' + node.id + '">' +
+  function renderCommentBlock(root) {
+    var html = renderSingleNode(root);
+
+    if (root.children && root.children.length > 0) {
+      var isExpanded = !!expandedParents[root.id];
+      var shown = isExpanded ? root.children : root.children.slice(0, COLLAPSE_LIMIT);
+      var hidden = root.children.length - shown.length;
+
+      html += '<div class="reply-children">';
+      shown.forEach(function(ch) {
+        html += renderSingleNode(ch);
+        if (ch.children && ch.children.length > 0) {
+          html += '<div class="reply-children">';
+          ch.children.forEach(function(sub) {
+            html += renderSingleNode(sub);
+          });
+          html += '</div>';
+        }
+      });
+      html += '</div>';
+
+      if (hidden > 0) {
+        html += '<button class="comment-toggle" onclick="expandParent(' + root.id + ')">展开 ' + hidden + ' 条回复 ▾</button>';
+      } else if (isExpanded && root.children.length > COLLAPSE_LIMIT) {
+        html += '<button class="comment-toggle" onclick="collapseParent(' + root.id + ')">收起 ▴</button>';
+      }
+    }
+
+    return html;
+  }
+
+  function expandParent(id) {
+    expandedParents[id] = true;
+    loadThreadReplies();
+  }
+  function collapseParent(id) {
+    expandedParents[id] = false;
+    loadThreadReplies();
+  }
+
+  function renderSingleNode(node) {
+    var targetEmail = node.user_email || '';
+    var nick = nickName(targetEmail);
+    var parentNick = '';
+    if (node.parent_id && node.parent_user_email) {
+      parentNick = nickName(node.parent_user_email);
+    }
+    var isMine = (node.user_email || '').toLowerCase() === MY_EMAIL;
+    var avatarChar = nick.charAt(0).toUpperCase() || '匿';
+
+    return '<div class="reply-node" data-id="' + node.id + '">' +
+      '<div class="r-avatar">' + escapeHtml(avatarChar) + '</div>' +
+      '<div class="r-main">' +
         '<div class="r-head">' +
           '<span class="r-name">' + nick + '</span>' +
           (parentNick ? '<span class="r-reply-to">回复 <b>' + parentNick + '</b></span>' : '') +
+          '<span class="r-time">' + timeAgo(node.created_at) + '</span>' +
         '</div>' +
         '<div class="r-content">' + escapeHtml(node.content) + '</div>' +
         '<div class="r-foot">' +
-          '<span>' + timeAgo(node.created_at) + '</span>' +
           '<button class="r-btn" onclick="startReply(' + node.id + ', \'' + escapeHtml(nick).replace(/'/g, "\\'") + '\')">回复</button>' +
           (isMine ? '<button class="r-btn danger" onclick="deleteReply(' + node.id + ')">删除</button>' : '') +
-        '</div>';
-
-      if (node.children && node.children.length > 0) {
-        html += renderReplyTree(node.children, depth + 1);
-      }
-
-      html += '</div>';
-    });
-    return html;
+        '</div>' +
+      '</div>' +
+    '</div>';
   }
 
   function renderComposerButton() {
@@ -947,7 +997,6 @@
     currentParentReplyId = parentId || null;
     currentReplyToName = parentNick || '';
     if (parentId) {
-      // 树洞里，就算 parentNick 传的是真名，也显示匿名
       var displayNick = (currentContext && currentContext.type === 'treehole') ? '匿名' : parentNick;
       el('composerTo').innerHTML = '回复 <b>' + escapeHtml(displayNick) + '</b>';
     } else {
@@ -999,6 +1048,8 @@
       var d = await r.json();
       if (d.error) { alert(d.error); return; }
       el('composerInput').value = '';
+      // 展开这个父评论，让用户看到自己刚发的
+      if (currentParentReplyId) expandedParents[currentParentReplyId] = true;
       closeComposer();
       loadThreadReplies();
     } catch (e) { alert('网络错误'); }

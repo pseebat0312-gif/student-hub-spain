@@ -5,7 +5,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0f0c29">
-<title>交流社区 · 西班牙留学生工具站</title>
+<title>探店地图 · 西班牙留学生工具站</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   body {
@@ -17,238 +21,273 @@
   #topBar {
     padding: 16px 20px; display: flex; align-items: center; gap: 12px;
     background: linear-gradient(to bottom, #0f0c29, transparent);
-    position: sticky; top: 0; z-index: 10;
+    position: sticky; top: 0; z-index: 9999;
   }
   #topBar .back-btn {
     background: rgba(255,255,255,0.08); border: none; color: #fff;
     font-size: 18px; width: 36px; height: 36px; border-radius: 50%;
-    cursor: pointer;
+    cursor: pointer; position: relative; z-index: 10000;
   }
   #topBar .back-btn:active { transform: scale(0.9); }
-  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
+  #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; }
 
-  #content { padding: 0 16px 40px; }
+  #content { padding: 0 20px 40px; }
 
-  .hub-tabs {
-    display: flex; gap: 6px; margin-bottom: 16px;
-    background: rgba(255,255,255,0.04);
-    padding: 5px; border-radius: 999px;
-    position: sticky; top: 68px; z-index: 9;
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+  #map {
+    width: 100%; height: 380px;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+    z-index: 1;
   }
-  .hub-tab {
-    flex: 1; padding: 11px;
-    border-radius: 999px; border: none;
-    background: transparent; color: #888;
-    font-size: 14px; font-weight: 600;
-    cursor: pointer; font-family: inherit;
-    transition: 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .hub-tab.active {
-    background: linear-gradient(135deg, #a0d8b3, #7ab890);
-    color: #0f0c29;
-    font-weight: 700;
-  }
-  .hub-tab:active { transform: scale(0.96); }
 
-  .hub-panel { display: none; }
-  .hub-panel.active { display: block; animation: fadeIn 0.3s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  .add-btn-top {
-    width: 100%; padding: 14px; border-radius: 14px; border: none;
-    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-    color: #fff; font-size: 15px; font-weight: 700;
-    cursor: pointer; font-family: inherit;
-    margin-bottom: 16px;
+  .action-row { display: flex; gap: 10px; margin-bottom: 14px; }
+  .publish-btn {
+    flex: 1; padding: 14px; border-radius: 14px;
+    border: none; background: linear-gradient(135deg, #4a7c59, #2d5a3d);
+    color: #fff; font-size: 15px; font-weight: bold;
+    cursor: pointer;
   }
-  .add-btn-top:active { transform: scale(0.97); }
+  .publish-btn:active { transform: scale(0.97); }
+  .nearby-btn {
+    flex: 0 0 auto; padding: 14px 16px; border-radius: 14px;
+    border: 1px solid rgba(160,216,179,0.3);
+    background: rgba(160,216,179,0.1);
+    color: #a0d8b3; font-size: 15px; font-weight: bold;
+    cursor: pointer;
+  }
+  .nearby-btn:active { transform: scale(0.97); }
 
-  .type-switch { display: flex; gap: 8px; margin-bottom: 10px; }
-  .type-switch label {
-    flex: 1; padding: 10px; text-align: center;
+  .filter-bar {
+    display: flex; gap: 8px; margin-bottom: 14px;
+    overflow-x: auto; padding-bottom: 4px;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    flex-shrink: 0;
+    padding: 8px 14px; border-radius: 999px;
     background: rgba(255,255,255,0.06);
-    border-radius: 12px;
-    font-size: 13px; cursor: pointer;
-    border: 2px solid transparent;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #ccc; font-size: 13px;
+    cursor: pointer;
+    transition: 0.15s;
+    font-family: inherit;
   }
-  .type-switch input { display: none; }
-  .type-switch label:has(input:checked) {
+  .filter-chip.active {
+    background: rgba(160,216,179,0.18);
     border-color: #a0d8b3;
-    background: rgba(160,216,179,0.15);
     color: #a0d8b3;
     font-weight: 700;
   }
+  .filter-chip:active { transform: scale(0.95); }
 
-  .upload-box {
-    padding: 14px; border-radius: 12px;
-    border: 2px dashed rgba(160, 216, 179, 0.3);
-    background: rgba(160, 216, 179, 0.05);
-    text-align: center;
-    font-size: 13px; color: #a0d8b3;
-    cursor: pointer;
+  .form-card {
+    display: none; background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px; padding: 18px; margin-bottom: 20px;
+  }
+  .form-card.show { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .form-card input, .form-card textarea, .form-card select {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 10px; font-family: inherit;
+  }
+  .form-card textarea { height: 70px; resize: none; }
+  .form-card select option { background: #1a1a2e; }
+
+  .radio-row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .radio-row label {
+    flex: 1; padding: 10px; text-align: center;
+    background: rgba(255,255,255,0.06); border-radius: 12px;
+    font-size: 14px; cursor: pointer;
+    border: 2px solid transparent;
+  }
+  .radio-row input { display: none; }
+  .radio-row label:has(input:checked) { border-color: #a0d8b3; background: rgba(160,216,179,0.15); }
+  .radio-row label:has(input:checked) span { color: #a0d8b3; font-weight: bold; }
+
+  .pick-hint {
+    background: rgba(160,216,179,0.1);
+    border: 1px solid rgba(160,216,179,0.3);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #a0d8b3;
+    line-height: 1.6;
     margin-bottom: 10px;
   }
-  .upload-box:active { transform: scale(0.98); }
-  .upload-preview {
-    display: flex; gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    margin-bottom: 10px;
-  }
-  .upload-preview::-webkit-scrollbar { display: none; }
-  .upload-thumb { position: relative; flex-shrink: 0; }
-  .upload-thumb img {
-    width: 70px; height: 70px;
-    border-radius: 10px;
-    object-fit: cover;
-    display: block;
-  }
-  .upload-thumb .rm {
-    position: absolute; top: -6px; right: -6px;
-    width: 20px; height: 20px; border-radius: 50%;
-    background: #ff4444; color: #fff;
-    font-size: 13px; line-height: 20px;
-    text-align: center; cursor: pointer;
-  }
+  .pick-hint b { color: #fff; }
 
-  .item-card {
+  .coord-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .coord-row input { flex: 1; margin-bottom: 0 !important; font-size: 12px !important; }
+
+  .form-actions { display: flex; gap: 10px; margin-top: 6px; }
+  .form-actions button {
+    flex: 1; padding: 12px; border-radius: 12px;
+    border: none; font-size: 14px; font-weight: bold; cursor: pointer;
+  }
+  .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
+  .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+
+  .shop-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 12px;
-    position: relative;
+    border-radius: 16px; padding: 16px; margin-bottom: 12px;
   }
-  .item-card .item-title {
-    font-size: 15px; font-weight: 700; color: #fff;
-    margin-bottom: 6px;
+  .shop-card .shop-header {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 8px;
+  }
+  .shop-card .shop-cat-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: rgba(160,216,179,0.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .shop-card .shop-title-wrap { flex: 1; min-width: 0; }
+  .shop-card .shop-name {
+    font-size: 15px; font-weight: bold; color: #fff;
+    margin-bottom: 3px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .item-card .item-meta {
-    font-size: 11px; color: #666;
-    margin-bottom: 8px;
-    display: flex; gap: 8px; align-items: center;
+  .shop-card .shop-meta { font-size: 12px; color: #888; }
+  .shop-card .shop-badge {
+    font-size: 11px; padding: 3px 8px; border-radius: 999px;
+    font-weight: 600; flex-shrink: 0;
   }
-  .item-card .item-body {
+  .shop-card .shop-badge.rec { background: rgba(46,204,113,0.15); color: #2ecc71; }
+  .shop-card .shop-badge.avoid { background: rgba(231,76,60,0.15); color: #e74c3c; }
+  .shop-card .shop-desc {
     font-size: 13px; color: #bbb; line-height: 1.6;
+    margin-bottom: 12px;
   }
-  .item-card .item-actions {
-    display: flex; gap: 8px; margin-top: 12px;
+  .shop-card .shop-actions {
+    display: flex; gap: 8px; margin-bottom: 10px;
   }
-  .item-card .item-actions button {
-    padding: 8px 14px; border-radius: 10px; border: none;
-    font-size: 12px; font-weight: 600;
+  .shop-card .shop-actions button {
+    padding: 10px; border-radius: 10px;
+    border: none; font-size: 13px; font-weight: 600;
     cursor: pointer; font-family: inherit;
   }
-  .item-card .btn-reply { background: rgba(160,216,179,0.15); color: #a0d8b3; }
-  .item-card .btn-del { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+  .shop-card .btn-nav {
+    flex: 1;
+    background: rgba(160,216,179,0.15);
+    color: #a0d8b3;
+  }
+  .shop-card .btn-nav:active { background: rgba(160,216,179,0.25); }
+  .shop-card .btn-cmt {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    color: #ccc;
+  }
+  .shop-card .btn-del {
+    flex: 0 0 60px;
+    background: rgba(231,76,60,0.12);
+    color: #e74c3c;
+  }
 
-  .market-badge {
-    display: inline-block;
-    font-size: 11px; font-weight: 700;
-    padding: 3px 8px; border-radius: 8px;
-    margin-right: 6px;
+  .comment-section {
+    display: none;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 12px;
+    margin-top: 4px;
   }
-  .market-badge.sell { background: rgba(160,216,179,0.15); color: #a0d8b3; }
-  .market-badge.want { background: rgba(244,184,208,0.15); color: #f4b8d0; }
-  .market-images {
-    display: flex; gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    margin-bottom: 8px;
-  }
-  .market-images::-webkit-scrollbar { display: none; }
-  .market-images img {
-    flex-shrink: 0;
-    width: 100px; height: 100px;
-    border-radius: 10px;
-    object-fit: cover;
-    cursor: pointer;
-  }
-  .market-price { color: #a0d8b3; font-weight: 700; font-size: 14px; }
-  .market-contact { color: #a0d8b3; margin-top: 6px; font-size: 12px; }
+  .comment-section.open { display: block; }
 
-  .empty-tip {
-    text-align: center; color: #666; font-size: 13px;
-    padding: 60px 20px; line-height: 1.8;
+  .comment-input-row {
+    display: flex; gap: 8px; margin-bottom: 12px;
+  }
+  .comment-input-row input {
+    flex: 1;
+    padding: 10px 12px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 13px; outline: none;
+    font-family: inherit;
+  }
+  .comment-input-row button {
+    padding: 0 16px; border-radius: 10px;
+    border: none; background: rgba(160,216,179,0.2);
+    color: #a0d8b3; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    white-space: nowrap;
   }
 
   /* ============ 扁平评论（全部并排，无缩进） ============ */
-  .reply-thread {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.06);
-  }
-  .comment-block {
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    padding-bottom: 4px;
-  }
-  .comment-block:last-child { border-bottom: none; }
+  .comment-list { padding-left: 0; }
 
-  .reply-node {
+  .comment-item {
     display: flex;
     gap: 10px;
     padding: 12px 0;
-    font-size: 14px;
-    line-height: 1.55;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     align-items: flex-start;
   }
-  .reply-node .r-avatar {
+  .comment-item:last-child { border-bottom: none; }
+
+  .comment-item .c-avatar {
     width: 32px; height: 32px; border-radius: 50%;
     background: rgba(160,216,179,0.18);
     display: flex; align-items: center; justify-content: center;
     font-size: 13px; color: #a0d8b3; font-weight: 700;
     flex-shrink: 0;
   }
-  .reply-node .r-main { flex: 1; min-width: 0; }
-  .reply-node .r-head {
+  .comment-item .c-main { flex: 1; min-width: 0; }
+  .comment-item .c-head {
     display: flex; align-items: center; gap: 6px;
     font-size: 13px; margin-bottom: 4px;
     flex-wrap: wrap;
   }
-  .reply-node .r-name {
-    color: #a0d8b3; font-weight: 700;
+  .comment-item .c-name {
+    font-size: 13px; color: #a0d8b3; font-weight: 700;
     max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .reply-node .r-reply-to { color: #888; font-size: 12px; }
-  .reply-node .r-reply-to b { color: #f4b8d0; font-weight: 600; }
-  .reply-node .r-time {
-    margin-left: auto;
+  .comment-item .c-reply-to {
+    font-size: 12px; color: #888;
+  }
+  .comment-item .c-reply-to b {
+    color: #f4b8d0; font-weight: 600;
+  }
+  .comment-item .c-time {
     font-size: 11px; color: #666;
+    margin-left: auto;
     flex-shrink: 0;
   }
-  .reply-node .r-content {
-    color: #e0e0e0;
-    word-break: break-word;
+  .comment-item .c-content {
+    font-size: 14px; color: #e0e0e0;
+    line-height: 1.55; word-break: break-word;
     margin-bottom: 6px;
-    font-size: 14px;
   }
-  .reply-node .r-foot {
-    display: flex; align-items: center; gap: 14px;
+  .comment-item .c-actions {
+    display: flex; gap: 14px;
     font-size: 12px;
   }
-  .reply-node .r-btn {
+  .comment-item .c-actions button {
     background: none; border: none;
     color: #888; font-size: 12px;
-    cursor: pointer; padding: 2px 0;
-    font-family: inherit;
+    cursor: pointer; font-family: inherit;
+    padding: 2px 0;
   }
-  .reply-node .r-btn:active { color: #a0d8b3; }
-  .reply-node .r-btn.danger { color: #ff6b6b; }
+  .comment-item .c-actions button:active { color: #a0d8b3; }
+  .comment-item .c-actions button.danger { color: #ff6b6b; }
 
-  .reply-children {
+  .comment-children {
     margin-left: 42px;
     padding-left: 12px;
     border-left: 2px solid rgba(160,216,179,0.18);
   }
-  .reply-children .reply-node { padding: 10px 0; }
+  .comment-children .comment-item { padding: 10px 0; }
 
   .comment-toggle {
     display: block;
-    margin-left: 42px;
+    width: 100%;
     padding: 8px 0;
+    margin-left: 42px;
     color: #a0d8b3;
     background: none;
     border: none;
@@ -260,229 +299,739 @@
   }
   .comment-toggle:active { opacity: 0.7; }
 
-  #replyComposer {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    background: #1a1a2e;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding: 12px 14px calc(20px + env(safe-area-inset-bottom, 0px));
+  .inline-reply {
+    margin-left: 42px;
+    margin-top: 8px;
     display: none;
-    z-index: 300;
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.4);
   }
-  #replyComposer.show { display: block; }
-  #replyComposer .composer-to {
-    font-size: 11px;
-    color: #a0d8b3;
-    margin-bottom: 6px;
-    display: flex; align-items: center; gap: 6px;
-  }
-  #replyComposer .composer-to b { color: #f4b8d0; }
-  #replyComposer .composer-row {
-    display: flex; gap: 8px;
-    align-items: center;
-  }
-  #replyComposer input {
-    flex: 1;
-    padding: 11px 14px;
-    border-radius: 999px;
+  .inline-reply.open { display: flex; gap: 8px; }
+  .inline-reply input {
+    flex: 1; padding: 8px 10px; border-radius: 8px;
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.06);
-    color: #fff; font-size: 14px;
-    outline: none;
+    color: #fff; font-size: 12px; outline: none;
     font-family: inherit;
-    min-width: 0;
   }
-  #replyComposer input:focus { border-color: #a0d8b3; }
-  #replyComposer .send-btn {
-    padding: 11px 18px; border-radius: 999px; border: none;
-    background: linear-gradient(135deg, #4a7c59, #2d5a3d);
-    color: #fff; font-size: 13px; font-weight: 700;
-    cursor: pointer; font-family: inherit;
-    flex-shrink: 0;
-  }
-  #replyComposer .cancel-btn {
-    padding: 11px 14px; border-radius: 999px; border: none;
-    background: rgba(255,255,255,0.08); color: #ccc;
-    font-size: 13px; cursor: pointer; font-family: inherit;
-    flex-shrink: 0;
+  .inline-reply button {
+    padding: 0 12px; border-radius: 8px; border: none;
+    background: rgba(160,216,179,0.2); color: #a0d8b3;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    font-family: inherit;
   }
 
-  .modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-    display: none; justify-content: center; align-items: flex-end;
-    z-index: 200; padding-top: 60px;
+  .no-comment {
+    text-align: center; color: #666;
+    font-size: 12px; padding: 16px 0;
   }
-  .modal.show { display: flex; }
-  .modal-content {
-    background: #1a1a2e; width: 100%; max-width: 500px;
-    border-radius: 25px 25px 0 0; padding: 20px 18px 30px;
-    max-height: 80vh; overflow-y: auto;
-    animation: slideUp 0.3s ease;
+
+  .empty-state {
+    text-align: center; color: #666; font-size: 13px;
+    padding: 40px 20px; line-height: 1.8;
   }
-  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-content h3 {
-    font-size: 17px; margin-bottom: 14px;
-    color: #a0d8b3; text-align: center;
+
+  .tip-box {
+    background: rgba(160, 216, 179, 0.08);
+    border-left: 4px solid #a0d8b3;
+    padding: 14px 16px; border-radius: 10px;
+    font-size: 13px; color: #ccc; line-height: 1.6; margin-top: 20px;
   }
-  .modal-content input, .modal-content textarea, .modal-content select {
-    width: 100%; padding: 12px 14px; border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.06);
-    color: #fff; font-size: 14px; outline: none;
-    margin-bottom: 10px; font-family: inherit;
+
+  .leaflet-popup-content-wrapper {
+    background: #1a1a2e; color: #fff; border-radius: 12px;
   }
-  .modal-content textarea { height: 90px; resize: none; }
-  .modal-content input:focus, .modal-content textarea:focus { border-color: #a0d8b3; }
-  .form-actions { display: flex; gap: 10px; margin-top: 8px; }
-  .form-actions button {
-    flex: 1; padding: 14px; border-radius: 12px; border: none;
-    font-size: 14px; font-weight: bold; cursor: pointer;
-    font-family: inherit;
-  }
-  .form-actions .cancel { background: rgba(255,255,255,0.1); color: #ccc; }
-  .form-actions .submit { background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff; }
+  .leaflet-popup-content { margin: 12px; }
+  .leaflet-popup-tip { background: #1a1a2e; }
+  .leaflet-container { background: #0f0c29; }
 </style>
 </head>
 <body>
 
 <div id="topBar">
   <button class="back-btn" onclick="goBack()">←</button>
-  <div class="title">💬 交流社区</div>
+  <div class="title">🗺️ 留学生探店地图</div>
 </div>
 
 <div id="content">
 
-  <div class="hub-tabs">
-    <button class="hub-tab active" data-tab="market" onclick="switchHub('market', this)">🛒 二手</button>
-    <button class="hub-tab" data-tab="treehole" onclick="switchHub('treehole', this)">🌳 树洞</button>
-    <button class="hub-tab" data-tab="community" onclick="switchHub('community', this)">🤝 互助</button>
+  <div id="map"></div>
+
+  <div class="action-row">
+    <button class="publish-btn" onclick="togglePublish()">➕ 推荐一家店</button>
+    <button class="nearby-btn" onclick="findNearby()" id="nearbyBtn">📍 我附近</button>
   </div>
 
-  <div class="hub-panel active" id="panel-market">
-    <button class="add-btn-top" onclick="openAddMarket()">➕ 发布</button>
-    <div id="marketList"><div class="empty-tip">加载中...</div></div>
+  <div class="filter-bar" id="filterBar">
+    <button class="filter-chip active" data-filter="all">全部</button>
+    <button class="filter-chip" data-filter="recommend">👍 推荐</button>
+    <button class="filter-chip" data-filter="avoid">👎 避雷</button>
+    <button class="filter-chip" data-filter="mine">👤 我的</button>
+    <button class="filter-chip" data-filter="city">🏙️ 城市</button>
+    <button class="filter-chip" data-filter="category">🍽️ 类别</button>
   </div>
 
-  <div class="hub-panel" id="panel-treehole">
-    <button class="add-btn-top" onclick="openAddTreehole()">➕ 发树洞</button>
-    <div id="treeholeList"><div class="empty-tip">加载中...</div></div>
-  </div>
+  <div class="form-card" id="publishForm">
+    <input type="text" id="shopName" placeholder="店名 *">
+    <input type="text" id="shopAddress" placeholder="地址（可写中文，例：Gran Vía 1, Madrid）">
 
-  <div class="hub-panel" id="panel-community">
-    <button class="add-btn-top" onclick="openAddPost()">➕ 发帖</button>
-    <div id="communityList"><div class="empty-tip">加载中...</div></div>
-  </div>
-
-</div>
-
-<div class="modal" id="marketModal">
-  <div class="modal-content">
-    <h3>🛒 发布二手</h3>
-    <div class="type-switch">
-      <label><input type="radio" name="mType" value="sell" checked><span>💰 出售</span></label>
-      <label><input type="radio" name="mType" value="want"><span>🔍 求购</span></label>
-    </div>
-    <input type="text" id="mTitle" placeholder="物品名称 *">
-    <textarea id="mDesc" placeholder="物品描述"></textarea>
-    <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <input type="number" id="mPrice" placeholder="价格" step="0.01" min="0" style="flex:1;margin-bottom:0;">
-      <select id="mCurrency" style="width:110px;margin-bottom:0;">
-        <option value="EUR">💶 €</option>
-        <option value="CNY">💰 ¥</option>
-      </select>
-    </div>
-    <input type="text" id="mContact" placeholder="联系方式（微信/WhatsApp）*">
-    <div class="upload-box" onclick="document.getElementById('mImages').click()">
-      📷 点击上传图片（可多选，每张最大 10MB）
-    </div>
-    <input type="file" id="mImages" accept="image/*" multiple style="display:none" onchange="onMarketImagesSelected(event)">
-    <div class="upload-preview" id="uploadPreview"></div>
-    <select id="mCategory">
-      <option value="">📂 选择分类</option>
-      <option value="家具">🛋️ 家具</option>
-      <option value="教材">📚 教材</option>
-      <option value="电子产品">💻 电子产品</option>
-      <option value="生活用品">🧴 生活用品</option>
-      <option value="出行工具">🚲 出行工具</option>
-      <option value="其他">📦 其他</option>
+    <select id="shopCity">
+      <option value="">选择城市</option>
+      <option>马德里</option>
+      <option>巴塞罗那</option>
+      <option>瓦伦西亚</option>
+      <option>塞维利亚</option>
+      <option>萨拉曼卡</option>
+      <option>其他</option>
     </select>
-    <div class="form-actions">
-      <button class="cancel" onclick="closeMarketModal()">取消</button>
-      <button class="submit" onclick="submitMarket()">发布</button>
-    </div>
-  </div>
-</div>
 
-<div class="modal" id="treeholeModal">
-  <div class="modal-content">
-    <h3>🌳 发树洞</h3>
-    <textarea id="tContent" placeholder="想说什么都可以（匿名）..." style="height:140px;"></textarea>
-    <div class="form-actions">
-      <button class="cancel" onclick="closeTreeholeModal()">取消</button>
-      <button class="submit" onclick="submitTreehole()">发布</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="postModal">
-  <div class="modal-content">
-    <h3>🤝 发帖</h3>
-    <input type="text" id="pTitle" placeholder="标题 *">
-    <select id="pCategory">
-      <option value="其他">其他</option>
-      <option>租房</option>
-      <option>拼单</option>
-      <option>拼车</option>
-      <option>求助</option>
-      <option>经验分享</option>
+    <select id="shopCategory">
+      <option value="">选择类别</option>
+      <option>中餐</option>
+      <option>奶茶</option>
+      <option>咖啡</option>
+      <option>西餐</option>
+      <option>甜品</option>
+      <option>超市</option>
+      <option>其他</option>
     </select>
-    <textarea id="pContent" placeholder="内容 *" style="height:120px;"></textarea>
+
+    <textarea id="shopDesc" placeholder="推荐理由 / 避雷原因"></textarea>
+
+    <div class="radio-row">
+      <label><input type="radio" name="rec" value="recommend" checked><span>👍 推荐</span></label>
+      <label><input type="radio" name="rec" value="avoid"><span>👎 避雷</span></label>
+    </div>
+
+    <div class="pick-hint">
+      📍 <b>怎么定位？</b><br>
+      1. 直接输入地址（例：Av. Complutense, Madrid）→ 点「🔍 搜索地址」<br>
+      2. 或粘贴坐标（例：40.4200, -3.7050）<br>
+      3. 或点「🎯 在地图上选点」
+    </div>
+
+    <input type="text" id="addrInput" placeholder="输入地址，例：Av. Complutense, Madrid" style="margin-bottom:10px;">
+    <button type="button" onclick="resolveAddress()" id="resolveBtn"
+      style="width:100%;padding:10px;border-radius:10px;border:1px solid rgba(160,216,179,0.3);background:rgba(160,216,179,0.1);color:#a0d8b3;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:10px;font-family:inherit;">
+      🔍 搜索地址
+    </button>
+
+    <button type="button" onclick="enterPickMode()" id="pickBtn"
+      style="width:100%;padding:12px;border-radius:12px;border:1px dashed rgba(160,216,179,0.4);background:rgba(160,216,179,0.08);color:#a0d8b3;font-size:14px;cursor:pointer;margin-bottom:10px;font-family:inherit;">
+      🎯 在地图上选点
+    </button>
+
+    <div class="coord-row">
+      <input type="text" id="latInput" placeholder="纬度" readonly>
+      <input type="text" id="lngInput" placeholder="经度" readonly>
+    </div>
+
     <div class="form-actions">
-      <button class="cancel" onclick="closePostModal()">取消</button>
-      <button class="submit" onclick="submitPost()">发布</button>
+      <button class="cancel" onclick="togglePublish()">取消</button>
+      <button class="submit" onclick="submitShop()">发布</button>
     </div>
   </div>
-</div>
 
-<div class="modal" id="threadModal">
-  <div class="modal-content">
-    <h3 id="threadTitle">💬 评论</h3>
-    <div id="threadBody"><div class="empty-tip">加载中...</div></div>
-    <div class="form-actions" style="margin-top:16px;">
-      <button class="cancel" onclick="closeThreadModal()">关闭</button>
-    </div>
-  </div>
-</div>
+  <div id="shopList"><div class="empty-state">加载中...</div></div>
 
-<div id="replyComposer">
-  <div class="composer-to" id="composerTo"></div>
-  <div class="composer-row">
-    <button class="cancel-btn" onclick="closeComposer()">取消</button>
-    <input type="text" id="composerInput" placeholder="写点什么...">
-    <button class="send-btn" onclick="submitComposer()">发送</button>
+  <div class="tip-box">
+    💡 点卡片上的「💬 评论」展开评论区，任何人都能评论和回复。<br>
+    点「🧭 导航」直接打开 Google Maps。
   </div>
+
 </div>
 
 <script>
   var el = function(id) { return document.getElementById(id); };
-  var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
-
-  var currentContext = null;
-  var currentParentReplyId = null;
-  var currentReplyToName = '';
-
-  var expandedParents = {};
-  var COLLAPSE_LIMIT = 2;
 
   function goBack() {
     if (navigator.vibrate) navigator.vibrate(10);
     if (window.history.length > 1) window.history.back();
-    else location.href = '/';
+    else location.href = '/?tab=tools';
+  }
+
+  var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
+
+  var CAT_ICON = {
+    '中餐': '🥢', '奶茶': '🧋', '咖啡': '☕', '西餐': '🍝',
+    '甜品': '🍰', '超市': '🛒', '其他': '🍽️'
+  };
+
+  var map = L.map('map').setView([40.4168, -3.7038], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 19
+  }).addTo(map);
+
+  var shops = [];
+  var markers = [];
+  var pickMode = false;
+  var pickMarker = null;
+
+  var filterMode = 'all';
+  var filterCity = '';
+  var filterCategory = '';
+
+  var expandedParents = {};   // 记录哪些父评论已展开
+  var COLLAPSE_LIMIT = 2;     // 默认显示几个子评论
+
+  async function loadShops() {
+    try {
+      var r = await fetch('/api/shops?t=' + Date.now());
+      var d = await r.json();
+      shops = Array.isArray(d) ? d : [];
+    } catch (e) {
+      shops = [];
+    }
+    renderShops();
+  }
+
+  function applyFilter(list) {
+    if (filterMode === 'all') return list;
+    if (filterMode === 'recommend') return list.filter(function(s) { return s.is_recommend; });
+    if (filterMode === 'avoid') return list.filter(function(s) { return !s.is_recommend; });
+    if (filterMode === 'mine') return list.filter(function(s) { return (s.user_email || '').toLowerCase() === MY_EMAIL; });
+    if (filterMode === 'city' && filterCity) return list.filter(function(s) { return s.city === filterCity; });
+    if (filterMode === 'category' && filterCategory) return list.filter(function(s) { return s.category === filterCategory; });
+    return list;
+  }
+
+  function setFilterMode(mode) {
+    if (navigator.vibrate) navigator.vibrate(8);
+    if (mode === 'city') {
+      var v = prompt('输入城市名（马德里 / 巴塞罗那 / 瓦伦西亚 / 塞维利亚 / 萨拉曼卡 / 其他）');
+      if (!v) return;
+      filterCity = v;
+    } else if (mode === 'category') {
+      var v2 = prompt('输入类别（中餐 / 奶茶 / 咖啡 / 西餐 / 甜品 / 超市 / 其他）');
+      if (!v2) return;
+      filterCategory = v2;
+    } else {
+      filterCity = '';
+      filterCategory = '';
+    }
+    filterMode = mode;
+    document.querySelectorAll('.filter-chip').forEach(function(c) {
+      c.classList.toggle('active', c.getAttribute('data-filter') === mode);
+    });
+    renderShops();
+  }
+
+  function renderShops() {
+    markers.forEach(function(m) { map.removeLayer(m); });
+    markers = [];
+
+    var visible = applyFilter(shops);
+
+    visible.forEach(function(s) {
+      var color = s.is_recommend ? '#2ecc71' : '#e74c3c';
+      var marker = L.circleMarker([s.latitude, s.longitude], {
+        radius: 9, color: color, fillColor: color, fillOpacity: 0.9, weight: 2
+      }).addTo(map);
+      marker.bindPopup(
+        '<div style="font-family: sans-serif; min-width: 180px;">' +
+        '<div style="font-weight: bold; font-size: 14px; margin-bottom: 4px;">' + escapeHtml(s.name) + '</div>' +
+        '<div style="font-size: 12px; color: #888; margin-bottom: 6px;">' + escapeHtml(s.city || '') + ' · ' + escapeHtml(s.category || '') + '</div>' +
+        '<div style="font-size: 13px; margin-bottom: 6px;">' + escapeHtml(s.description || '') + '</div>' +
+        '<div style="font-size: 12px; color: ' + (s.is_recommend ? '#2ecc71' : '#e74c3c') + ';">' +
+        (s.is_recommend ? '👍 推荐' : '👎 避雷') + '</div></div>'
+      );
+      markers.push(marker);
+    });
+
+    var list = el('shopList');
+    if (visible.length === 0) {
+      list.innerHTML = '<div class="empty-state">没有符合条件的店铺<br>试试切换筛选，或者自己推荐一家</div>';
+      return;
+    }
+
+    list.innerHTML = '';
+    visible.forEach(function(s) {
+      list.appendChild(buildShopCard(s));
+    });
+  }
+
+  function buildShopCard(s) {
+    var icon = CAT_ICON[s.category] || '🍽️';
+    var badgeClass = s.is_recommend ? 'rec' : 'avoid';
+    var badgeText = s.is_recommend ? '👍 推荐' : '👎 避雷';
+    var canDelete = (s.user_email || '').toLowerCase() === MY_EMAIL;
+
+    var card = document.createElement('div');
+    card.className = 'shop-card';
+
+    card.innerHTML =
+      '<div class="shop-header">' +
+        '<div class="shop-cat-icon">' + icon + '</div>' +
+        '<div class="shop-title-wrap">' +
+          '<div class="shop-name">' + escapeHtml(s.name) + '</div>' +
+          '<div class="shop-meta">' + escapeHtml(s.city || '') + ' · ' + escapeHtml(s.category || '') + '</div>' +
+        '</div>' +
+        '<div class="shop-badge ' + badgeClass + '">' + badgeText + '</div>' +
+      '</div>' +
+      (s.description ? '<div class="shop-desc">' + escapeHtml(s.description) + '</div>' : '') +
+      '<div class="shop-actions">' +
+        '<button class="btn-nav" data-nav="' + s.id + '">🧭 导航</button>' +
+        '<button class="btn-cmt" data-cmt="' + s.id + '">💬 评论</button>' +
+        (canDelete ? '<button class="btn-del" data-del="' + s.id + '">删除</button>' : '') +
+      '</div>' +
+      '<div class="comment-section" id="cmt-' + s.id + '">' +
+        '<div class="comment-input-row">' +
+          '<input type="text" id="cmt-input-' + s.id + '" placeholder="说点什么...">' +
+          '<button data-send="' + s.id + '">发送</button>' +
+        '</div>' +
+        '<div class="comment-list" id="cmt-list-' + s.id + '">' +
+          '<div class="no-comment">加载中...</div>' +
+        '</div>' +
+      '</div>';
+
+    card.addEventListener('click', function(e) {
+      if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') return;
+      if (navigator.vibrate) navigator.vibrate(10);
+      map.flyTo([s.latitude, s.longitude], 16, { duration: 0.8 });
+    });
+
+    return card;
+  }
+
+  document.addEventListener('click', function(e) {
+    var t = e.target;
+
+    if (t.matches('[data-nav]')) {
+      e.stopPropagation();
+      var id = t.getAttribute('data-nav');
+      var s = shops.filter(function(x) { return String(x.id) === String(id); })[0];
+      if (s) openGoogleMaps(s.latitude, s.longitude, s.name);
+      return;
+    }
+
+    if (t.matches('[data-cmt]')) {
+      e.stopPropagation();
+      var sid = t.getAttribute('data-cmt');
+      var sec = el('cmt-' + sid);
+      if (!sec) return;
+      var isOpen = sec.classList.toggle('open');
+      if (isOpen) loadComments(sid);
+      return;
+    }
+
+    if (t.matches('[data-del]')) {
+      e.stopPropagation();
+      deleteShop(t.getAttribute('data-del'));
+      return;
+    }
+
+    if (t.matches('[data-send]')) {
+      e.stopPropagation();
+      var sid2 = t.getAttribute('data-send');
+      sendComment(sid2, null);
+      return;
+    }
+
+    if (t.matches('[data-reply]')) {
+      e.stopPropagation();
+      var cid = t.getAttribute('data-reply');
+      var box = el('reply-' + cid);
+      if (box) box.classList.toggle('open');
+      return;
+    }
+
+    if (t.matches('[data-reply-send]')) {
+      e.stopPropagation();
+      var cid2 = t.getAttribute('data-reply-send');
+      var sid3 = t.getAttribute('data-shop');
+      sendComment(sid3, cid2);
+      return;
+    }
+
+    if (t.matches('[data-cdel]')) {
+      e.stopPropagation();
+      deleteComment(t.getAttribute('data-cdel'));
+      return;
+    }
+
+    // 展开/收起
+    if (t.matches('[data-toggle-more]')) {
+      e.stopPropagation();
+      var shopId = t.getAttribute('data-toggle-shop');
+      var parentId = t.getAttribute('data-toggle-parent');
+      var willExpand = t.getAttribute('data-will-expand') === '1';
+      expandedParents[parentId] = willExpand;
+      loadComments(shopId);
+      return;
+    }
+  });
+
+  async function loadComments(shopId) {
+    var listEl = el('cmt-list-' + shopId);
+    if (!listEl) return;
+    try {
+      var r = await fetch('/api/shops/comments?shop_id=' + shopId + '&t=' + Date.now());
+      var data = await r.json();
+      if (!Array.isArray(data)) data = [];
+      renderComments(shopId, data);
+    } catch (e) {
+      listEl.innerHTML = '<div class="no-comment">加载失败</div>';
+    }
+  }
+
+  // ============ 全部平铺 + 折叠 ============
+  function renderComments(shopId, all) {
+    var listEl = el('cmt-list-' + shopId);
+    if (!listEl) return;
+
+    if (all.length === 0) {
+      listEl.innerHTML = '<div class="no-comment">还没有评论，来抢沙发～</div>';
+      return;
+    }
+
+    var cmap = {};
+    all.forEach(function(c) {
+      cmap[c.id] = Object.assign({}, c, { children: [] });
+    });
+
+    var roots = [];
+    all.forEach(function(c) {
+      var node = cmap[c.id];
+      if (c.parent_id && cmap[c.parent_id]) {
+        cmap[c.parent_id].children.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    listEl.innerHTML = '';
+    roots.forEach(function(root) {
+      listEl.appendChild(buildCommentBlock(shopId, root));
+    });
+  }
+
+  function buildCommentBlock(shopId, root) {
+    var wrap = document.createElement('div');
+    wrap.className = 'comment-block';
+
+    // 顶层评论
+    wrap.appendChild(buildCommentItem(shopId, root));
+
+    // 子评论（全部平铺，一条竖线包住）
+    if (root.children && root.children.length > 0) {
+      var isExpanded = !!expandedParents[root.id];
+      var shown = isExpanded ? root.children : root.children.slice(0, COLLAPSE_LIMIT);
+      var hidden = root.children.length - shown.length;
+
+      var childrenWrap = document.createElement('div');
+      childrenWrap.className = 'comment-children';
+      shown.forEach(function(ch) {
+        childrenWrap.appendChild(buildCommentItem(shopId, ch));
+        // 孙评论也平铺
+        if (ch.children && ch.children.length > 0) {
+          var subWrap = document.createElement('div');
+          subWrap.className = 'comment-children';
+          ch.children.forEach(function(sub) {
+            subWrap.appendChild(buildCommentItem(shopId, sub));
+          });
+          childrenWrap.appendChild(subWrap);
+        }
+      });
+      wrap.appendChild(childrenWrap);
+
+      // 折叠/展开按钮
+      var btn = document.createElement('button');
+      btn.className = 'comment-toggle';
+      if (hidden > 0) {
+        btn.setAttribute('data-toggle-more', '1');
+        btn.setAttribute('data-toggle-shop', shopId);
+        btn.setAttribute('data-toggle-parent', root.id);
+        btn.setAttribute('data-will-expand', '1');
+        btn.textContent = '展开 ' + hidden + ' 条回复 ▾';
+        wrap.appendChild(btn);
+      } else if (isExpanded && root.children.length > COLLAPSE_LIMIT) {
+        btn.setAttribute('data-toggle-more', '1');
+        btn.setAttribute('data-toggle-shop', shopId);
+        btn.setAttribute('data-toggle-parent', root.id);
+        btn.setAttribute('data-will-expand', '0');
+        btn.textContent = '收起 ▴';
+        wrap.appendChild(btn);
+      }
+    }
+
+    return wrap;
+  }
+
+  // 渲染单条评论（平铺）
+  function buildCommentItem(shopId, c) {
+    var item = document.createElement('div');
+    item.className = 'comment-item';
+
+    var isMine = (c.user_email || '').toLowerCase() === MY_EMAIL;
+    var name = (c.user_email || '匿名').split('@')[0];
+    var avatarChar = name.charAt(0).toUpperCase();
+    var time = timeAgo(c.created_at);
+
+    var replyToHtml = '';
+    if (c.parent_id && c.parent_user_email) {
+      var parentName = (c.parent_user_email || '').split('@')[0];
+      replyToHtml = '<span class="c-reply-to">回复 <b>' + escapeHtml(parentName) + '</b></span>';
+    }
+
+    item.innerHTML =
+      '<div class="c-avatar">' + escapeHtml(avatarChar) + '</div>' +
+      '<div class="c-main">' +
+        '<div class="c-head">' +
+          '<span class="c-name">' + escapeHtml(name) + '</span>' +
+          replyToHtml +
+          '<span class="c-time">' + time + '</span>' +
+        '</div>' +
+        '<div class="c-content">' + escapeHtml(c.content) + '</div>' +
+        '<div class="c-actions">' +
+          '<button data-reply="' + c.id + '">回复</button>' +
+          (isMine ? '<button class="danger" data-cdel="' + c.id + '">删除</button>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="inline-reply" id="reply-' + c.id + '">' +
+        '<input type="text" id="reply-input-' + c.id + '" placeholder="回复 @' + escapeHtml(name) + '...">' +
+        '<button data-reply-send="' + c.id + '" data-shop="' + shopId + '">发送</button>' +
+      '</div>';
+
+    return item;
+  }
+
+  async function sendComment(shopId, parentId) {
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+    var inputEl = parentId ? el('reply-input-' + parentId) : el('cmt-input-' + shopId);
+    if (!inputEl) return;
+    var content = inputEl.value.trim();
+    if (!content) { alert('写点什么吧'); return; }
+
+    if (navigator.vibrate) navigator.vibrate(12);
+
+    try {
+      var r = await fetch('/api/shops/comments/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          shop_id: shopId,
+          email: MY_EMAIL,
+          content: content,
+          parent_id: parentId || null
+        })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      inputEl.value = '';
+      if (parentId) {
+        var box = el('reply-' + parentId);
+        if (box) box.classList.remove('open');
+      }
+      // 展开这个父评论，让用户看到自己刚发的
+      expandedParents[parentId || '__root__'] = true;
+      loadComments(shopId);
+    } catch (e) { alert('网络错误'); }
+  }
+
+  async function deleteComment(cid) {
+    if (!MY_EMAIL) { alert('请先登录'); return; }
+    if (!confirm('确定删除这条评论吗？')) return;
+    try {
+      await fetch('/api/shops/comments/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: cid, email: MY_EMAIL })
+      });
+      var all = document.querySelectorAll('.comment-section.open');
+      all.forEach(function(sec) {
+        var id = sec.id.replace('cmt-', '');
+        loadComments(id);
+      });
+    } catch (e) { alert('网络错误'); }
+  }
+
+  function openGoogleMaps(lat, lng, name) {
+    var url = 'https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng + '&travelmode=walking';
+    window.open(url, '_blank');
+  }
+
+  async function deleteShop(id) {
+    if (!MY_EMAIL) { alert('请先登录'); return; }
+    if (!confirm('确定删除这家店吗？')) return;
+    try {
+      var r = await fetch('/api/shops/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id, email: MY_EMAIL })
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      await loadShops();
+    } catch (e) { alert('网络错误'); }
+  }
+
+  function findNearby() {
+    if (!navigator.geolocation) { alert('你的浏览器不支持定位'); return; }
+    if (navigator.vibrate) navigator.vibrate(10);
+    el('nearbyBtn').textContent = '📍 定位中...';
+
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      var myLat = pos.coords.latitude;
+      var myLng = pos.coords.longitude;
+      el('nearbyBtn').textContent = '📍 我附近';
+
+      shops.sort(function(a, b) {
+        return distance(myLat, myLng, a.latitude, a.longitude) -
+               distance(myLat, myLng, b.latitude, b.longitude);
+      });
+
+      map.flyTo([myLat, myLng], 14, { duration: 0.8 });
+      L.circleMarker([myLat, myLng], {
+        radius: 8, color: '#a0d8b3', fillColor: '#a0d8b3',
+        fillOpacity: 1, weight: 3
+      }).addTo(map).bindPopup('📍 你在这里').openPopup();
+
+      renderShops();
+    }, function() {
+      el('nearbyBtn').textContent = '📍 我附近';
+      alert('定位失败，请允许浏览器访问位置');
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  }
+
+  function distance(lat1, lng1, lat2, lng2) {
+    var R = 6371;
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function togglePublish() {
+    if (navigator.vibrate) navigator.vibrate(10);
+    el('publishForm').classList.toggle('show');
+    if (!el('publishForm').classList.contains('show')) exitPickMode();
+  }
+
+  async function resolveAddress() {
+    var addr = el('addrInput').value.trim();
+    if (!addr) { alert('请输入地址'); return; }
+
+    var parts = addr.split(/[,\s]+/).filter(function(p) { return p.length > 0; });
+    if (parts.length >= 2) {
+      var lat = parseFloat(parts[0]);
+      var lng = parseFloat(parts[1]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        el('latInput').value = lat.toFixed(6);
+        el('lngInput').value = lng.toFixed(6);
+        if (pickMarker) map.removeLayer(pickMarker);
+        pickMarker = L.marker([lat, lng]).addTo(map);
+        map.flyTo([lat, lng], 16, { duration: 0.8 });
+        if (navigator.vibrate) navigator.vibrate(15);
+        return;
+      }
+    }
+
+    el('resolveBtn').textContent = '🔍 搜索中...';
+    el('resolveBtn').disabled = true;
+    try {
+      var r = await fetch('/api/geocode?address=' + encodeURIComponent(addr));
+      var d = await r.json();
+      if (d.error) {
+        alert('找不到这个地址，试试写得更完整，或改用地图选点。');
+        return;
+      }
+      el('latInput').value = parseFloat(d.lat).toFixed(6);
+      el('lngInput').value = parseFloat(d.lng).toFixed(6);
+      if (pickMarker) map.removeLayer(pickMarker);
+      pickMarker = L.marker([d.lat, d.lng]).addTo(map);
+      map.flyTo([d.lat, d.lng], 16, { duration: 0.8 });
+      if (navigator.vibrate) navigator.vibrate(15);
+    } catch (e) {
+      alert('查询失败，请检查网络');
+    } finally {
+      el('resolveBtn').textContent = '🔍 搜索地址';
+      el('resolveBtn').disabled = false;
+    }
+  }
+
+  function enterPickMode() {
+    pickMode = true;
+    el('pickBtn').textContent = '🎯 点击地图选点中...（再点取消）';
+    el('pickBtn').style.background = 'rgba(160,216,179,0.2)';
+    map.getContainer().style.cursor = 'crosshair';
+    map.off('click', onMapClick);
+    map.on('click', onMapClick);
+  }
+
+  function exitPickMode() {
+    pickMode = false;
+    el('pickBtn').textContent = '🎯 在地图上选点';
+    el('pickBtn').style.background = 'rgba(160,216,179,0.08)';
+    map.getContainer().style.cursor = '';
+    map.off('click', onMapClick);
+  }
+
+  function onMapClick(e) {
+    if (!pickMode) return;
+    var lat = e.latlng.lat.toFixed(6);
+    var lng = e.latlng.lng.toFixed(6);
+    el('latInput').value = lat;
+    el('lngInput').value = lng;
+    if (pickMarker) map.removeLayer(pickMarker);
+    pickMarker = L.marker([lat, lng]).addTo(map);
+    if (navigator.vibrate) navigator.vibrate(15);
+    exitPickMode();
+  }
+
+  async function submitShop() {
+    var name = el('shopName').value.trim();
+    var address = el('shopAddress').value.trim();
+    var city = el('shopCity').value;
+    var category = el('shopCategory').value;
+    var desc = el('shopDesc').value.trim();
+    var rec = document.querySelector('input[name="rec"]:checked').value === 'recommend';
+    var lat = el('latInput').value.trim();
+    var lng = el('lngInput').value.trim();
+
+    if (!name) { alert('请填店名'); return; }
+    if (!lat || !lng) { alert('请先搜索地址，或在地图上选点'); return; }
+    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
+
+    if (navigator.vibrate) navigator.vibrate(15);
+
+    try {
+      var r = await fetch('/api/shops/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: MY_EMAIL, name: name, address: address,
+          city: city, category: category, description: desc,
+          latitude: parseFloat(lat), longitude: parseFloat(lng),
+          is_recommend: rec
+        })
+      });
+      var d = await r.json();
+      if (d.error) { alert('发布失败：' + d.error); return; }
+
+      el('shopName').value = '';
+      el('shopAddress').value = '';
+      el('shopCity').value = '';
+      el('shopCategory').value = '';
+      el('shopDesc').value = '';
+      el('latInput').value = '';
+      el('lngInput').value = '';
+      el('addrInput').value = '';
+      if (pickMarker) { map.removeLayer(pickMarker); pickMarker = null; }
+
+      togglePublish();
+      await loadShops();
+      map.flyTo([parseFloat(lat), parseFloat(lng)], 16, { duration: 0.8 });
+    } catch (e) {
+      alert('网络错误，请稍后重试');
+    }
   }
 
   function escapeHtml(s) {
-    return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    return String(s || '')
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   function timeAgo(dateStr) {
@@ -499,590 +1048,13 @@
     return d.toLocaleDateString('zh-CN');
   }
 
-  function nickName(email) {
-    if (currentContext && currentContext.type === 'treehole') {
-      return '匿名';
-    }
-    return escapeHtml((email || '').split('@')[0] || '匿名');
-  }
-
-  function parsePrice(raw) {
-    if (!raw) return { currency: 'EUR', amount: '' };
-    var s = String(raw);
-    if (s.includes(':')) {
-      var parts = s.split(':');
-      return { currency: parts[0] === 'CNY' ? 'CNY' : 'EUR', amount: parts[1] };
-    }
-    return { currency: 'EUR', amount: s };
-  }
-  function formatPrice(raw) {
-    var p = parsePrice(raw);
-    if (!p.amount) return '';
-    var sym = p.currency === 'CNY' ? '¥' : '€';
-    return sym + p.amount;
-  }
-
-  var uploadedImages = [];
-
-  async function onMarketImagesSelected(event) {
-    var files = Array.from(event.target.files || []);
-    for (var i = 0; i < files.length; i++) {
-      var f = files[i];
-      if (!f.type.startsWith('image/')) continue;
-      if (f.size > 10 * 1024 * 1024) { alert(f.name + ' 超过 10MB，已跳过'); continue; }
-      var fd = new FormData();
-      fd.append('file', f);
-      fd.append('bucket', 'market');
-      try {
-        var resp = await fetch('/api/upload', { method: 'POST', body: fd });
-        var data = await resp.json();
-        if (data.url) {
-          uploadedImages.push(data.url);
-          renderUploadPreview();
-        } else if (data.error) {
-          alert('上传失败：' + data.error);
-        }
-      } catch (e) { alert('网络错误'); }
-    }
-    event.target.value = '';
-  }
-
-  function renderUploadPreview() {
-    var box = el('uploadPreview');
-    box.innerHTML = '';
-    uploadedImages.forEach(function(u, i) {
-      var div = document.createElement('div');
-      div.className = 'upload-thumb';
-      div.innerHTML = '<img src="' + u + '" alt=""><span class="rm" onclick="removeUpload(' + i + ')">×</span>';
-      box.appendChild(div);
+  document.querySelectorAll('.filter-chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      setFilterMode(chip.getAttribute('data-filter'));
     });
-  }
+  });
 
-  function removeUpload(i) {
-    if (navigator.vibrate) navigator.vibrate(8);
-    uploadedImages.splice(i, 1);
-    renderUploadPreview();
-  }
-
-  function switchHub(tab, btn) {
-    if (navigator.vibrate) navigator.vibrate(8);
-    document.querySelectorAll('.hub-panel').forEach(p => p.classList.remove('active'));
-    el('panel-' + tab).classList.add('active');
-    document.querySelectorAll('.hub-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    if (tab === 'market') loadMarket();
-    else if (tab === 'treehole') loadTreehole();
-    else if (tab === 'community') loadCommunity();
-  }
-
-  (function autoSwitchFromHash() {
-    var hash = (location.hash || '').replace('#', '');
-    if (hash === 'market' || hash === 'treehole' || hash === 'community') {
-      var btn = document.querySelector('.hub-tab[data-tab="' + hash + '"]');
-      if (btn) switchHub(hash, btn);
-    }
-  })();
-
-  // ==================== 二手市场 ====================
-  async function loadMarket() {
-    var list = el('marketList');
-    list.innerHTML = '<div class="empty-tip">加载中...</div>';
-    try {
-      var r = await fetch('/api/market');
-      var data = await r.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        list.innerHTML = '<div class="empty-tip">还没有人发布</div>';
-        return;
-      }
-      list.innerHTML = '';
-      data.forEach(function(item) {
-        var card = document.createElement('div');
-        card.className = 'item-card';
-        var isMine = (item.user_email || '').toLowerCase() === MY_EMAIL;
-        var isSell = (item.type || 'sell') === 'sell';
-        var badge = isSell
-          ? '<span class="market-badge sell">💰 出售</span>'
-          : '<span class="market-badge want">🔍 求购</span>';
-        var priceText = formatPrice(item.price);
-
-        var urls = (item.image_url || '').split(',').filter(Boolean);
-        var imgsHtml = '';
-        if (urls.length) {
-          imgsHtml = '<div class="market-images">' + urls.map(function(u) {
-            return '<img src="' + escapeHtml(u) + '" onclick="window.open(\'' + escapeHtml(u) + '\',\'_blank\')" alt="">';
-          }).join('') + '</div>';
-        }
-
-        card.innerHTML =
-          '<div class="item-title">' + badge + escapeHtml(item.title) + '</div>' +
-          '<div class="item-meta">' +
-            (priceText ? '<span class="market-price">' + escapeHtml(priceText) + '</span>' : '') +
-            (item.category ? '<span>' + escapeHtml(item.category) + '</span>' : '') +
-            '<span style="margin-left:auto;">' + timeAgo(item.created_at) + '</span>' +
-          '</div>' +
-          imgsHtml +
-          (item.description ? '<div class="item-body">' + escapeHtml(item.description) + '</div>' : '') +
-          (item.contact ? '<div class="market-contact">📞 ' + escapeHtml(item.contact) + '</div>' : '') +
-          '<div class="item-actions">' +
-            '<button class="btn-reply" onclick="openMarketThread(' + item.id + ')">💬 询问 / 回复</button>' +
-            (isMine ? '<button class="btn-del" onclick="deleteMarket(' + item.id + ')">删除</button>' : '') +
-          '</div>';
-
-        list.appendChild(card);
-      });
-    } catch (e) {
-      list.innerHTML = '<div class="empty-tip">加载失败</div>';
-    }
-  }
-
-  function openAddMarket() {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
-    el('mTitle').value = '';
-    el('mPrice').value = '';
-    el('mContact').value = '';
-    el('mDesc').value = '';
-    el('mCurrency').value = 'EUR';
-    el('mCategory').value = '';
-    uploadedImages = [];
-    renderUploadPreview();
-    document.querySelector('input[name="mType"][value="sell"]').checked = true;
-    el('marketModal').classList.add('show');
-  }
-  function closeMarketModal() { el('marketModal').classList.remove('show'); }
-
-  async function submitMarket() {
-    var title = el('mTitle').value.trim();
-    var contact = el('mContact').value.trim();
-    if (!title || !contact) { alert('名称和联系方式不能为空'); return; }
-    var priceRaw = el('mPrice').value.trim();
-    var currency = el('mCurrency').value;
-    var priceStored = priceRaw ? (currency + ':' + priceRaw) : '';
-    var type = document.querySelector('input[name="mType"]:checked').value;
-
-    try {
-      var r = await fetch('/api/market/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: MY_EMAIL,
-          title: title,
-          price: priceStored,
-          contact: contact,
-          description: el('mDesc').value.trim(),
-          image_url: uploadedImages.join(','),
-          category: el('mCategory').value,
-          type: type
-        })
-      });
-      var d = await r.json();
-      if (d.error) { alert(d.error); return; }
-      closeMarketModal();
-      loadMarket();
-    } catch (e) { alert('网络错误'); }
-  }
-
-  async function deleteMarket(id) {
-    if (!confirm('确定删除？')) return;
-    try {
-      await fetch('/api/market/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id, email: MY_EMAIL })
-      });
-      loadMarket();
-    } catch (e) {}
-  }
-
-  function openMarketThread(id) {
-    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
-    openThread('market', id, '🛒 询问 / 回复');
-  }
-
-  // ==================== 树洞 ====================
-  async function loadTreehole() {
-    var list = el('treeholeList');
-    list.innerHTML = '<div class="empty-tip">加载中...</div>';
-    try {
-      var r = await fetch('/api/treeholes');
-      var data = await r.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        list.innerHTML = '<div class="empty-tip">还没有树洞，发第一个吧</div>';
-        return;
-      }
-      list.innerHTML = '';
-      data.forEach(function(t) {
-        var card = document.createElement('div');
-        card.className = 'item-card';
-        card.innerHTML =
-          '<div class="item-body">' + escapeHtml(t.content) + '</div>' +
-          '<div class="item-meta" style="margin-top:10px;">' +
-            '<span>🌳 匿名</span>' +
-            '<span style="margin-left:auto;">' + timeAgo(t.created_at) + '</span>' +
-          '</div>' +
-          '<div class="item-actions">' +
-            '<button class="btn-reply" onclick="openTreeholeThread(' + t.id + ')">💬 查看评论</button>' +
-          '</div>';
-        list.appendChild(card);
-      });
-    } catch (e) {
-      list.innerHTML = '<div class="empty-tip">加载失败</div>';
-    }
-  }
-
-  function openAddTreehole() {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
-    el('tContent').value = '';
-    el('treeholeModal').classList.add('show');
-  }
-  function closeTreeholeModal() { el('treeholeModal').classList.remove('show'); }
-
-  async function submitTreehole() {
-    var content = el('tContent').value.trim();
-    if (!content) { alert('写点什么吧'); return; }
-    try {
-      var r = await fetch('/api/treeholes/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: MY_EMAIL, content: content })
-      });
-      var d = await r.json();
-      if (d.error) { alert(d.error); return; }
-      closeTreeholeModal();
-      loadTreehole();
-    } catch (e) { alert('网络错误'); }
-  }
-
-  function openTreeholeThread(id) {
-    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
-    openThread('treehole', id, '🌳 树洞评论');
-  }
-
-  // ==================== 互助社区 ====================
-  async function loadCommunity() {
-    var list = el('communityList');
-    list.innerHTML = '<div class="empty-tip">加载中...</div>';
-    try {
-      var r = await fetch('/api/community/posts');
-      var data = await r.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        list.innerHTML = '<div class="empty-tip">还没有帖子，发第一个吧</div>';
-        return;
-      }
-      list.innerHTML = '';
-      data.forEach(function(p) {
-        var card = document.createElement('div');
-        card.className = 'item-card';
-        var isMine = (p.user_email || '').toLowerCase() === MY_EMAIL;
-        card.innerHTML =
-          '<div class="item-title">' + escapeHtml(p.title) + '</div>' +
-          '<div class="item-meta">' +
-            '<span>' + escapeHtml(p.category || '其他') + '</span>' +
-            '<span>💬 ' + (p.replies_count || 0) + '</span>' +
-            '<span style="margin-left:auto;">' + timeAgo(p.created_at) + '</span>' +
-          '</div>' +
-          '<div class="item-body">' + escapeHtml(p.content) + '</div>' +
-          '<div class="item-actions">' +
-            '<button class="btn-reply" onclick="openPostThread(' + p.id + ')">💬 查看评论</button>' +
-            (isMine ? '<button class="btn-del" onclick="deletePost(' + p.id + ')">删除</button>' : '') +
-          '</div>';
-        list.appendChild(card);
-      });
-    } catch (e) {
-      list.innerHTML = '<div class="empty-tip">加载失败</div>';
-    }
-  }
-
-  function openAddPost() {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
-    el('pTitle').value = '';
-    el('pContent').value = '';
-    el('postModal').classList.add('show');
-  }
-  function closePostModal() { el('postModal').classList.remove('show'); }
-
-  async function submitPost() {
-    var title = el('pTitle').value.trim();
-    var content = el('pContent').value.trim();
-    if (!title || !content) { alert('标题和内容都要填'); return; }
-    try {
-      var r = await fetch('/api/community/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: MY_EMAIL,
-          title: title,
-          content: content,
-          category: el('pCategory').value
-        })
-      });
-      var d = await r.json();
-      if (d.error) { alert(d.error); return; }
-      closePostModal();
-      loadCommunity();
-    } catch (e) { alert('网络错误'); }
-  }
-
-  async function deletePost(id) {
-    if (!confirm('确定删除这个帖子吗？')) return;
-    try {
-      await fetch('/api/community/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id, email: MY_EMAIL })
-      });
-      loadCommunity();
-    } catch (e) {}
-  }
-
-  function openPostThread(id) {
-    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
-    openThread('post', id, '🤝 帖子评论');
-  }
-
-  // ==================== 楼中楼核心 ====================
-
-  function openThread(type, id, title) {
-    currentContext = { type: type, id: id };
-    currentParentReplyId = null;
-    currentReplyToName = '';
-    el('threadTitle').textContent = title;
-    el('threadModal').classList.add('show');
-    el('threadBody').innerHTML = '<div class="empty-tip">加载中...</div>';
-    loadThreadReplies();
-  }
-
-  function closeThreadModal() {
-    el('threadModal').classList.remove('show');
-    closeComposer();
-    currentContext = null;
-    currentParentReplyId = null;
-  }
-
-  async function loadThreadReplies() {
-    if (!currentContext) return;
-    var type = currentContext.type;
-    var id = currentContext.id;
-    var url = '';
-
-    if (type === 'market') {
-      url = '/api/market/comments?item_id=' + id;
-    } else if (type === 'treehole') {
-      url = '/api/treeholes/replies?id=' + id;
-    } else if (type === 'post') {
-      url = '/api/community/replies?post_id=' + id;
-    }
-
-    try {
-      var r = await fetch(url);
-      var data = await r.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        el('threadBody').innerHTML =
-          '<div class="empty-tip">还没有评论，说点什么吧</div>' +
-          renderComposerButton();
-        return;
-      }
-      var tree = buildReplyTree(data);
-      el('threadBody').innerHTML =
-        '<div class="reply-thread">' + renderReplyTree(tree, 0) + '</div>' +
-        renderComposerButton();
-    } catch (e) {
-      el('threadBody').innerHTML = '<div class="empty-tip">加载失败</div>';
-    }
-  }
-
-  function buildReplyTree(list) {
-    var map = {};
-    var roots = [];
-    list.forEach(function(item) {
-      map[item.id] = Object.assign({}, item, { children: [] });
-    });
-    list.forEach(function(item) {
-      var node = map[item.id];
-      if (item.parent_id && map[item.parent_id]) {
-        map[item.parent_id].children.push(node);
-      } else {
-        roots.push(node);
-      }
-    });
-    return roots;
-  }
-
-  function renderReplyTree(nodes, depth) {
-    if (!nodes || nodes.length === 0) return '';
-    var html = '';
-    nodes.forEach(function(root) {
-      html += renderCommentBlock(root);
-    });
-    return html;
-  }
-
-  function renderCommentBlock(root) {
-    var html = renderSingleNode(root);
-
-    if (root.children && root.children.length > 0) {
-      var isExpanded = !!expandedParents[root.id];
-      var shown = isExpanded ? root.children : root.children.slice(0, COLLAPSE_LIMIT);
-      var hidden = root.children.length - shown.length;
-
-      html += '<div class="reply-children">';
-      shown.forEach(function(ch) {
-        html += renderSingleNode(ch);
-        if (ch.children && ch.children.length > 0) {
-          html += '<div class="reply-children">';
-          ch.children.forEach(function(sub) {
-            html += renderSingleNode(sub);
-          });
-          html += '</div>';
-        }
-      });
-      html += '</div>';
-
-      if (hidden > 0) {
-        html += '<button class="comment-toggle" onclick="expandParent(' + root.id + ')">展开 ' + hidden + ' 条回复 ▾</button>';
-      } else if (isExpanded && root.children.length > COLLAPSE_LIMIT) {
-        html += '<button class="comment-toggle" onclick="collapseParent(' + root.id + ')">收起 ▴</button>';
-      }
-    }
-
-    return html;
-  }
-
-  function expandParent(id) {
-    expandedParents[id] = true;
-    loadThreadReplies();
-  }
-  function collapseParent(id) {
-    expandedParents[id] = false;
-    loadThreadReplies();
-  }
-
-  function renderSingleNode(node) {
-    var targetEmail = node.user_email || '';
-    var nick = nickName(targetEmail);
-    var parentNick = '';
-    if (node.parent_id && node.parent_user_email) {
-      parentNick = nickName(node.parent_user_email);
-    }
-    var isMine = (node.user_email || '').toLowerCase() === MY_EMAIL;
-    var avatarChar = nick.charAt(0).toUpperCase() || '匿';
-
-    return '<div class="reply-node" data-id="' + node.id + '">' +
-      '<div class="r-avatar">' + escapeHtml(avatarChar) + '</div>' +
-      '<div class="r-main">' +
-        '<div class="r-head">' +
-          '<span class="r-name">' + nick + '</span>' +
-          (parentNick ? '<span class="r-reply-to">回复 <b>' + parentNick + '</b></span>' : '') +
-          '<span class="r-time">' + timeAgo(node.created_at) + '</span>' +
-        '</div>' +
-        '<div class="r-content">' + escapeHtml(node.content) + '</div>' +
-        '<div class="r-foot">' +
-          '<button class="r-btn" onclick="startReply(' + node.id + ', \'' + escapeHtml(nick).replace(/'/g, "\\'") + '\')">回复</button>' +
-          (isMine ? '<button class="r-btn danger" onclick="deleteReply(' + node.id + ')">删除</button>' : '') +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }
-
-  function renderComposerButton() {
-    return '<div style="text-align:center;margin-top:14px;">' +
-      '<button class="btn-reply" style="padding:10px 20px;border-radius:12px;border:none;background:rgba(160,216,179,0.15);color:#a0d8b3;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;" onclick="startReply(null, \'\')">💬 写评论</button>' +
-      '</div>';
-  }
-
-  function startReply(parentId, parentNick) {
-    if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
-    currentParentReplyId = parentId || null;
-    currentReplyToName = parentNick || '';
-    if (parentId) {
-      var displayNick = (currentContext && currentContext.type === 'treehole') ? '匿名' : parentNick;
-      el('composerTo').innerHTML = '回复 <b>' + escapeHtml(displayNick) + '</b>';
-    } else {
-      el('composerTo').innerHTML = '发表评论';
-    }
-    el('composerInput').value = '';
-    el('replyComposer').classList.add('show');
-    setTimeout(function() { el('composerInput').focus(); }, 100);
-  }
-
-  function closeComposer() {
-    el('replyComposer').classList.remove('show');
-    el('composerInput').value = '';
-    currentParentReplyId = null;
-    currentReplyToName = '';
-  }
-
-  async function submitComposer() {
-    var content = el('composerInput').value.trim();
-    if (!content) { alert('写点什么吧'); return; }
-    if (!currentContext) { closeComposer(); return; }
-
-    if (navigator.vibrate) navigator.vibrate(12);
-
-    var payload = {
-      email: MY_EMAIL,
-      content: content,
-      parent_id: currentParentReplyId || null
-    };
-
-    var url = '';
-    if (currentContext.type === 'market') {
-      url = '/api/market/comments/add';
-      payload.item_id = currentContext.id;
-    } else if (currentContext.type === 'treehole') {
-      url = '/api/treeholes/reply';
-      payload.treehole_id = currentContext.id;
-    } else if (currentContext.type === 'post') {
-      url = '/api/community/reply';
-      payload.post_id = currentContext.id;
-    }
-
-    try {
-      var r = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      var d = await r.json();
-      if (d.error) { alert(d.error); return; }
-      el('composerInput').value = '';
-      // 展开这个父评论，让用户看到自己刚发的
-      if (currentParentReplyId) expandedParents[currentParentReplyId] = true;
-      closeComposer();
-      loadThreadReplies();
-    } catch (e) { alert('网络错误'); }
-  }
-
-  async function deleteReply(replyId) {
-    if (!MY_EMAIL) return;
-    if (!confirm('确定删除这条评论吗？')) return;
-    if (!currentContext) return;
-
-    var url = '';
-    var payload = { id: replyId, email: MY_EMAIL };
-    if (currentContext.type === 'market') {
-      url = '/api/market/comments/delete';
-    } else if (currentContext.type === 'treehole') {
-      url = '/api/treeholes/reply/delete';
-    } else if (currentContext.type === 'post') {
-      url = '/api/community/reply/delete';
-    }
-
-    try {
-      var r = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      var d = await r.json();
-      if (d.error) { alert(d.error); return; }
-      loadThreadReplies();
-    } catch (e) { alert('网络错误'); }
-  }
-
-  loadMarket();
+  loadShops();
 </script>
 <script src="/static/js/auth-gate.js"></script>
 </body>
