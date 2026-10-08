@@ -446,8 +446,23 @@
 </div>
 
 <div class="modal" id="threadModal">
-  <div class="modal-content">
-    <h3 id="threadTitle">💬 评论</h3>
+  <div class="modal-content" style="position:relative;">
+    <button onclick="closeThreadModal()" style="
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: #ccc;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1;
+    ">✕</button>
+    <h3 id="threadTitle" style="padding-right: 44px;">💬 评论</h3>
     <div id="threadBody"><div class="empty-tip">加载中...</div></div>
     <div class="form-actions" style="margin-top:16px;">
       <button class="cancel" onclick="closeThreadModal()">关闭</button>

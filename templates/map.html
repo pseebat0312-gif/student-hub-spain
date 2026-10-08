@@ -470,8 +470,8 @@
   var filterCity = '';
   var filterCategory = '';
 
-  var expandedParents = {};   // 记录哪些父评论已展开
-  var COLLAPSE_LIMIT = 2;     // 默认显示几个子评论
+  var expandedParents = {};
+  var COLLAPSE_LIMIT = 2;
 
   async function loadShops() {
     try {
@@ -648,7 +648,6 @@
       return;
     }
 
-    // 展开/收起
     if (t.matches('[data-toggle-more]')) {
       e.stopPropagation();
       var shopId = t.getAttribute('data-toggle-shop');
@@ -673,7 +672,7 @@
     }
   }
 
-  // ============ 全部平铺 + 折叠 ============
+  // ============ 扁平 + 折叠 ============
   function renderComments(shopId, all) {
     var listEl = el('cmt-list-' + shopId);
     if (!listEl) return;
@@ -708,10 +707,8 @@
     var wrap = document.createElement('div');
     wrap.className = 'comment-block';
 
-    // 顶层评论
     wrap.appendChild(buildCommentItem(shopId, root));
 
-    // 子评论（全部平铺，一条竖线包住）
     if (root.children && root.children.length > 0) {
       var isExpanded = !!expandedParents[root.id];
       var shown = isExpanded ? root.children : root.children.slice(0, COLLAPSE_LIMIT);
@@ -721,19 +718,15 @@
       childrenWrap.className = 'comment-children';
       shown.forEach(function(ch) {
         childrenWrap.appendChild(buildCommentItem(shopId, ch));
-        // 孙评论也平铺
+        // 孙评论也拉平（同一层级）
         if (ch.children && ch.children.length > 0) {
-          var subWrap = document.createElement('div');
-          subWrap.className = 'comment-children';
           ch.children.forEach(function(sub) {
-            subWrap.appendChild(buildCommentItem(shopId, sub));
+            childrenWrap.appendChild(buildCommentItem(shopId, sub));
           });
-          childrenWrap.appendChild(subWrap);
         }
       });
       wrap.appendChild(childrenWrap);
 
-      // 折叠/展开按钮
       var btn = document.createElement('button');
       btn.className = 'comment-toggle';
       if (hidden > 0) {
@@ -756,7 +749,6 @@
     return wrap;
   }
 
-  // 渲染单条评论（平铺）
   function buildCommentItem(shopId, c) {
     var item = document.createElement('div');
     item.className = 'comment-item';
@@ -821,7 +813,6 @@
         var box = el('reply-' + parentId);
         if (box) box.classList.remove('open');
       }
-      // 展开这个父评论，让用户看到自己刚发的
       expandedParents[parentId || '__root__'] = true;
       loadComments(shopId);
     } catch (e) { alert('网络错误'); }
