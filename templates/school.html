@@ -17,16 +17,19 @@
   }
 
   #topBar {
-    padding: 16px 20px;
+    padding: 16px 20px 12px;
     display: flex; align-items: center; gap: 12px;
     background: linear-gradient(to bottom, #0f0c29, transparent);
     position: sticky; top: 0; z-index: 10;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
   }
   #topBar .back-btn {
     background: rgba(255,255,255,0.08);
     border: none; color: #fff; font-size: 18px;
     width: 36px; height: 36px; border-radius: 50%;
     cursor: pointer; transition: 0.1s;
+    flex-shrink: 0;
   }
   #topBar .back-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.15); }
   #topBar .title { font-size: 16px; font-weight: bold; color: #a0d8b3; flex: 1; }
@@ -37,10 +40,68 @@
     font-size: 12px; font-weight: 700;
     padding: 8px 14px; border-radius: 999px;
     cursor: pointer; transition: 0.15s;
+    flex-shrink: 0;
   }
   #topBar .switch-btn:active { transform: scale(0.95); }
 
-  #content { padding: 10px 20px 40px; }
+  #content { padding: 4px 20px 40px; }
+
+  /* 搜索框 */
+  .search-box {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+  }
+  .search-box .s-icon { font-size: 16px; color: rgba(255,255,255,0.4); flex-shrink: 0; }
+  .search-box input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: #fff; font-size: 15px; font-family: inherit; min-width: 0;
+  }
+  .search-box input::placeholder { color: rgba(255,255,255,0.35); }
+  .search-box .s-clear {
+    background: rgba(255,255,255,0.1);
+    border: none; color: #ccc;
+    width: 22px; height: 22px; border-radius: 50%;
+    font-size: 11px; cursor: pointer;
+    display: none;
+    align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .search-box .s-clear.show { display: flex; }
+
+  /* 搜索结果列表 */
+  .search-results {
+    display: none;
+    margin-bottom: 18px;
+  }
+  .search-results.show { display: block; }
+  .search-result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .search-result-item:active {
+    transform: scale(0.98);
+    background: rgba(160,216,179,0.12);
+    border-color: rgba(160,216,179,0.3);
+  }
+  .search-result-item .sr-emoji { font-size: 22px; flex-shrink: 0; }
+  .search-result-item .sr-info { flex: 1; min-width: 0; }
+  .search-result-item .sr-name {
+    font-size: 14px; font-weight: 700; color: #fff;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .search-result-item .sr-city {
+    font-size: 11px; color: rgba(255,255,255,0.45); margin-top: 2px;
+  }
 
   /* 学校头部卡片 */
   .school-header {
@@ -71,24 +132,6 @@
     font-size: 12px; color: #888;
     margin-top: 4px;
   }
-
-  /* 学校选择器（初始 / 切换时显示） */
-  .school-select {
-    width: 100%;
-    padding: 16px 20px;
-    border-radius: 16px;
-    border: 2px solid rgba(255,255,255,0.1);
-    background: rgba(255,255,255,0.06);
-    color: #fff; font-size: 16px;
-    outline: none; appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a0d8b3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 16px center;
-    background-size: 18px;
-    margin-bottom: 24px;
-    cursor: pointer;
-  }
-  .school-select option { background: #1a1a2e; color: #fff; }
 
   /* 分类标题 */
   .section-title {
@@ -158,6 +201,8 @@
     padding: 24px 20px 34px;
     box-sizing: border-box;
     animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    max-height: 70vh;
+    overflow-y: auto;
   }
   .picker-sheet .picker-title {
     font-size: 18px; font-weight: 800;
@@ -210,45 +255,49 @@
 
 <div id="content">
 
-  <!-- 如果还没选学校，显示下拉 -->
-  <select class="school-select" id="schoolSelect" onchange="onSchoolChange(this.value)">
-    <option value="">📌 请选择你的学校</option>
-    <option value="UCM">马德里康普顿斯大学 (UCM)</option>
-    <option value="UAM">马德里自治大学 (UAM)</option>
-    <option value="UB">巴塞罗那大学 (UB)</option>
-    <option value="UPF">庞培法布拉大学 (UPF)</option>
-    <option value="other">其他（即将添加）</option>
-  </select>
+  <!-- 搜索框 -->
+  <div class="search-box">
+    <span class="s-icon">🔍</span>
+    <input type="text" id="schoolSearchInput" placeholder="搜索学校名称或城市，如：马德里、巴塞罗那" oninput="onSchoolSearch(this)">
+    <button class="s-clear" id="schoolSearchClear" onclick="clearSchoolSearch()">✕</button>
+  </div>
+
+  <!-- 搜索结果 -->
+  <div class="search-results" id="searchResults"></div>
 
   <!-- 学校内容 -->
   <div id="schoolContent">
-    <div class="empty-state">👆 请从上方选择你的学校</div>
+    <div class="empty-state">🔍 搜索你的学校，或从下方列表选择</div>
   </div>
 
 </div>
 
-<!-- 换学校弹窗 -->
+<!-- 换学校弹窗（快速切换常用的） -->
 <div class="picker-overlay" id="pickerOverlay" onclick="closeSchoolPicker(event)">
   <div class="picker-sheet" onclick="event.stopPropagation()">
-    <div class="picker-title">选择学校</div>
+    <div class="picker-title">快速切换</div>
     <button class="picker-option" data-key="UCM" onclick="pickSchool('UCM')">
-      <span>🏛️</span><span>马德里康普顿斯大学 (UCM)</span>
+      <span>🏛️</span><span>马德里康普顿斯大学</span>
       <span class="check" style="display:none;">✓</span>
     </button>
     <button class="picker-option" data-key="UAM" onclick="pickSchool('UAM')">
-      <span>🏛️</span><span>马德里自治大学 (UAM)</span>
+      <span>🏛️</span><span>马德里自治大学</span>
       <span class="check" style="display:none;">✓</span>
     </button>
     <button class="picker-option" data-key="UB" onclick="pickSchool('UB')">
-      <span>🏛️</span><span>巴塞罗那大学 (UB)</span>
+      <span>🏛️</span><span>巴塞罗那大学</span>
       <span class="check" style="display:none;">✓</span>
     </button>
     <button class="picker-option" data-key="UPF" onclick="pickSchool('UPF')">
-      <span>🏛️</span><span>庞培法布拉大学 (UPF)</span>
+      <span>🏛️</span><span>庞培法布拉大学</span>
       <span class="check" style="display:none;">✓</span>
     </button>
-    <button class="picker-option" data-key="other" onclick="pickSchool('other')">
-      <span>✨</span><span>其他学校</span>
+    <button class="picker-option" data-key="UPC" onclick="pickSchool('UPC')">
+      <span>🏛️</span><span>加泰罗尼亚理工大学</span>
+      <span class="check" style="display:none;">✓</span>
+    </button>
+    <button class="picker-option" data-key="URJC" onclick="pickSchool('URJC')">
+      <span>🏛️</span><span>胡安卡洛斯国王大学</span>
       <span class="check" style="display:none;">✓</span>
     </button>
     <button class="picker-cancel" onclick="closeSchoolPicker()">取消</button>
@@ -266,57 +315,381 @@
     }
   }
 
-  // ===== 学校数据 =====
+  // ===== 学校数据（覆盖西班牙主要大学） =====
   const schoolData = {
+    // ---- 马德里 ----
     UCM: {
-      name: "马德里康普顿斯大学 (UCM)",
-      emoji: "🏛️",
+      name: "马德里康普顿斯大学 (UCM)", emoji: "🏛️", city: "马德里",
       sections: [
-        {
-          title: "📚 学术与教学",
-          links: [
-            { emoji: "🏛️", name: "UCM 官网", url: "https://www.ucm.es" },
-            { emoji: "💻", name: "Campus Virtual", url: "https://www.ucm.es/campusvirtual" },
-            { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" },
-            { emoji: "🛠️", name: "学校免费工具", url: "https://ssii.ucm.es/" }
-          ]
-        },
-        {
-          title: "🏃 体育与生活",
-          links: [
-            { emoji: "⚽", name: "体育主页", url: "https://www.ucm.es/deportesucm" },
-            { emoji: "🏟️", name: "设施预约", url: "https://deportes.ucm.es/" },
-            { emoji: "📖", name: "图书馆服务", url: "https://biblioteca.ucm.es/" }
-          ]
-        }
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UCM 官网", url: "https://www.ucm.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://www.ucm.es/campusvirtual" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" },
+          { emoji: "📖", name: "图书馆", url: "https://biblioteca.ucm.es/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.ucm.es/deportesucm" },
+          { emoji: "🏟️", name: "设施预约", url: "https://deportes.ucm.es/" },
+          { emoji: "🛠️", name: "学校免费工具", url: "https://ssii.ucm.es/" }
+        ]}
       ],
-      tip: "💡 提示：在校外访问 Campus Virtual 时，需要先连接学校的 VPN。"
+      tip: "💡 在校外访问 Campus Virtual 时，需要先连接学校的 VPN。"
     },
-    UAM: { name: "马德里自治大学 (UAM)", emoji: "🏛️", sections: [], tip: "UAM 的入口正在整理中，敬请期待！" },
-    UB: { name: "巴塞罗那大学 (UB)", emoji: "🏛️", sections: [], tip: "UB 的入口正在整理中，敬请期待！" },
-    UPF: { name: "庞培法布拉大学 (UPF)", emoji: "🏛️", sections: [], tip: "UPF 的入口正在整理中，敬请期待！" },
-    other: { name: "其他学校", emoji: "✨", sections: [], tip: "如果你希望添加你的学校，欢迎在留言板留言联系作者！" }
+    UAM: {
+      name: "马德里自治大学 (UAM)", emoji: "🏛️", city: "马德里",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UAM 官网", url: "https://www.uam.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://www.uam.es/campusvirtual" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.uam.es/deportes" },
+          { emoji: "📖", name: "图书馆", url: "https://biblioteca.uam.es/" }
+        ]}
+      ],
+      tip: "💡 UAM 的 Cantoblanco 校区很大，建议提前查好教学楼位置。"
+    },
+    UC3M: {
+      name: "马德里卡洛斯三世大学 (UC3M)", emoji: "🏛️", city: "马德里",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UC3M 官网", url: "https://www.uc3m.es" },
+          { emoji: "💻", name: "Aula Global", url: "https://aulaglobal.uc3m.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.uc3m.es/deporte" },
+          { emoji: "📖", name: "图书馆", url: "https://www.uc3m.es/biblioteca" }
+        ]}
+      ],
+      tip: "💡 UC3M 有多个校区（Getafe、Leganés、Colmenarejo），注意看课程在哪个校区。"
+    },
+    UPM: {
+      name: "马德里理工大学 (UPM)", emoji: "🏛️", city: "马德里",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UPM 官网", url: "https://www.upm.es" },
+          { emoji: "💻", name: "Moodle UPM", url: "https://moodle.upm.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.upm.es/deportes" },
+          { emoji: "📖", name: "图书馆", url: "https://www.upm.es/biblioteca" }
+        ]}
+      ],
+      tip: "💡 理工大学，各学院分布在马德里不同位置，入学前确认好校区。"
+    },
+    URJC: {
+      name: "胡安卡洛斯国王大学 (URJC)", emoji: "🏛️", city: "马德里",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "URJC 官网", url: "https://www.urjc.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://www.urjc.es/campus-virtual" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.urjc.es/deportes" },
+          { emoji: "📖", name: "图书馆", url: "https://www.urjc.es/biblioteca" }
+        ]}
+      ],
+      tip: "💡 URJC 有多个校区，Mostoles、Alcorcon、Vicalvaro 等，注意区分。"
+    },
+    UAH: {
+      name: "阿尔卡拉大学 (UAH)", emoji: "🏛️", city: "阿尔卡拉",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UAH 官网", url: "https://www.uah.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://campusvirtual.uah.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.uah.es/deportes" },
+          { emoji: "📖", name: "图书馆", url: "https://www.uah.es/biblioteca" }
+        ]}
+      ],
+      tip: "💡 阿尔卡拉是塞万提斯故乡，校区在历史城区，环境很美。"
+    },
+
+    // ---- 巴塞罗那 / 加泰罗尼亚 ----
+    UB: {
+      name: "巴塞罗那大学 (UB)", emoji: "🏛️", city: "巴塞罗那",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UB 官网", url: "https://www.ub.edu" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://campusvirtual.ub.edu" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.ub.edu/esports" },
+          { emoji: "📖", name: "CRAI 图书馆", url: "https://crai.ub.edu" },
+          { emoji: "📱", name: "SocUB App", url: "https://www.ub.edu/app-socub/" }
+        ]}
+      ],
+      tip: "💡 校外访问 Campus Virtual 需要连接学校 VPN。"
+    },
+    UAB: {
+      name: "巴塞罗那自治大学 (UAB)", emoji: "🏛️", city: "巴塞罗那",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UAB 官网", url: "https://www.uab.cat" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://www.uab.cat/campusvirtual" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.uab.cat/esports" },
+          { emoji: "📖", name: "图书馆", url: "https://www.uab.cat/biblioteques" }
+        ]}
+      ],
+      tip: "💡 UAB 在 Bellaterra，距离巴塞罗那市区约 40 分钟火车。"
+    },
+    UPF: {
+      name: "庞培法布拉大学 (UPF)", emoji: "🏛️", city: "巴塞罗那",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UPF 官网", url: "https://www.upf.edu" },
+          { emoji: "💻", name: "Aula Global", url: "https://aulaglobal.upf.edu" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.upf.edu/esports" },
+          { emoji: "📖", name: "图书馆", url: "https://www.upf.edu/biblioteca" }
+        ]}
+      ],
+      tip: "💡 UPF 校区分布在巴塞罗那市区，Ciutadella 校区是主校区。"
+    },
+    UPC: {
+      name: "加泰罗尼亚理工大学 (UPC)", emoji: "🏛️", city: "巴塞罗那",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UPC 官网", url: "https://www.upc.edu" },
+          { emoji: "💻", name: "Atenea", url: "https://atenea.upc.edu" },
+          { emoji: "📧", name: "学生邮箱", url: "https://correu.upc.edu" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.upc.edu/esports" },
+          { emoji: "📖", name: "图书馆", url: "https://bibliotecnica.upc.edu" },
+          { emoji: "🛠️", name: "e-Secretaria", url: "https://esecretaria.upc.edu" }
+        ]}
+      ],
+      tip: "💡 UPC 的校区很多，ETSEIB、Camins 等都在不同楼，看好课表地址。"
+    },
+    UDG: {
+      name: "赫罗纳大学 (UdG)", emoji: "🏛️", city: "赫罗纳",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UdG 官网", url: "https://www.udg.edu" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://moodle.udg.edu" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]}
+      ],
+      tip: "💡 UdG 有多个校区，Barri Vell 和 Montilivi 是主要校区。"
+    },
+
+    // ---- 瓦伦西亚 ----
+    UV: {
+      name: "瓦伦西亚大学 (UV)", emoji: "🏛️", city: "瓦伦西亚",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UV 官网", url: "https://www.uv.es" },
+          { emoji: "💻", name: "Aula Virtual", url: "https://aulavirtual.uv.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.uv.es/esports" },
+          { emoji: "📖", name: "图书馆", url: "https://www.uv.es/biblioteca" }
+        ]}
+      ],
+      tip: "💡 UV 的 Blasco Ibañez 校区是主校区，在瓦伦西亚市区。"
+    },
+    UPV: {
+      name: "瓦伦西亚理工大学 (UPV)", emoji: "🏛️", city: "瓦伦西亚",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UPV 官网", url: "https://www.upv.es" },
+          { emoji: "💻", name: "PoliformaT", url: "https://poliformat.upv.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://www.upv.es/deportes" },
+          { emoji: "📖", name: "图书馆", url: "https://www.upv.es/biblioteca" }
+        ]}
+      ],
+      tip: "💡 UPV 和 UV 是两个不同的学校，不要搞混。"
+    },
+
+    // ---- 安达卢西亚 ----
+    US: {
+      name: "塞维利亚大学 (US)", emoji: "🏛️", city: "塞维利亚",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "US 官网", url: "https://www.us.es" },
+          { emoji: "💻", name: "Enseñanza Virtual", url: "https://ev.us.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://buzonweb.us.es" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "📖", name: "图书馆", url: "http://bib.us.es" },
+          { emoji: "🛠️", name: "Sevius 秘书处", url: "https://sevius.us.es" }
+        ]}
+      ],
+      tip: "💡 塞维利亚大学有多个校区，Reina Mercedes 是主校区。"
+    },
+    UGR: {
+      name: "格拉纳达大学 (UGR)", emoji: "🏛️", city: "格拉纳达",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UGR 官网", url: "https://www.ugr.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://campusvirtual.ugr.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]},
+        { title: "🏃 体育与生活", links: [
+          { emoji: "⚽", name: "体育主页", url: "https://deportes.ugr.es" },
+          { emoji: "📖", name: "图书馆", url: "https://biblioteca.ugr.es" }
+        ]}
+      ],
+      tip: "💡 格拉纳达大学历史悠久，校区分散在市区，注意看课表地址。"
+    },
+
+    // ---- 其他主要城市 ----
+    USC: {
+      name: "圣地亚哥德孔波斯特拉大学 (USC)", emoji: "🏛️", city: "圣地亚哥",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "USC 官网", url: "https://www.usc.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://campusvirtual.usc.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]}
+      ],
+      tip: "💡 USC 在圣地亚哥德孔波斯特拉，是朝圣之路的终点城市。"
+    },
+    UPV_EHU: {
+      name: "巴斯克大学 (UPV/EHU)", emoji: "🏛️", city: "毕尔巴鄂",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UPV/EHU 官网", url: "https://www.ehu.eus" },
+          { emoji: "💻", name: "eGela", url: "https://egela.ehu.eus" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]}
+      ],
+      tip: "💡 巴斯克大学有三个校区：Bilbao、San Sebastián、Vitoria-Gasteiz。"
+    },
+    UNIZAR: {
+      name: "萨拉戈萨大学 (UNIZAR)", emoji: "🏛️", city: "萨拉戈萨",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "UNIZAR 官网", url: "https://www.unizar.es" },
+          { emoji: "💻", name: "Anillo Digital", url: "https://add.unizar.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]}
+      ],
+      tip: "💡 UNIZAR 的学术日历和考试时间在官网上可以查。"
+    },
+    ULL: {
+      name: "拉古纳大学 (ULL)", emoji: "🏛️", city: "特内里费",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "ULL 官网", url: "https://www.ull.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://campusvirtual.ull.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]}
+      ],
+      tip: "💡 拉古纳大学在加那利群岛的特内里费岛。"
+    },
+    ULPGC: {
+      name: "拉斯帕尔马斯大学 (ULPGC)", emoji: "🏛️", city: "大加那利",
+      sections: [
+        { title: "📚 学术与教学", links: [
+          { emoji: "🏛️", name: "ULPGC 官网", url: "https://www.ulpgc.es" },
+          { emoji: "💻", name: "Campus Virtual", url: "https://campusvirtual.ulpgc.es" },
+          { emoji: "📧", name: "学生邮箱", url: "https://mail.google.com/" }
+        ]}
+      ],
+      tip: "💡 拉斯帕尔马斯大学在加那利群岛的大加那利岛。"
+    }
   };
 
+  // ===== 搜索用的扁平列表 =====
+  const schoolList = Object.keys(schoolData).map(key => ({
+    key: key,
+    name: schoolData[key].name,
+    city: schoolData[key].city || '',
+    emoji: schoolData[key].emoji
+  }));
+
   const STORAGE_KEY = 'selected_school';
+
+  // ===== 搜索 =====
+  function onSchoolSearch(input) {
+    const q = (input.value || '').trim().toLowerCase();
+    const clearBtn = document.getElementById('schoolSearchClear');
+    const resultsBox = document.getElementById('searchResults');
+    const contentBox = document.getElementById('schoolContent');
+
+    if (q) clearBtn.classList.add('show');
+    else clearBtn.classList.remove('show');
+
+    if (!q) {
+      resultsBox.classList.remove('show');
+      resultsBox.innerHTML = '';
+      contentBox.style.display = 'block';
+      return;
+    }
+
+    const matched = schoolList.filter(s =>
+      s.name.toLowerCase().includes(q) || s.city.toLowerCase().includes(q)
+    );
+
+    contentBox.style.display = 'none';
+    resultsBox.classList.add('show');
+    resultsBox.innerHTML = '';
+
+    if (matched.length === 0) {
+      resultsBox.innerHTML = '<div class="empty-state">没有找到相关学校</div>';
+      return;
+    }
+
+    matched.forEach(s => {
+      const div = document.createElement('div');
+      div.className = 'search-result-item';
+      div.innerHTML = `
+        <span class="sr-emoji">${s.emoji}</span>
+        <div class="sr-info">
+          <div class="sr-name">${s.name}</div>
+          ${s.city ? `<div class="sr-city">📍 ${s.city}</div>` : ''}
+        </div>
+      `;
+      div.onclick = () => {
+        if (navigator.vibrate) navigator.vibrate(10);
+        localStorage.setItem(STORAGE_KEY, s.key);
+        renderSchool(s.key);
+        clearSchoolSearch();
+      };
+      resultsBox.appendChild(div);
+    });
+  }
+
+  function clearSchoolSearch() {
+    const input = document.getElementById('schoolSearchInput');
+    input.value = '';
+    document.getElementById('schoolSearchClear').classList.remove('show');
+    document.getElementById('searchResults').classList.remove('show');
+    document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('schoolContent').style.display = 'block';
+  }
 
   // ===== 渲染 =====
   function renderSchool(key) {
     const container = document.getElementById('schoolContent');
-    const selectEl = document.getElementById('schoolSelect');
     const switchBtn = document.getElementById('switchBtn');
 
     if (!key || !schoolData[key]) {
-      container.innerHTML = '<div class="empty-state">👆 请从上方选择你的学校</div>';
-      selectEl.style.display = 'block';
+      container.innerHTML = '<div class="empty-state">🔍 搜索你的学校，或从下方列表选择</div>';
       switchBtn.style.display = 'none';
       return;
     }
 
     const data = schoolData[key];
 
-    // 隐藏下拉，显示换学校按钮
-    selectEl.style.display = 'none';
     switchBtn.style.display = 'block';
 
     // 更新弹窗里的勾
@@ -336,20 +709,20 @@
         <div class="logo">${data.emoji}</div>
         <div class="info">
           <div class="name">${data.name}</div>
-          <div class="sub">快速入口 · 一键直达</div>
+          <div class="sub">${data.city ? '📍 ' + data.city + ' · ' : ''}快速入口 · 一键直达</div>
         </div>
       </div>
     `;
 
     if (data.sections.length === 0) {
-      html += `<div class="empty-state">${data.tip}</div>`;
+      html += `<div class="empty-state">${data.tip || '信息整理中'}</div>`;
     } else {
       data.sections.forEach(sec => {
         html += `<div class="section-title">${sec.title}</div>`;
         html += `<div class="link-grid">`;
         sec.links.forEach(link => {
           html += `
-            <a class="link-btn" href="${link.url}" target="_blank">
+            <a class="link-btn" href="${link.url}" target="_blank" rel="noopener">
               <span class="emoji">${link.emoji}</span>
               <span>${link.name}</span>
             </a>
@@ -363,19 +736,7 @@
     container.innerHTML = html;
   }
 
-  // ===== 下拉选择（首次） =====
-  function onSchoolChange(key) {
-    if (navigator.vibrate) navigator.vibrate(10);
-    if (!key) {
-      localStorage.removeItem(STORAGE_KEY);
-      renderSchool('');
-      return;
-    }
-    localStorage.setItem(STORAGE_KEY, key);
-    renderSchool(key);
-  }
-
-  // ===== 弹窗选择（切换） =====
+  // ===== 弹窗选择 =====
   function openSchoolPicker() {
     if (navigator.vibrate) navigator.vibrate(10);
     document.getElementById('pickerOverlay').classList.add('show');

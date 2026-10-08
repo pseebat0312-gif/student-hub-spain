@@ -41,6 +41,9 @@ html, body {
     cursor: pointer; flex-shrink: 0;
   }
 #topBar .icon-btn:active { transform: scale(0.95); }
+#topBar .icon-btn.pink {
+    background: rgba(244,184,208,0.15); color: #f4b8d0;
+  }
 
 #menuContainer {
     display: flex;
@@ -48,7 +51,7 @@ html, body {
   }
 
 #categorySide {
-    width: 88px; background: rgba(0,0,0,0.3);
+    width: 96px; background: rgba(0,0,0,0.3);
     flex-shrink: 0; padding: 10px 0;
     position: sticky; top: 56px;
     align-self: flex-start;
@@ -57,9 +60,10 @@ html, body {
   }
 #categorySide::-webkit-scrollbar { display: none; }
 .cat-item {
-    padding: 14px 6px; text-align: center;
+    padding: 12px 6px; text-align: center;
     font-size: 12px; color: #aaa; cursor: pointer;
     position: relative; transition: 0.15s; line-height: 1.4;
+    user-select: none;
   }
 .cat-item:active { background: rgba(255,255,255,0.05); }
 .cat-item.active {
@@ -72,6 +76,31 @@ html, body {
     background: #a0d8b3; border-radius: 0 3px 3px 0;
   }
 .cat-item .cat-count { display: block; font-size: 10px; color: #666; margin-top: 2px; }
+.cat-item .cat-del {
+    position: absolute; top: 4px; right: 4px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(255,107,107,0.15); color: #ff6b6b;
+    border: none; font-size: 10px; line-height: 1;
+    cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+  }
+.cat-item:hover .cat-del { display: flex; }
+.cat-item .cat-edit {
+    position: absolute; top: 4px; right: 22px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: rgba(160,216,179,0.15); color: #a0d8b3;
+    border: none; font-size: 9px; line-height: 1;
+    cursor: pointer; display: none;
+    align-items: center; justify-content: center;
+  }
+.cat-item:hover .cat-edit { display: flex; }
+
+.cat-item.add-cat {
+    color: #a0d8b3; font-weight: bold;
+    border-top: 1px dashed rgba(255,255,255,0.1);
+    margin-top: 6px; padding-top: 14px;
+  }
+.cat-item.add-cat .plus { font-size: 18px; display: block; line-height: 1; margin-bottom: 2px; }
 
 #dishArea {
     flex: 1;
@@ -305,7 +334,6 @@ html, body {
   }
 #exportOverlay.show { display: flex; }
 
-/* ===== 加粗醒目的长按提示 ===== */
 #exportOverlay .export-tip {
     color: #fff;
     font-size: 20px;
@@ -366,9 +394,7 @@ html, body {
     background: rgba(255,255,255,0.1); color: #ccc;
   }
 
-/* ============================================================
-   ===== 导出卡片：所有颜色写死，不继承系统主题 =====
-   ============================================================ */
+/* ===== 导出卡片 ===== */
 #exportStage {
     position: fixed; left: -99999px; top: 0;
     width: 720px;
@@ -377,14 +403,11 @@ html, body {
   .export-card {
     width: 720px;
     padding: 48px 40px;
-    /* 写死深色背景 */
     background: #1a1a2e;
     background-image: linear-gradient(160deg, #1a1a2e 0%, #0f0c29 100%);
-    /* 写死文字颜色 */
     color: #ffffff;
     font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
     position: relative; overflow: hidden;
-    /* 关闭 iOS 浅色模式对表单/文字的自动反色 */
     color-scheme: only light;
     -webkit-text-fill-color: #ffffff;
   }
@@ -467,6 +490,59 @@ html, body {
     color: #e8a8b8; font-weight: 700;
     -webkit-text-fill-color: #e8a8b8;
   }
+
+/* ===== 分类编辑弹层 ===== */
+#catEditOverlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 9999;
+    justify-content: center; align-items: flex-end;
+  }
+#catEditOverlay.show { display: flex; }
+#catEditOverlay .ce-sheet {
+    width: 100%; max-width: 500px;
+    background: #1a1a2e;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 30px;
+  }
+#catEditOverlay h3 {
+    font-size: 16px; color: #a0d8b3;
+    margin-bottom: 16px; text-align: center;
+  }
+#catEditOverlay input {
+    width: 100%; padding: 12px 14px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.06);
+    color: #fff; font-size: 14px; outline: none;
+    margin-bottom: 10px; font-family: inherit;
+  }
+#catEditOverlay .emoji-row {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+#catEditOverlay .emoji-option {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 2px solid transparent;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; cursor: pointer;
+  }
+#catEditOverlay .emoji-option.active {
+    border-color: #a0d8b3;
+    background: rgba(160,216,179,0.15);
+  }
+#catEditOverlay .ce-actions {
+    display: flex; gap: 10px; margin-top: 8px;
+  }
+#catEditOverlay .ce-actions button {
+    flex: 1; padding: 14px; border-radius: 12px; border: none;
+    font-size: 15px; font-weight: bold; cursor: pointer;
+  }
+#catEditOverlay .ce-actions .cancel {
+    background: rgba(255,255,255,0.1); color: #ccc;
+  }
+#catEditOverlay .ce-actions .submit {
+    background: linear-gradient(135deg, #4a7c59, #2d5a3d); color: #fff;
+  }
 </style>
 </head>
 <body>
@@ -476,7 +552,7 @@ html, body {
 <div class="title" id="menuTitle">🍽️ 独家菜单</div>
 <button class="icon-btn" id="btnExport">📤 导出</button>
 <button class="icon-btn" id="btnShare">👥 共享</button>
-<button class="icon-btn" id="btnHistory">📜 历史</button>
+<button class="icon-btn pink" id="btnHistory">📜 历史</button>
 </div>
 
 <div id="menuContainer">
@@ -500,14 +576,7 @@ html, body {
 <h3>➕ 添加新菜</h3>
 <input type="text" id="dishName" placeholder="菜名 *（比如：番茄炒蛋）">
 <textarea id="dishNote" placeholder="简介（可选，比如：微辣、不放葱）"></textarea>
-<select id="dishCat">
-<option value="主食">🍚 主食</option>
-<option value="蔬菜">🥬 蔬菜</option>
-<option value="肉类">🍖 肉类</option>
-<option value="甜品">🍰 甜品</option>
-<option value="汤">🍲 汤</option>
-<option value="其他">✨ 其他</option>
-</select>
+<select id="dishCat"></select>
 <input type="file" id="dishImage" accept="image/*" style="display:none">
 <button type="button" class="upload-img-btn" id="btnUploadImg">📷 从手机选择图片</button>
 <div id="imgPreview" style="margin-bottom:10px;"></div>
@@ -532,8 +601,9 @@ html, body {
 <div class="modal-content">
 <h3>📜 历史订单</h3>
 <div id="historyList"></div>
-<div class="modal-btns" style="margin-top:16px;">
-<button class="close-btn" id="btnCloseHistory">关闭</button>
+<div style="display:flex; gap:10px; margin-top:16px;">
+<button class="close-btn" id="btnExportHistory" style="flex:1; padding:14px; border-radius:14px; border:none; background: linear-gradient(135deg, #f4b8d0, #e08aa8); color:#1a0f14; font-size:14px; font-weight:bold; cursor:pointer;">📤 导出历史</button>
+<button class="close-btn" id="btnCloseHistory" style="flex:1; padding:14px; border-radius:14px; border:none; background: rgba(255,255,255,0.1); color:#fff; font-size:14px; font-weight:bold; cursor:pointer;">关闭</button>
 </div>
 </div>
 </div>
@@ -554,6 +624,20 @@ html, body {
 </div>
 </div>
 
+<!-- 分类编辑弹层 -->
+<div id="catEditOverlay">
+  <div class="ce-sheet">
+    <h3 id="ceTitle">编辑分类</h3>
+    <input type="text" id="ceName" placeholder="分类名称（比如：早餐）" maxlength="6">
+    <div style="font-size:12px; color:#888; margin-bottom:8px;">选择图标</div>
+    <div class="emoji-row" id="ceEmojiRow"></div>
+    <div class="ce-actions">
+      <button class="cancel" id="ceCancel">取消</button>
+      <button class="submit" id="ceSubmit">保存</button>
+    </div>
+  </div>
+</div>
+
 <div id="vipLockOverlay">
   <div class="lock-card">
     <div class="lock-icon">👑</div>
@@ -567,7 +651,6 @@ html, body {
   </div>
 </div>
 
-<!-- 导出预览层（加粗长按提示，去掉下载按钮） -->
 <div id="exportOverlay">
   <div class="export-tip"><span class="finger">👇</span> 长按图片保存 <span class="finger">👇</span></div>
   <div class="export-sub">按住图片不动 → 选择「存储到照片」</div>
@@ -584,18 +667,55 @@ html, body {
 <script>
 var el = function(id) { return document.getElementById(id); };
 
-var categories = ['主食', '蔬菜', '肉类', '甜品', '汤', '其他'];
-var catEmoji = { '主食': '🍚', '蔬菜': '🥬', '肉类': '🍖', '甜品': '🍰', '汤': '🍲', '其他': '✨' };
+// ========== 默认分类（可被自定义覆盖） ==========
+var DEFAULT_CATS = [
+  { name: '主食', emoji: '🍚' },
+  { name: '蔬菜', emoji: '🥬' },
+  { name: '肉类', emoji: '🍖' },
+  { name: '甜品', emoji: '🍰' },
+  { name: '汤',   emoji: '🍲' },
+  { name: '其他', emoji: '✨' }
+];
+
+// 用户可以自定义的分类（存 localStorage）
+var CAT_KEY = 'menu_categories_v1';
+
+function loadCategories() {
+  try {
+    var raw = localStorage.getItem(CAT_KEY);
+    if (!raw) return DEFAULT_CATS.slice();
+    var arr = JSON.parse(raw);
+    if (!Array.isArray(arr) || arr.length === 0) return DEFAULT_CATS.slice();
+    return arr;
+  } catch (e) {
+    return DEFAULT_CATS.slice();
+  }
+}
+
+function saveCategories(arr) {
+  try { localStorage.setItem(CAT_KEY, JSON.stringify(arr)); } catch (e) {}
+}
+
+var categories = loadCategories();
+var catEmoji = {};
+categories.forEach(function(c) { catEmoji[c.name] = c.emoji; });
 
 var dishes = [];
-var currentCat = '主食';
+var currentCat = categories[0] ? categories[0].name : '主食';
 var cart = [];
 var localImageData = '';
 var shareList = [];
 var menuOwner = '';
+var allOrders = [];   // 缓存的历史订单，用于导出
 
 var MY_EMAIL = (localStorage.getItem('user_email') || 'anonymous').toLowerCase();
 
+// ========== 分类编辑状态 ==========
+var editingCatIndex = -1;  // -1 表示新增
+var editingCatEmoji = '🍽️';
+var EMOJI_POOL = ['🍚','🥬','🍖','🍰','🍲','✨','🍜','🍕','🍔','🍟','🥗','🍣','🍱','🥘','🍛','🍝','🥩','🍗','🍤','🧋','🍵','☕','🍺','🍷','🥤','🍎','🍊','🍇','🍓','🥐','🥖','🍞','🧁','🍩','🍪','🍫','🍬','🍭'];
+
+// ========== 共享 & VIP ==========
 async function loadShares() {
   if (!MY_EMAIL || MY_EMAIL === 'anonymous') {
     shareList = [];
@@ -654,6 +774,7 @@ function closeVipLock() {
   el('vipLockOverlay').classList.remove('show');
 }
 
+// ========== 加载菜单 ==========
 function loadDishes() {
   return fetch('/api/dishes?owner=' + encodeURIComponent(getMenuOwner()))
     .then(function(resp) { return resp.json(); })
@@ -669,22 +790,48 @@ function loadDishes() {
     });
 }
 
+// ========== 渲染侧边栏 ==========
 function renderCategories() {
   var side = el('categorySide');
   side.innerHTML = '';
-  categories.forEach(function(cat) {
-    var count = dishes.filter(function(d) { return d.category === cat; }).length;
+  categories.forEach(function(cat, idx) {
+    var catName = cat.name;
+    var catIcon = cat.emoji;
+    var count = dishes.filter(function(d) { return d.category === catName; }).length;
     var div = document.createElement('div');
-    div.className = 'cat-item' + (cat === currentCat ? ' active' : '');
-    div.innerHTML = catEmoji[cat] + '<br>' + cat + '<span class="cat-count">' + count + ' 道</span>';
-    div.addEventListener('click', function() {
+    div.className = 'cat-item' + (catName === currentCat ? ' active' : '');
+    div.innerHTML =
+      '<button class="cat-edit" data-idx="' + idx + '">✎</button>' +
+      '<button class="cat-del" data-idx="' + idx + '">✕</button>' +
+      catIcon + '<br>' + catName +
+      '<span class="cat-count">' + count + ' 道</span>';
+    div.addEventListener('click', function(e) {
+      if (e.target.classList.contains('cat-edit')) {
+        e.stopPropagation();
+        openCatEdit(idx);
+        return;
+      }
+      if (e.target.classList.contains('cat-del')) {
+        e.stopPropagation();
+        deleteCat(idx);
+        return;
+      }
       if (navigator.vibrate) navigator.vibrate(8);
-      currentCat = cat;
+      currentCat = catName;
       renderCategories();
       renderDishes();
     });
     side.appendChild(div);
   });
+
+  // 末尾的「+ 新增分类」按钮
+  var addBtn = document.createElement('div');
+  addBtn.className = 'cat-item add-cat';
+  addBtn.innerHTML = '<span class="plus">＋</span>新增';
+  addBtn.addEventListener('click', function() {
+    openCatEdit(-1);
+  });
+  side.appendChild(addBtn);
 }
 
 function renderDishes() {
@@ -707,7 +854,7 @@ function renderDishes() {
       '<div class="dish-info">' +
       '<div class="dish-name">' + dish.name + '</div>' +
       '<div class="dish-note">' + (dish.note || '') + '</div>' +
-      '<div class="dish-cat-tag">' + catEmoji[dish.category] + ' ' + dish.category + '</div>' +
+      '<div class="dish-cat-tag">' + (catEmoji[dish.category] || '🍽️') + ' ' + dish.category + '</div>' +
       '</div>';
 
     var addBtn = document.createElement('button');
@@ -726,6 +873,104 @@ function renderDishes() {
   });
 }
 
+// ========== 分类编辑 ==========
+function openCatEdit(idx) {
+  editingCatIndex = idx;
+  if (idx === -1) {
+    el('ceTitle').textContent = '新增分类';
+    el('ceName').value = '';
+    editingCatEmoji = '🍽️';
+  } else {
+    el('ceTitle').textContent = '编辑分类';
+    el('ceName').value = categories[idx].name;
+    editingCatEmoji = categories[idx].emoji;
+  }
+
+  // 渲染 emoji 选择
+  var row = el('ceEmojiRow');
+  row.innerHTML = '';
+  EMOJI_POOL.forEach(function(em) {
+    var d = document.createElement('div');
+    d.className = 'emoji-option' + (em === editingCatEmoji ? ' active' : '');
+    d.textContent = em;
+    d.addEventListener('click', function() {
+      editingCatEmoji = em;
+      row.querySelectorAll('.emoji-option').forEach(function(x) {
+        x.classList.toggle('active', x.textContent === em);
+      });
+    });
+    row.appendChild(d);
+  });
+
+  el('catEditOverlay').classList.add('show');
+}
+
+function closeCatEdit() {
+  el('catEditOverlay').classList.remove('show');
+}
+
+function submitCatEdit() {
+  var name = el('ceName').value.trim();
+  if (!name) { alert('请输入分类名称'); return; }
+
+  // 不能重名
+  var exists = categories.some(function(c, i) {
+    return c.name === name && i !== editingCatIndex;
+  });
+  if (exists) { alert('已经有这个分类了'); return; }
+
+  if (editingCatIndex === -1) {
+    categories.push({ name: name, emoji: editingCatEmoji });
+  } else {
+    var oldName = categories[editingCatIndex].name;
+    categories[editingCatIndex].name = name;
+    categories[editingCatIndex].emoji = editingCatEmoji;
+    // 更新该分类下所有菜的 category
+    dishes.forEach(function(d) {
+      if (d.category === oldName) d.category = name;
+    });
+    if (currentCat === oldName) currentCat = name;
+  }
+
+  catEmoji = {};
+  categories.forEach(function(c) { catEmoji[c.name] = c.emoji; });
+  saveCategories(categories);
+
+  closeCatEdit();
+  renderCategories();
+  renderDishes();
+}
+
+function deleteCat(idx) {
+  if (categories.length <= 1) {
+    alert('至少保留一个分类');
+    return;
+  }
+  var catName = categories[idx].name;
+  var count = dishes.filter(function(d) { return d.category === catName; }).length;
+  if (count > 0) {
+    if (!confirm('该分类下有 ' + count + ' 道菜，删除后这些菜会移动到「其他」。确定删除吗？')) return;
+    // 移到「其他」或第一个分类
+    var fallback = categories.find(function(c) { return c.name === '其他'; });
+    var target = fallback ? '其他' : categories[0].name;
+    dishes.forEach(function(d) {
+      if (d.category === catName) d.category = target;
+    });
+  } else {
+    if (!confirm('确定删除分类「' + catName + '」吗？')) return;
+  }
+
+  categories.splice(idx, 1);
+  catEmoji = {};
+  categories.forEach(function(c) { catEmoji[c.name] = c.emoji; });
+  saveCategories(categories);
+
+  if (currentCat === catName) currentCat = categories[0].name;
+  renderCategories();
+  renderDishes();
+}
+
+// ========== 菜品操作 ==========
 function addToCart(dishId) {
   if (navigator.vibrate) navigator.vibrate(8);
   var dish = dishes.filter(function(d) { return d.id === dishId; })[0];
@@ -745,7 +990,19 @@ function updateCartBar() {
   }
 }
 
-function openAddForm() { el('addModal').classList.add('show'); }
+function openAddForm() {
+  // 每次打开都刷新分类下拉
+  var sel = el('dishCat');
+  sel.innerHTML = '';
+  categories.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c.name;
+    opt.textContent = c.emoji + ' ' + c.name;
+    sel.appendChild(opt);
+  });
+  sel.value = currentCat;
+  el('addModal').classList.add('show');
+}
 function closeAddForm() { el('addModal').classList.remove('show'); }
 
 function previewLocalImage(event) {
@@ -822,6 +1079,7 @@ function removeDish(dishId) {
   });
 }
 
+// ========== 下单 ==========
 function submitOrder() {
   if (cart.length === 0) return;
   if (navigator.vibrate) navigator.vibrate(20);
@@ -867,18 +1125,20 @@ function saveOrder() {
   });
 }
 
+// ========== 历史订单 ==========
 function showHistory() {
   var list = el('historyList');
   list.innerHTML = '<div style="text-align:center;color:#666;padding:20px;">加载中...</div>';
   fetch('/api/orders?owner=' + encodeURIComponent(getMenuOwner()))
     .then(function(resp) { return resp.json(); })
     .then(function(data) {
-      if (!Array.isArray(data) || data.length === 0) {
+      allOrders = Array.isArray(data) ? data : [];
+      if (allOrders.length === 0) {
         list.innerHTML = '<div class="empty-state">还没有历史订单</div>';
         return;
       }
       list.innerHTML = '';
-      data.forEach(function(o) {
+      allOrders.forEach(function(o) {
         var dishNames = [];
         try { dishNames = JSON.parse(o.dishes); } catch(e) { dishNames = [o.dishes]; }
         var div = document.createElement('div');
@@ -898,11 +1158,83 @@ function showHistory() {
 
 function closeHistory() { el('historyModal').classList.remove('show'); }
 
+// ========== 导出历史订单 ==========
+async function exportHistory() {
+  if (!allOrders || allOrders.length === 0) {
+    alert('还没有历史订单可以导出');
+    return;
+  }
+  var vip = await groupHasVip();
+  if (!vip) {
+    el('vipLockSub').innerHTML =
+      '导出历史订单是 <b style="color:#f4b8d0;">VIP 专属功能</b>。<br>' +
+      '开通后可导出所有历史订单卡片。';
+    showVipLock();
+    return;
+  }
+  if (navigator.vibrate) navigator.vibrate(20);
+  closeHistory();
+
+  var card = buildHistoryExportCard();
+  await new Promise(function(r) { setTimeout(r, 80); });
+
+  try {
+    var canvas = await html2canvas(card, {
+      backgroundColor: '#1a1a2e',
+      scale: 2,
+      useCORS: true,
+      logging: false
+    });
+    var dataUrl = canvas.toDataURL('image/png');
+    el('exportImg').src = dataUrl;
+    el('exportOverlay').classList.add('show');
+  } catch (e) {
+    alert('生成图片失败，请重试');
+  }
+}
+
+function buildHistoryExportCard() {
+  var stage = el('exportStage');
+  stage.innerHTML = '';
+
+  var sectionsHtml = allOrders.map(function(o) {
+    var dishNames = [];
+    try { dishNames = JSON.parse(o.dishes); } catch(e) { dishNames = [o.dishes]; }
+    var dateStr = o.created_at ? o.created_at.slice(0, 16).replace('T', ' ') : '';
+    var itemsHtml = dishNames.map(function(d) {
+      return '<div class="ec-item"><div class="ec-dot"></div><div>' + d + '</div></div>';
+    }).join('');
+    return '<div class="ec-section">' +
+      '<div class="ec-section-title">📅 ' + dateStr +
+      '<span class="ec-count">' + dishNames.length + ' 道</span>' +
+      '</div>' + itemsHtml + '</div>';
+  }).join('');
+
+  var now = new Date();
+  var todayStr = now.getFullYear() + '年' + (now.getMonth()+1) + '月' + now.getDate() + '日';
+
+  var card = document.createElement('div');
+  card.className = 'export-card';
+  card.innerHTML =
+    '<div class="ec-head">' +
+    '<div class="ec-crown">📜</div>' +
+    '<div class="ec-title">我的菜单历史</div>' +
+    '<div class="ec-sub">ORDER HISTORY</div>' +
+    '<div class="ec-divider"></div>' +
+    '</div>' +
+    '<div class="ec-date">' + todayStr + ' · 共 ' + allOrders.length + ' 单</div>' +
+    sectionsHtml +
+    '<div class="ec-foot">来自 <span class="ec-brand">西班牙留学生工具站</span></div>';
+
+  stage.appendChild(card);
+  return card;
+}
+
+// ========== 共享 ==========
 function showShare() {
   renderShareList();
   el('shareModal').classList.add('show');
 }
-
 function closeShare() { el('shareModal').classList.remove('show'); }
 
 function renderShareList() {
@@ -963,13 +1295,13 @@ async function removeShare(email) {
   }
 }
 
-/* ============ 导出精美菜单 ============ */
+// ========== 导出当前菜单 ==========
 function buildExportCard() {
   var stage = el('exportStage');
   stage.innerHTML = '';
 
   var grouped = {};
-  categories.forEach(function(c) { grouped[c] = []; });
+  categories.forEach(function(c) { grouped[c.name] = []; });
   dishes.forEach(function(d) {
     if (!grouped[d.category]) grouped[d.category] = [];
     grouped[d.category].push(d);
@@ -977,7 +1309,7 @@ function buildExportCard() {
 
   var sectionsHtml = '';
   categories.forEach(function(cat) {
-    var list = grouped[cat];
+    var list = grouped[cat.name];
     if (!list || list.length === 0) return;
     var itemsHtml = list.map(function(d) {
       return '<div class="ec-item">' +
@@ -988,7 +1320,7 @@ function buildExportCard() {
     }).join('');
     sectionsHtml +=
       '<div class="ec-section">' +
-      '<div class="ec-section-title">' + catEmoji[cat] + ' ' + cat +
+      '<div class="ec-section-title">' + cat.emoji + ' ' + cat.name +
       '<span class="ec-count">' + list.length + ' 道</span>' +
       '</div>' + itemsHtml + '</div>';
   });
@@ -1033,7 +1365,7 @@ async function exportMenu() {
 
   try {
     var canvas = await html2canvas(card, {
-      backgroundColor: '#1a1a2e',   /* 写死深色背景，避免浅色模式变白 */
+      backgroundColor: '#1a1a2e',
       scale: 2,
       useCORS: true,
       logging: false
@@ -1056,6 +1388,7 @@ function goBack() {
   else location.href = '/?tab=tools';
 }
 
+// ========== 事件绑定 ==========
 el('btnBack').addEventListener('click', goBack);
 el('btnShare').addEventListener('click', showShare);
 el('btnHistory').addEventListener('click', showHistory);
@@ -1069,9 +1402,13 @@ el('btnSubmitAdd').addEventListener('click', submitAddDish);
 el('btnCloseOrder').addEventListener('click', closeOrderModal);
 el('btnSaveOrder').addEventListener('click', saveOrder);
 el('btnCloseHistory').addEventListener('click', closeHistory);
+el('btnExportHistory').addEventListener('click', exportHistory);
 el('btnAddShare').addEventListener('click', addShare);
 el('btnCloseShare').addEventListener('click', closeShare);
+el('ceCancel').addEventListener('click', closeCatEdit);
+el('ceSubmit').addEventListener('click', submitCatEdit);
 
+// ========== 初始化 ==========
 (async function init() {
   await loadShares();
   await loadDishes();

@@ -491,6 +491,14 @@
     else if (tab === 'treehole') loadTreehole();
     else if (tab === 'community') loadCommunity();
   }
+// 根据 URL hash 自动切换 tab
+(function autoSwitchFromHash() {
+  var hash = (location.hash || '').replace('#', '');
+  if (hash === 'market' || hash === 'treehole' || hash === 'community') {
+    var btn = document.querySelector('.hub-tab[data-tab="' + hash + '"]');
+    if (btn) switchHub(hash, btn);
+  }
+})();
 
   // ==================== 二手市场 ====================
   async function loadMarket() {
