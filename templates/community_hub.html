@@ -57,7 +57,6 @@
   .hub-panel.active { display: block; animation: fadeIn 0.3s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* 通用按钮 */
   .add-btn-top {
     width: 100%; padding: 14px; border-radius: 14px; border: none;
     background: linear-gradient(135deg, #4a7c59, #2d5a3d);
@@ -67,7 +66,6 @@
   }
   .add-btn-top:active { transform: scale(0.97); }
 
-  /* 出售 / 求购 切换 */
   .type-switch {
     display: flex; gap: 8px; margin-bottom: 10px;
   }
@@ -86,7 +84,6 @@
     font-weight: 700;
   }
 
-  /* 图片上传 */
   .upload-box {
     padding: 14px; border-radius: 12px;
     border: 2px dashed rgba(160, 216, 179, 0.3);
@@ -121,7 +118,6 @@
     text-align: center; cursor: pointer;
   }
 
-  /* 卡片通用 */
   .item-card {
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
@@ -158,7 +154,6 @@
     background: rgba(255,107,107,0.12); color: #ff6b6b;
   }
 
-  /* 二手图片 */
   .market-badge {
     display: inline-block;
     font-size: 11px; font-weight: 700;
@@ -221,6 +216,8 @@
   .reply-node.depth-2 { margin-left: 16px; background: rgba(160,216,179,0.04); }
   .reply-node.depth-3 { margin-left: 32px; background: rgba(160,216,179,0.03); }
   .reply-node.depth-4 { margin-left: 48px; background: rgba(160,216,179,0.02); }
+  .reply-node.depth-5 { margin-left: 56px; background: rgba(160,216,179,0.02); }
+  .reply-node.depth-6 { margin-left: 64px; background: rgba(160,216,179,0.02); }
   .reply-node .r-head {
     display: flex; align-items: center; gap: 6px;
     font-size: 11px; margin-bottom: 4px;
@@ -253,8 +250,9 @@
     font-family: inherit;
   }
   .reply-node .r-btn:active { background: rgba(160,216,179,0.12); }
+  .reply-node .r-btn.danger { color: #ff6b6b; }
+  .reply-node .r-btn.danger:active { background: rgba(255,107,107,0.12); }
 
-  /* 回复浮层 */
   #replyComposer {
     position: fixed;
     left: 0; right: 0; bottom: 0;
@@ -305,7 +303,6 @@
     flex-shrink: 0;
   }
 
-  /* 弹窗 */
   .modal {
     position: fixed; inset: 0; background: rgba(0,0,0,0.85);
     display: none; justify-content: center; align-items: flex-end;
@@ -478,11 +475,8 @@
   var el = function(id) { return document.getElementById(id); };
   var MY_EMAIL = (localStorage.getItem('user_email') || '').toLowerCase();
 
-  // 当前打开的帖子/树洞上下文
-  var currentContext = null;  // { type: 'post' | 'treehole', id: xxx }
-  // 当前回复目标的父评论 id（楼中楼）
+  var currentContext = null;
   var currentParentReplyId = null;
-  // 当前回复目标的作者昵称（显示用）
   var currentReplyToName = '';
 
   function goBack() {
@@ -513,7 +507,6 @@
     return escapeHtml((email || '').split('@')[0] || '匿名');
   }
 
-  // ===== 价格工具 =====
   function parsePrice(raw) {
     if (!raw) return { currency: 'EUR', amount: '' };
     var s = String(raw);
@@ -530,7 +523,6 @@
     return sym + p.amount;
   }
 
-  // ===== 图片上传 =====
   var uploadedImages = [];
 
   async function onMarketImagesSelected(event) {
@@ -573,7 +565,6 @@
     renderUploadPreview();
   }
 
-  // ===== Tab 切换 =====
   function switchHub(tab, btn) {
     if (navigator.vibrate) navigator.vibrate(8);
     document.querySelectorAll('.hub-panel').forEach(p => p.classList.remove('active'));
@@ -585,7 +576,6 @@
     else if (tab === 'community') loadCommunity();
   }
 
-  // 根据 URL hash 自动切换 tab
   (function autoSwitchFromHash() {
     var hash = (location.hash || '').replace('#', '');
     if (hash === 'market' || hash === 'treehole' || hash === 'community') {
@@ -705,7 +695,6 @@
     } catch (e) {}
   }
 
-  // 打开二手物品的评论区（楼中楼）
   function openMarketThread(id) {
     if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
     openThread('market', id, '🛒 询问 / 回复');
@@ -726,6 +715,7 @@
       data.forEach(function(t) {
         var card = document.createElement('div');
         card.className = 'item-card';
+        // 树洞匿名，不显示 id
         card.innerHTML =
           '<div class="item-body">' + escapeHtml(t.content) + '</div>' +
           '<div class="item-meta" style="margin-top:10px;">' +
@@ -856,7 +846,6 @@
 
   // ==================== 楼中楼核心 ====================
 
-  // 打开某个帖子/树洞/物品的评论区
   function openThread(type, id, title) {
     currentContext = { type: type, id: id };
     currentParentReplyId = null;
@@ -874,7 +863,6 @@
     currentParentReplyId = null;
   }
 
-  // 根据 context.type 去不同的接口拿回复树
   async function loadThreadReplies() {
     if (!currentContext) return;
     var type = currentContext.type;
@@ -882,9 +870,7 @@
     var url = '';
 
     if (type === 'market') {
-      // 复用 community/replies，用 market_id 作为 post_id 传
-      // 如果你的后端不同，改这里
-      url = '/api/community/replies?post_id=' + id + '&type=market';
+      url = '/api/market/comments?item_id=' + id;
     } else if (type === 'treehole') {
       url = '/api/treeholes/replies?id=' + id;
     } else if (type === 'post') {
@@ -900,7 +886,6 @@
           renderComposerButton();
         return;
       }
-      // 用 renderTree 递归渲染
       var tree = buildReplyTree(data);
       el('threadBody').innerHTML =
         '<div class="reply-thread">' + renderReplyTree(tree, 0) + '</div>' +
@@ -910,8 +895,6 @@
     }
   }
 
-  // 把扁平数组变成树
-  // 每条回复应该有 id, parent_id, user_email, content, created_at
   function buildReplyTree(list) {
     var map = {};
     var roots = [];
@@ -929,18 +912,19 @@
     return roots;
   }
 
-  // 递归渲染
   function renderReplyTree(nodes, depth) {
     if (!nodes || nodes.length === 0) return '';
     var html = '';
     nodes.forEach(function(node) {
-      var d = depth > 4 ? 4 : depth;  // 最多缩进 4 层，再深就不缩进了
+      var d = depth > 6 ? 6 : depth;
       var targetEmail = node.user_email || '';
       var nick = nickName(targetEmail);
       var parentNick = '';
       if (node.parent_id && node.parent_user_email) {
         parentNick = nickName(node.parent_user_email);
       }
+      var isMine = (node.user_email || '').toLowerCase() === MY_EMAIL;
+
       html += '<div class="reply-node depth-' + d + '" data-id="' + node.id + '">' +
         '<div class="r-head">' +
           '<span class="r-name">' + nick + '</span>' +
@@ -950,9 +934,9 @@
         '<div class="r-foot">' +
           '<span>' + timeAgo(node.created_at) + '</span>' +
           '<button class="r-btn" onclick="startReply(' + node.id + ', \'' + escapeHtml(nick).replace(/'/g, "\\'") + '\')">回复</button>' +
+          (isMine ? '<button class="r-btn danger" onclick="deleteReply(' + node.id + ')">删除</button>' : '') +
         '</div>';
 
-      // 递归渲染子节点
       if (node.children && node.children.length > 0) {
         html += renderReplyTree(node.children, depth + 1);
       }
@@ -968,7 +952,6 @@
       '</div>';
   }
 
-  // 点击「回复」按钮
   function startReply(parentId, parentNick) {
     if (!MY_EMAIL) { alert('请先登录'); location.href = '/login'; return; }
     currentParentReplyId = parentId || null;
@@ -980,7 +963,6 @@
     }
     el('composerInput').value = '';
     el('replyComposer').classList.add('show');
-    // 延迟聚焦，等 DOM 更新
     setTimeout(function() { el('composerInput').focus(); }, 100);
   }
 
@@ -1006,9 +988,8 @@
 
     var url = '';
     if (currentContext.type === 'market') {
-      url = '/api/community/reply';
-      payload.post_id = currentContext.id;
-      payload.type = 'market';
+      url = '/api/market/comments/add';
+      payload.item_id = currentContext.id;
     } else if (currentContext.type === 'treehole') {
       url = '/api/treeholes/reply';
       payload.treehole_id = currentContext.id;
@@ -1027,12 +1008,37 @@
       if (d.error) { alert(d.error); return; }
       el('composerInput').value = '';
       closeComposer();
-      // 刷新评论区
       loadThreadReplies();
     } catch (e) { alert('网络错误'); }
   }
 
-  // ===== 启动 =====
+  async function deleteReply(replyId) {
+    if (!MY_EMAIL) return;
+    if (!confirm('确定删除这条评论吗？')) return;
+    if (!currentContext) return;
+
+    var url = '';
+    var payload = { id: replyId, email: MY_EMAIL };
+    if (currentContext.type === 'market') {
+      url = '/api/market/comments/delete';
+    } else if (currentContext.type === 'treehole') {
+      url = '/api/treeholes/reply/delete';
+    } else if (currentContext.type === 'post') {
+      url = '/api/community/reply/delete';
+    }
+
+    try {
+      var r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      var d = await r.json();
+      if (d.error) { alert(d.error); return; }
+      loadThreadReplies();
+    } catch (e) { alert('网络错误'); }
+  }
+
   loadMarket();
 </script>
 <script src="/static/js/auth-gate.js"></script>

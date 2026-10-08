@@ -522,7 +522,6 @@ def api_orders_add():
         return jsonify({"error": "购物车为空"}), 400
     try:
         supabase.table("orders").insert({"user_email": email, "dishes": json.dumps(dish_names, ensure_ascii=False)}).execute()
-        # 改成：只有 email 存在才通知
         if email and email != "anonymous":
             notify(email, "menu_order", "有人点单了！共 " + str(len(dish_names)) + " 道菜", "/menu")
         return jsonify({"success": True})
@@ -771,7 +770,7 @@ def api_treeholes_add():
 
 
 # ==========================================================
-#                  树洞回复（支持楼中楼）
+#                  树洞回复（支持无限层楼中楼）
 # ==========================================================
 @app.route("/api/treeholes/replies")
 def api_treeholes_replies():
@@ -781,21 +780,23 @@ def api_treeholes_replies():
     if not tid:
         return jsonify({"error": "缺少 id"}), 400
     try:
-        # 先拿所有回复
         result = supabase.table("treehole_replies").select("*").eq("treehole_id", tid).order("created_at", desc=False).execute()
         rows = result.data or []
 
-        # 把父评论的作者邮箱补上，方便前端显示「回复 张三」
+        # 补上「父评论的作者 email」——一次性把所有需要的父评论都查出来
         parent_ids = [r.get("parent_id") for r in rows if r.get("parent_id")]
         parent_map = {}
         if parent_ids:
-            parents = supabase.table("treehole_replies").select("id,user_email").in_("id", list(set(parent_ids))).execute()
-            for p in (parents.data or []):
-                parent_map[p["id"]] = p["user_email"]
+            uniq_ids = list(set(parent_ids))
+            for i in range(0, len(uniq_ids), 100):
+                batch = uniq_ids[i:i+100]
+                parents = supabase.table("treehole_replies").select("id,user_email").in_("id", batch).execute()
+                for p in (parents.data or []):
+                    parent_map[p["id"]] = p["user_email"]
 
         for r in rows:
-            pid = r.get("parent_id")
-            r["parent_user_email"] = parent_map.get(pid, "") if pid else ""
+            p_id = r.get("parent_id")
+            r["parent_user_email"] = parent_map.get(p_id, "") if p_id else ""
 
         return jsonify(rows)
     except Exception as e:
@@ -823,7 +824,7 @@ def api_treeholes_reply():
             row["parent_id"] = parent_id
         supabase.table("treehole_replies").insert(row).execute()
 
-        # 通知：优先通知被回复的人，否则通知树洞原作者        
+        # 通知：优先通知被回复的人，否则通知树洞原作者
         if parent_id:
             try:
                 p = supabase.table("treehole_replies").select("user_email").eq("id", parent_id).execute()
@@ -843,6 +844,23 @@ def api_treeholes_reply():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/treeholes/reply/delete", methods=["POST"])
+def api_treeholes_reply_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    cid = data.get("id")
+    email = data.get("email", "").strip().lower()
+    if not cid or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("treehole_replies").delete().eq("id", cid).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/my_replies")
 def api_my_replies():
@@ -1007,6 +1025,97 @@ def api_market_view():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# ==========================================================
+#                        二手评论（支持无限层楼中楼）
+# ==========================================================
+@app.route("/api/market/comments")
+def api_market_comments():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    item_id = request.args.get("item_id", "").strip()
+    if not item_id:
+        return jsonify({"error": "缺少 item_id"}), 400
+    try:
+        result = supabase.table("market_comments").select("*").eq("item_id", item_id).order("created_at", desc=False).execute()
+        rows = result.data or []
+
+        parent_ids = [r.get("parent_id") for r in rows if r.get("parent_id")]
+        parent_map = {}
+        if parent_ids:
+            uniq_ids = list(set(parent_ids))
+            for i in range(0, len(uniq_ids), 100):
+                batch = uniq_ids[i:i+100]
+                parents = supabase.table("market_comments").select("id,user_email").in_("id", batch).execute()
+                for p in (parents.data or []):
+                    parent_map[p["id"]] = p["user_email"]
+
+        for r in rows:
+            p_id = r.get("parent_id")
+            r["parent_user_email"] = parent_map.get(p_id, "") if p_id else ""
+
+        return jsonify(rows)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/market/comments/add", methods=["POST"])
+def api_market_comments_add():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    item_id = data.get("item_id")
+    email = data.get("email", "").strip().lower()
+    content = data.get("content", "").strip()
+    parent_id = data.get("parent_id")
+    if not item_id or not email or not content:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        row = {
+            "item_id": item_id,
+            "user_email": email,
+            "content": content
+        }
+        if parent_id:
+            row["parent_id"] = parent_id
+        supabase.table("market_comments").insert(row).execute()
+
+        if parent_id:
+            try:
+                p = supabase.table("market_comments").select("user_email").eq("id", parent_id).execute()
+                if p.data:
+                    owner = p.data[0]["user_email"]
+                    if owner and owner != email:
+                        notify(owner, "market_comment_reply", "有人回复了你的二手评论：" + content[:30], "/community_hub#market")
+            except Exception:
+                pass
+        else:
+            item = supabase.table("market_items").select("user_email, title").eq("id", item_id).execute()
+            if item.data:
+                owner = item.data[0]["user_email"]
+                if owner and owner != email:
+                    notify(owner, "market_interest", "有人询问了你的二手：" + content[:30], "/community_hub#market")
+
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/market/comments/delete", methods=["POST"])
+def api_market_comments_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    cid = data.get("id")
+    email = data.get("email", "").strip().lower()
+    if not cid or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("market_comments").delete().eq("id", cid).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 # ==========================================================
 #                        探店地图
 # ==========================================================
@@ -1072,7 +1181,7 @@ def api_shops_delete():
 
 
 # ==========================================================
-#                        店铺评论
+#                        店铺评论（支持无限层楼中楼）
 # ==========================================================
 @app.route("/api/shops/comments")
 def api_shops_comments():
@@ -1090,7 +1199,23 @@ def api_shops_comments():
             .limit(500)
             .execute()
         )
-        return jsonify(result.data or [])
+        rows = result.data or []
+
+        parent_ids = [r.get("parent_id") for r in rows if r.get("parent_id")]
+        parent_map = {}
+        if parent_ids:
+            uniq_ids = list(set(parent_ids))
+            for i in range(0, len(uniq_ids), 100):
+                batch = uniq_ids[i:i+100]
+                parents = supabase.table("shop_comments").select("id,user_email").in_("id", batch).execute()
+                for p in (parents.data or []):
+                    parent_map[p["id"]] = p["user_email"]
+
+        for r in rows:
+            p_id = r.get("parent_id")
+            r["parent_user_email"] = parent_map.get(p_id, "") if p_id else ""
+
+        return jsonify(rows)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -1116,6 +1241,11 @@ def api_shops_comments_add():
             row["parent_id"] = parent_id
         supabase.table("shop_comments").insert(row).execute()
 
+        # 通知逻辑：
+        # 1. 如果是在回复某条评论，通知那条评论的作者
+        # 2. 无论如何，都通知店铺的作者（除非就是他自己在评论）
+        notified_emails = set()
+
         if parent_id:
             try:
                 p = supabase.table("shop_comments").select("user_email").eq("id", parent_id).execute()
@@ -1124,8 +1254,21 @@ def api_shops_comments_add():
                     if owner and owner != email:
                         notify(owner, "shop_comment_reply",
                                "有人回复了你的店铺评论：" + content[:30], "/map")
+                        notified_emails.add(owner)
             except Exception:
                 pass
+
+        # 通知店铺作者（顶层评论 + 回复时都通知）
+        try:
+            shop = supabase.table("shops").select("user_email, name").eq("id", shop_id).execute()
+            if shop.data:
+                shop_owner = shop.data[0]["user_email"]
+                if shop_owner and shop_owner != email and shop_owner not in notified_emails:
+                    notify(shop_owner, "shop_comment",
+                           "有人评论了你的店铺：" + content[:30], "/map")
+        except Exception:
+            pass
+
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -1184,7 +1327,7 @@ def api_community_add():
 
 
 # ==========================================================
-#                  社区回复（支持楼中楼）
+#                  社区回复（支持无限层楼中楼）
 # ==========================================================
 @app.route("/api/community/replies")
 def api_community_replies():
@@ -1197,13 +1340,15 @@ def api_community_replies():
         result = supabase.table("community_replies").select("*").eq("post_id", pid).order("created_at", desc=False).execute()
         rows = result.data or []
 
-        # 补上父评论作者 email
         parent_ids = [r.get("parent_id") for r in rows if r.get("parent_id")]
         parent_map = {}
         if parent_ids:
-            parents = supabase.table("community_replies").select("id,user_email").in_("id", list(set(parent_ids))).execute()
-            for p in (parents.data or []):
-                parent_map[p["id"]] = p["user_email"]
+            uniq_ids = list(set(parent_ids))
+            for i in range(0, len(uniq_ids), 100):
+                batch = uniq_ids[i:i+100]
+                parents = supabase.table("community_replies").select("id,user_email").in_("id", batch).execute()
+                for p in (parents.data or []):
+                    parent_map[p["id"]] = p["user_email"]
 
         for r in rows:
             p_id = r.get("parent_id")
@@ -1235,12 +1380,10 @@ def api_community_reply():
             row["parent_id"] = parent_id
         supabase.table("community_replies").insert(row).execute()
 
-        # 帖子 replies_count +1
         cur = supabase.table("community_posts").select("replies_count").eq("id", pid).execute()
         c = (cur.data[0]["replies_count"] if cur.data else 0) or 0
         supabase.table("community_posts").update({"replies_count": c + 1}).eq("id", pid).execute()
 
-        # 通知：优先通知被回复的人，否则通知帖子作者
         if parent_id:
             try:
                 p = supabase.table("community_replies").select("user_email").eq("id", parent_id).execute()
@@ -1260,6 +1403,23 @@ def api_community_reply():
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/community/reply/delete", methods=["POST"])
+def api_community_reply_delete():
+    if not supabase:
+        return jsonify({"error": "数据库未连接"}), 500
+    data = request.get_json()
+    cid = data.get("id")
+    email = data.get("email", "").strip().lower()
+    if not cid or not email:
+        return jsonify({"error": "缺少参数"}), 400
+    try:
+        supabase.table("community_replies").delete().eq("id", cid).eq("user_email", email).execute()
+        return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/community/delete", methods=["POST"])
 def api_community_delete():
@@ -2512,10 +2672,8 @@ def api_weather():
     """用 Open-Meteo 查天气（免费、无需 Key）"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
-    # 用户传 city=Madrid，也支持经纬度参数 lat/lng（默认马德里）
     city = request.args.get("city", "Madrid").strip() or "Madrid"
 
-    # 城市 → 经纬度映射（简单内置几个常用城市）
     CITY_COORDS = {
         "Madrid":    (40.4168, -3.7038),
         "Barcelona": (41.3874,  2.1686),
@@ -2530,7 +2688,6 @@ def api_weather():
 
     try:
         lat, lng = CITY_COORDS.get(city, (40.4168, -3.7038))
-        # Open-Meteo：一次拿当前天气 + 今日最高最低
         url = (
             "https://api.open-meteo.com/v1/forecast"
             f"?latitude={lat}&longitude={lng}"
