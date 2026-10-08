@@ -2667,12 +2667,23 @@ def api_rates():
 # ==========================================================
 #                        今日天气（Open-Meteo，免费）
 # ==========================================================
+# ==========================================================
+#                        今日天气（带缓存，避免被限流）
+# ==========================================================
+WEATHER_CACHE = {}   # { city: { data: {...}, ts: 时间戳 } }
+WEATHER_CACHE_TTL = 30 * 60  # 30 分钟
+
+
 @app.route("/api/weather")
 def api_weather():
-    """用 Open-Meteo 查天气（免费、无需 Key）"""
-    if not supabase:
-        return jsonify({"error": "数据库未连接"}), 500
+    """用 Open-Meteo 查天气，带 30 分钟内存缓存，避免 429"""
     city = request.args.get("city", "Madrid").strip() or "Madrid"
+
+    # 1. 先看缓存
+    now = datetime.now(timezone.utc).timestamp()
+    cached = WEATHER_CACHE.get(city)
+    if cached and (now - cached["ts"] < WEATHER_CACHE_TTL):
+        return jsonify(cached["data"])
 
     CITY_COORDS = {
         "Madrid":    (40.4168, -3.7038),
@@ -2686,31 +2697,38 @@ def api_weather():
         "Alicante":  (38.3452, -0.4810),
     }
 
+    lat, lng = CITY_COORDS.get(city, (40.4168, -3.7038))
+    url = (
+        "https://api.open-meteo.com/v1/forecast"
+        f"?latitude={lat}&longitude={lng}"
+        "&current=temperature_2m,weather_code"
+        "&daily=temperature_2m_max,temperature_2m_min"
+        "&timezone=Europe/Madrid&forecast_days=1"
+    )
+
+    # 2. 请求失败时，如果有旧缓存就用旧的（哪怕是过期的）
     try:
-        lat, lng = CITY_COORDS.get(city, (40.4168, -3.7038))
-        url = (
-            "https://api.open-meteo.com/v1/forecast"
-            f"?latitude={lat}&longitude={lng}"
-            "&current=temperature_2m,weather_code"
-            "&daily=temperature_2m_max,temperature_2m_min"
-            "&timezone=Europe/Madrid&forecast_days=1"
-        )
         req = urllib.request.Request(url, headers={"User-Agent": "StudentHubSpain/1.0"})
-        with urllib.request.urlopen(req, timeout=8) as r:
+        with urllib.request.urlopen(req, timeout=10) as r:
             import json as _json
             data = _json.loads(r.read().decode("utf-8"))
         cur = data.get("current", {})
         daily = data.get("daily", {})
-        return jsonify({
+        result = {
             "success": True,
             "temp": cur.get("temperature_2m", 0),
             "code": cur.get("weather_code", 0),
             "high": (daily.get("temperature_2m_max") or [0])[0],
             "low": (daily.get("temperature_2m_min") or [0])[0],
-        })
+        }
+        # 写缓存
+        WEATHER_CACHE[city] = {"data": result, "ts": now}
+        return jsonify(result)
     except Exception as e:
+        # 请求失败：如果有过期缓存，也返回它（比报错好）
+        if cached:
+            return jsonify(cached["data"])
         return jsonify({"error": str(e)}), 500
-
 # ==========================================================
 #                        待办事项
 # ==========================================================

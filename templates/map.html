@@ -226,6 +226,8 @@
   }
 
   .comment-list { padding-left: 0; }
+
+  /* 楼中楼：每层缩进 */
   .comment-item {
     padding: 10px 0;
     border-bottom: 1px solid rgba(255,255,255,0.04);
@@ -245,6 +247,12 @@
   .comment-item .c-name {
     font-size: 12px; color: #a0d8b3; font-weight: 600;
     max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .comment-item .c-reply-to {
+    font-size: 11px; color: #888;
+  }
+  .comment-item .c-reply-to b {
+    color: #f4b8d0; font-weight: 600;
   }
   .comment-item .c-time {
     font-size: 11px; color: #666;
@@ -266,22 +274,18 @@
     padding: 0;
   }
   .comment-item .c-actions button:active { color: #a0d8b3; }
+  .comment-item .c-actions button.danger { color: #ff6b6b; }
 
+  /* 子评论容器：递归缩进 */
   .comment-item .c-children {
     margin-left: 34px;
-    margin-top: 8px;
+    margin-top: 6px;
     padding-left: 12px;
     border-left: 2px solid rgba(160,216,179,0.15);
   }
-  .comment-item .c-children .comment-item {
-    padding: 8px 0;
-  }
-  .comment-item .c-children .c-content,
-  .comment-item .c-children .c-actions {
-    padding-left: 0;
-  }
-  .comment-item .c-children .c-head {
-    padding-left: 0;
+  .comment-item .c-children .comment-item .c-content,
+  .comment-item .c-children .comment-item .c-actions {
+    padding-left: 34px;
   }
 
   .inline-reply {
@@ -643,6 +647,7 @@
     }
   }
 
+  // ============ 楼中楼：递归渲染 ============
   function renderComments(shopId, all) {
     var listEl = el('cmt-list-' + shopId);
     if (!listEl) return;
@@ -652,24 +657,29 @@
       return;
     }
 
-    var top = [];
-    var children = {};
+    // 建索引 + 建树
+    var map = {};
     all.forEach(function(c) {
-      if (!c.parent_id) {
-        top.push(c);
+      map[c.id] = Object.assign({}, c, { children: [] });
+    });
+    var roots = [];
+    all.forEach(function(c) {
+      var node = map[c.id];
+      if (c.parent_id && map[c.parent_id]) {
+        map[c.parent_id].children.push(node);
       } else {
-        if (!children[c.parent_id]) children[c.parent_id] = [];
-        children[c.parent_id].push(c);
+        roots.push(node);
       }
     });
 
     listEl.innerHTML = '';
-    top.forEach(function(c) {
-      listEl.appendChild(buildCommentItem(shopId, c, children[c.id] || [], true));
+    roots.forEach(function(root) {
+      listEl.appendChild(buildCommentNode(shopId, root, 0));
     });
   }
 
-  function buildCommentItem(shopId, c, children, isTop) {
+  // 递归渲染单条评论（含所有子评论）
+  function buildCommentNode(shopId, c, depth) {
     var item = document.createElement('div');
     item.className = 'comment-item';
 
@@ -678,46 +688,44 @@
     var avatarChar = name.charAt(0).toUpperCase();
     var time = timeAgo(c.created_at);
 
+    // 是否显示「回复 @xxx」
+    var replyToHtml = '';
+    if (c.parent_id && c.parent_user_email) {
+      var parentName = (c.parent_user_email || '').split('@')[0];
+      replyToHtml = '<span class="c-reply-to">回复 <b>' + escapeHtml(parentName) + '</b></span>';
+    }
+
+    // 每层都用同一套结构：head / content / actions / inline-reply
     var html =
       '<div class="c-head">' +
         '<div class="c-avatar">' + escapeHtml(avatarChar) + '</div>' +
         '<div class="c-name">' + escapeHtml(name) + '</div>' +
+        replyToHtml +
         '<div class="c-time">' + time + '</div>' +
       '</div>' +
       '<div class="c-content">' + escapeHtml(c.content) + '</div>' +
       '<div class="c-actions">' +
         '<button data-reply="' + c.id + '">回复</button>' +
-        (isMine ? '<button data-cdel="' + c.id + '">删除</button>' : '') +
+        (isMine ? '<button class="danger" data-cdel="' + c.id + '">删除</button>' : '') +
       '</div>' +
       '<div class="inline-reply" id="reply-' + c.id + '">' +
         '<input type="text" id="reply-input-' + c.id + '" placeholder="回复 @' + escapeHtml(name) + '...">' +
         '<button data-reply-send="' + c.id + '" data-shop="' + shopId + '">发送</button>' +
       '</div>';
 
-    if (children && children.length > 0) {
-      html += '<div class="c-children">';
-      children.forEach(function(ch) {
-        var chName = (ch.user_email || '匿名').split('@')[0];
-        var chChar = chName.charAt(0).toUpperCase();
-        var chTime = timeAgo(ch.created_at);
-        var chMine = (ch.user_email || '').toLowerCase() === MY_EMAIL;
-        html +=
-          '<div class="comment-item">' +
-            '<div class="c-head">' +
-              '<div class="c-avatar">' + escapeHtml(chChar) + '</div>' +
-              '<div class="c-name">' + escapeHtml(chName) + '</div>' +
-              '<div class="c-time">' + chTime + '</div>' +
-            '</div>' +
-            '<div class="c-content">' + escapeHtml(ch.content) + '</div>' +
-            '<div class="c-actions">' +
-              (chMine ? '<button data-cdel="' + ch.id + '">删除</button>' : '') +
-            '</div>' +
-          '</div>';
+    // 递归子评论（用 .c-children 包住，缩进一层）
+    if (c.children && c.children.length > 0) {
+      var childrenWrapper = document.createElement('div');
+      childrenWrapper.className = 'c-children';
+      c.children.forEach(function(ch) {
+        childrenWrapper.appendChild(buildCommentNode(shopId, ch, depth + 1));
       });
-      html += '</div>';
+      item.innerHTML = html;
+      item.appendChild(childrenWrapper);
+    } else {
+      item.innerHTML = html;
     }
 
-    item.innerHTML = html;
     return item;
   }
 
@@ -833,12 +841,11 @@
     if (!el('publishForm').classList.contains('show')) exitPickMode();
   }
 
-  // ===== 解析地址（新） =====
+  // ===== 解析地址 =====
   async function resolveAddress() {
     var addr = el('addrInput').value.trim();
     if (!addr) { alert('请输入地址'); return; }
 
-    // 先试试是不是坐标（40.4200, -3.7050）
     var parts = addr.split(/[,\s]+/).filter(function(p) { return p.length > 0; });
     if (parts.length >= 2) {
       var lat = parseFloat(parts[0]);
@@ -854,7 +861,6 @@
       }
     }
 
-    // 不是坐标，当地址处理
     el('resolveBtn').textContent = '🔍 搜索中...';
     el('resolveBtn').disabled = true;
     try {
