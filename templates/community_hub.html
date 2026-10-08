@@ -29,7 +29,6 @@
 
   #content { padding: 0 16px 40px; }
 
-  /* Tab 切换 */
   .hub-tabs {
     display: flex; gap: 6px; margin-bottom: 16px;
     background: rgba(255,255,255,0.04);
@@ -197,7 +196,6 @@
     padding: 60px 20px; line-height: 1.8;
   }
 
-  /* ============ 楼中楼样式 ============ */
   .reply-thread {
     margin-top: 10px;
     padding-top: 10px;
@@ -371,19 +369,15 @@
 
 </div>
 
-<!-- 二手发布弹窗 -->
 <div class="modal" id="marketModal">
   <div class="modal-content">
     <h3>🛒 发布二手</h3>
-
     <div class="type-switch">
       <label><input type="radio" name="mType" value="sell" checked><span>💰 出售</span></label>
       <label><input type="radio" name="mType" value="want"><span>🔍 求购</span></label>
     </div>
-
     <input type="text" id="mTitle" placeholder="物品名称 *">
     <textarea id="mDesc" placeholder="物品描述"></textarea>
-
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <input type="number" id="mPrice" placeholder="价格" step="0.01" min="0" style="flex:1;margin-bottom:0;">
       <select id="mCurrency" style="width:110px;margin-bottom:0;">
@@ -391,15 +385,12 @@
         <option value="CNY">💰 ¥</option>
       </select>
     </div>
-
     <input type="text" id="mContact" placeholder="联系方式（微信/WhatsApp）*">
-
     <div class="upload-box" onclick="document.getElementById('mImages').click()">
       📷 点击上传图片（可多选，每张最大 10MB）
     </div>
     <input type="file" id="mImages" accept="image/*" multiple style="display:none" onchange="onMarketImagesSelected(event)">
     <div class="upload-preview" id="uploadPreview"></div>
-
     <select id="mCategory">
       <option value="">📂 选择分类</option>
       <option value="家具">🛋️ 家具</option>
@@ -409,7 +400,6 @@
       <option value="出行工具">🚲 出行工具</option>
       <option value="其他">📦 其他</option>
     </select>
-
     <div class="form-actions">
       <button class="cancel" onclick="closeMarketModal()">取消</button>
       <button class="submit" onclick="submitMarket()">发布</button>
@@ -417,7 +407,6 @@
   </div>
 </div>
 
-<!-- 树洞发布弹窗 -->
 <div class="modal" id="treeholeModal">
   <div class="modal-content">
     <h3>🌳 发树洞</h3>
@@ -429,7 +418,6 @@
   </div>
 </div>
 
-<!-- 互助发帖弹窗 -->
 <div class="modal" id="postModal">
   <div class="modal-content">
     <h3>🤝 发帖</h3>
@@ -450,7 +438,6 @@
   </div>
 </div>
 
-<!-- 帖子/树洞 查看回复弹窗 -->
 <div class="modal" id="threadModal">
   <div class="modal-content">
     <h3 id="threadTitle">💬 评论</h3>
@@ -461,7 +448,6 @@
   </div>
 </div>
 
-<!-- 浮动回复输入框（楼中楼用） -->
 <div id="replyComposer">
   <div class="composer-to" id="composerTo"></div>
   <div class="composer-row">
@@ -503,7 +489,11 @@
     return d.toLocaleDateString('zh-CN');
   }
 
+  // ============ 昵称：树洞里全部匿名 ============
   function nickName(email) {
+    if (currentContext && currentContext.type === 'treehole') {
+      return '匿名';
+    }
     return escapeHtml((email || '').split('@')[0] || '匿名');
   }
 
@@ -715,7 +705,7 @@
       data.forEach(function(t) {
         var card = document.createElement('div');
         card.className = 'item-card';
-        // 树洞匿名，不显示 id
+        // 树洞卡片：只显示内容和时间，不显示任何 id 或昵称
         card.innerHTML =
           '<div class="item-body">' + escapeHtml(t.content) + '</div>' +
           '<div class="item-meta" style="margin-top:10px;">' +
@@ -918,10 +908,10 @@
     nodes.forEach(function(node) {
       var d = depth > 6 ? 6 : depth;
       var targetEmail = node.user_email || '';
-      var nick = nickName(targetEmail);
+      var nick = nickName(targetEmail);   // 树洞里自动返回「匿名」
       var parentNick = '';
       if (node.parent_id && node.parent_user_email) {
-        parentNick = nickName(node.parent_user_email);
+        parentNick = nickName(node.parent_user_email);  // 树洞里也自动「匿名」
       }
       var isMine = (node.user_email || '').toLowerCase() === MY_EMAIL;
 
@@ -957,7 +947,9 @@
     currentParentReplyId = parentId || null;
     currentReplyToName = parentNick || '';
     if (parentId) {
-      el('composerTo').innerHTML = '回复 <b>' + escapeHtml(parentNick) + '</b>';
+      // 树洞里，就算 parentNick 传的是真名，也显示匿名
+      var displayNick = (currentContext && currentContext.type === 'treehole') ? '匿名' : parentNick;
+      el('composerTo').innerHTML = '回复 <b>' + escapeHtml(displayNick) + '</b>';
     } else {
       el('composerTo').innerHTML = '发表评论';
     }
