@@ -522,7 +522,9 @@ def api_orders_add():
         return jsonify({"error": "购物车为空"}), 400
     try:
         supabase.table("orders").insert({"user_email": email, "dishes": json.dumps(dish_names, ensure_ascii=False)}).execute()
-        notify(email, "menu_order", "有人点单了！共 " + str(len(dish_names)) + " 道菜", "/menu")
+        # 改成：只有 email 存在才通知
+        if email and email != "anonymous":
+            notify(email, "menu_order", "有人点单了！共 " + str(len(dish_names)) + " 道菜", "/menu")
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -539,7 +541,6 @@ def api_menu_shares():
     if not email:
         return jsonify({"error": "缺少 email"}), 400
     try:
-        # 我发起的 + 别人发给我的
         sent = supabase.table("menu_shares").select("member_email").eq("owner_email", email).execute()
         received = supabase.table("menu_shares").select("owner_email").eq("member_email", email).execute()
         group = set()
@@ -549,7 +550,6 @@ def api_menu_shares():
         for r in (received.data or []):
             group.add(r["owner_email"])
         members = sorted(list(group))
-        # 组的 owner = 排序后第一个
         owner = members[0] if members else email
         return jsonify({"members": members, "owner": owner})
     except Exception as e:
@@ -769,6 +769,10 @@ def api_treeholes_add():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+# ==========================================================
+#                  树洞回复（支持楼中楼）
+# ==========================================================
 @app.route("/api/treeholes/replies")
 def api_treeholes_replies():
     if not supabase:
@@ -777,10 +781,26 @@ def api_treeholes_replies():
     if not tid:
         return jsonify({"error": "缺少 id"}), 400
     try:
+        # 先拿所有回复
         result = supabase.table("treehole_replies").select("*").eq("treehole_id", tid).order("created_at", desc=False).execute()
-        return jsonify(result.data)
+        rows = result.data or []
+
+        # 把父评论的作者邮箱补上，方便前端显示「回复 张三」
+        parent_ids = [r.get("parent_id") for r in rows if r.get("parent_id")]
+        parent_map = {}
+        if parent_ids:
+            parents = supabase.table("treehole_replies").select("id,user_email").in_("id", list(set(parent_ids))).execute()
+            for p in (parents.data or []):
+                parent_map[p["id"]] = p["user_email"]
+
+        for r in rows:
+            pid = r.get("parent_id")
+            r["parent_user_email"] = parent_map.get(pid, "") if pid else ""
+
+        return jsonify(rows)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/api/treeholes/reply", methods=["POST"])
 def api_treeholes_reply():
@@ -790,15 +810,36 @@ def api_treeholes_reply():
     tid = data.get("treehole_id")
     email = data.get("email", "").strip() or "anonymous"
     content = data.get("content", "").strip()
+    parent_id = data.get("parent_id")
     if not tid or not content:
         return jsonify({"error": "缺少内容"}), 400
     try:
-        supabase.table("treehole_replies").insert({"treehole_id": tid, "user_email": email, "content": content}).execute()
-        tree = supabase.table("treeholes").select("user_email").eq("id", tid).execute()
-        if tree.data:
-            owner = tree.data[0]["user_email"]
-            if owner and owner != email and owner != "anonymous":
-                notify(owner, "treehole_reply", "有人回复了你的树洞：" + content[:30], "/treehole")
+        row = {
+            "treehole_id": tid,
+            "user_email": email,
+            "content": content,
+        }
+        if parent_id:
+            row["parent_id"] = parent_id
+        supabase.table("treehole_replies").insert(row).execute()
+
+        # 通知：优先通知被回复的人，否则通知树洞原作者        
+        if parent_id:
+            try:
+                p = supabase.table("treehole_replies").select("user_email").eq("id", parent_id).execute()
+                if p.data:
+                    owner = p.data[0]["user_email"]
+                    if owner and owner != email and owner != "anonymous":
+                        notify(owner, "treehole_reply", "有人回复了你的树洞评论：" + content[:30], "/community_hub#treehole")
+            except Exception:
+                pass
+        else:
+            tree = supabase.table("treeholes").select("user_email").eq("id", tid).execute()
+            if tree.data:
+                owner = tree.data[0]["user_email"]
+                if owner and owner != email and owner != "anonymous":
+                    notify(owner, "treehole_reply", "有人回复了你的树洞：" + content[:30], "/community_hub#treehole")
+
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -1142,6 +1183,9 @@ def api_community_add():
         return jsonify({"error": str(e)}), 500
 
 
+# ==========================================================
+#                  社区回复（支持楼中楼）
+# ==========================================================
 @app.route("/api/community/replies")
 def api_community_replies():
     if not supabase:
@@ -1151,7 +1195,21 @@ def api_community_replies():
         return jsonify({"error": "缺少 post_id"}), 400
     try:
         result = supabase.table("community_replies").select("*").eq("post_id", pid).order("created_at", desc=False).execute()
-        return jsonify(result.data)
+        rows = result.data or []
+
+        # 补上父评论作者 email
+        parent_ids = [r.get("parent_id") for r in rows if r.get("parent_id")]
+        parent_map = {}
+        if parent_ids:
+            parents = supabase.table("community_replies").select("id,user_email").in_("id", list(set(parent_ids))).execute()
+            for p in (parents.data or []):
+                parent_map[p["id"]] = p["user_email"]
+
+        for r in rows:
+            p_id = r.get("parent_id")
+            r["parent_user_email"] = parent_map.get(p_id, "") if p_id else ""
+
+        return jsonify(rows)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -1164,22 +1222,41 @@ def api_community_reply():
     pid = data.get("post_id")
     email = data.get("email", "").strip()
     content = data.get("content", "").strip()
+    parent_id = data.get("parent_id")
     if not pid or not email or not content:
         return jsonify({"error": "缺少参数"}), 400
     try:
-        supabase.table("community_replies").insert({
+        row = {
             "post_id": pid,
             "user_email": email,
             "content": content,
-        }).execute()
+        }
+        if parent_id:
+            row["parent_id"] = parent_id
+        supabase.table("community_replies").insert(row).execute()
+
+        # 帖子 replies_count +1
         cur = supabase.table("community_posts").select("replies_count").eq("id", pid).execute()
         c = (cur.data[0]["replies_count"] if cur.data else 0) or 0
         supabase.table("community_posts").update({"replies_count": c + 1}).eq("id", pid).execute()
-        post = supabase.table("community_posts").select("user_email, title").eq("id", pid).execute()
-        if post.data:
-            owner = post.data[0]["user_email"]
-            if owner and owner != email:
-                notify(owner, "community_reply", "有人回复了你的帖子：" + content[:30], "/community")
+
+        # 通知：优先通知被回复的人，否则通知帖子作者
+        if parent_id:
+            try:
+                p = supabase.table("community_replies").select("user_email").eq("id", parent_id).execute()
+                if p.data:
+                    owner = p.data[0]["user_email"]
+                    if owner and owner != email:
+                        notify(owner, "community_reply", "有人回复了你的评论：" + content[:30], "/community_hub#community")
+            except Exception:
+                pass
+        else:
+            post = supabase.table("community_posts").select("user_email, title").eq("id", pid).execute()
+            if post.data:
+                owner = post.data[0]["user_email"]
+                if owner and owner != email:
+                    notify(owner, "community_reply", "有人回复了你的帖子：" + content[:30], "/community_hub#community")
+
         return jsonify({"success": True})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -2432,25 +2509,47 @@ def api_rates():
 # ==========================================================
 @app.route("/api/weather")
 def api_weather():
-    """用 wttr.in 查天气（免费、无需 Key）"""
+    """用 Open-Meteo 查天气（免费、无需 Key）"""
     if not supabase:
         return jsonify({"error": "数据库未连接"}), 500
-    city = request.args.get("city", "Madrid")
+    # 用户传 city=Madrid，也支持经纬度参数 lat/lng（默认马德里）
+    city = request.args.get("city", "Madrid").strip() or "Madrid"
+
+    # 城市 → 经纬度映射（简单内置几个常用城市）
+    CITY_COORDS = {
+        "Madrid":    (40.4168, -3.7038),
+        "Barcelona": (41.3874,  2.1686),
+        "Valencia":  (39.4699, -0.3763),
+        "Sevilla":   (37.3891, -5.9845),
+        "Granada":   (37.1773, -3.5986),
+        "Bilbao":    (43.2630, -2.9350),
+        "Zaragoza":  (41.6488, -0.8891),
+        "Malaga":    (36.7213, -4.4213),
+        "Alicante":  (38.3452, -0.4810),
+    }
+
     try:
-        url = f"https://wttr.in/{city}?format=j1"
-        req = urllib.request.Request(url, headers={"User-Agent": "curl/7.68.0"})
+        lat, lng = CITY_COORDS.get(city, (40.4168, -3.7038))
+        # Open-Meteo：一次拿当前天气 + 今日最高最低
+        url = (
+            "https://api.open-meteo.com/v1/forecast"
+            f"?latitude={lat}&longitude={lng}"
+            "&current=temperature_2m,weather_code"
+            "&daily=temperature_2m_max,temperature_2m_min"
+            "&timezone=Europe/Madrid&forecast_days=1"
+        )
+        req = urllib.request.Request(url, headers={"User-Agent": "StudentHubSpain/1.0"})
         with urllib.request.urlopen(req, timeout=8) as r:
             import json as _json
             data = _json.loads(r.read().decode("utf-8"))
-        cur = data.get("current_condition", [{}])[0]
-        today = data.get("weather", [{}])[0]
-        code = int(cur.get("weatherCode", "0"))
+        cur = data.get("current", {})
+        daily = data.get("daily", {})
         return jsonify({
             "success": True,
-            "temp": float(cur.get("temp_C", 0)),
-            "code": code,
-            "high": float(today.get("maxtempC", 0)),
-            "low": float(today.get("mintempC", 0)),
+            "temp": cur.get("temperature_2m", 0),
+            "code": cur.get("weather_code", 0),
+            "high": (daily.get("temperature_2m_max") or [0])[0],
+            "low": (daily.get("temperature_2m_min") or [0])[0],
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
